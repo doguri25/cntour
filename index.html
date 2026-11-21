@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>충청남도 블록 탐방</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--p:#1a73e8;--p2:#4f9bff;--ink:#1f2430;--sub:#5b6472;--glass:rgba(255,255,255,.84);--line:rgba(20,30,50,.08);--sh:0 1px 2px rgba(20,30,60,.10),0 8px 24px rgba(20,30,60,.14);--r:20px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#e6f1fb;font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;color:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{display:block;position:fixed;inset:0;width:100%;height:100%}
+button{font-family:inherit;color:inherit}
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:var(--sh);border:1px solid rgba(255,255,255,.7)}
+.chip{position:fixed}
+/* stamp counter */
+#count{top:12px;left:12px;height:44px;padding:0 16px 0 6px;border-radius:999px;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:700;cursor:pointer}
+#ring{width:32px;height:32px;border-radius:50%;background:conic-gradient(var(--p) calc(var(--pg,0)*1%),#e3e8f0 0);display:grid;place-items:center}
+#ring:after{content:"";width:22px;height:22px;border-radius:50%;background:#fff}
+#count small{font-weight:500;color:var(--sub);font-size:12px;margin-right:2px}
+#count b{color:var(--p);font-weight:900}
+#count:active{transform:scale(.97)}
+/* minimap */
+#mmw{position:fixed;left:12px;top:64px;padding:6px;border-radius:16px;pointer-events:none}
+#mm{display:block;width:164px;height:84px;border-radius:11px;position:static}
+/* right rail */
+.rail{position:fixed;right:12px;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;padding:4px;gap:2px}
+.rail button{width:42px;height:42px;border:0;background:transparent;border-radius:14px;display:grid;place-items:center;font-size:19px;cursor:pointer;transition:background .15s}
+.rail button:active{background:rgba(26,115,232,.14)}
+.rail svg{width:20px;height:20px;stroke:#3a4352;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#zoom{top:12px}#sky{top:204px}
+/* labels */
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(20,30,60,.18),0 4px 10px rgba(20,30,60,.14);will-change:transform;display:flex;align-items:center;gap:5px}
+.lb:before{content:"";width:7px;height:7px;border-radius:50%;background:#f29900;flex:none}
+.lb:after{content:"";position:absolute;left:50%;bottom:-4px;margin-left:-4px;width:8px;height:8px;background:inherit;transform:rotate(45deg);border-radius:1px}
+.lb.v{background:var(--p);color:#fff}.lb.v:before{content:"✓";background:none;width:auto;height:auto;font-size:11px;line-height:1}
+.lb.big{font-size:14px;padding:7px 14px;background:rgba(31,36,48,.9);color:#fff;font-weight:900;letter-spacing:.02em}.lb.big:before{display:none}
+/* place card */
+#card{position:fixed;left:50%;top:170px;transform:translate(-50%,-520%);width:min(430px,calc(100% - 24px));border-radius:var(--r);padding:14px 18px 15px 20px;transition:transform .32s cubic-bezier(.2,.9,.25,1.05);pointer-events:none;overflow:hidden}
+#card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--p2),var(--p))}
+#card.on{transform:translate(-50%,0)}
+#card .top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+#cr{font-size:11px;font-weight:700;color:var(--p);background:rgba(26,115,232,.1);border-radius:999px;padding:2px 9px}
+#cs{font-size:11px;font-weight:700;background:#e6f4ea;color:#137333;border-radius:999px;padding:2px 9px}
+#card h2{margin:0 0 4px;font-size:18px;font-weight:900;letter-spacing:-.01em}
+#card p{margin:0;font-size:13.5px;line-height:1.6;color:#3b4352;word-break:keep-all;font-weight:500}
+@media(min-width:760px){#card{top:14px}}
+/* controls */
+#joy{position:fixed;left:18px;bottom:calc(22px + env(safe-area-inset-bottom,0px));width:132px;height:132px;border-radius:50%;touch-action:none;
+  background:radial-gradient(circle at 50% 42%,rgba(255,255,255,.34),rgba(255,255,255,.14) 70%);border:1.5px solid rgba(255,255,255,.8);
+  box-shadow:0 12px 32px rgba(20,30,60,.22),inset 0 0 0 10px rgba(255,255,255,.08),inset 0 -8px 20px rgba(26,115,232,.10);-webkit-backdrop-filter:blur(10px) saturate(1.3);backdrop-filter:blur(10px) saturate(1.3)}
+#joy:before{content:"";position:absolute;inset:0;border-radius:50%;opacity:.75;background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 132' fill='none' stroke='%231a73e8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M60 18l6-6 6 6M60 114l6 6 6-6M18 60l-6 6 6 6M114 60l6 6-6 6'/%3E%3C/svg%3E") center/100% no-repeat}
+#joy i{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px;border-radius:50%;background:radial-gradient(circle at 50% 50%,var(--p) 0 24%,#fff 26% 100%);
+  box-shadow:0 6px 16px rgba(20,30,60,.28),inset 0 -3px 6px rgba(26,115,232,.14),inset 0 0 0 1px rgba(26,115,232,.18)}
+#jump{position:fixed;right:22px;bottom:calc(38px + env(safe-area-inset-bottom,0px));width:78px;height:78px;border-radius:50%;touch-action:none;cursor:pointer;
+  border:3px solid transparent;background:linear-gradient(#ffffff,#f1f6ff) padding-box,linear-gradient(135deg,#4f9bff,#19c3b1) border-box;color:var(--p);font-size:11px;font-weight:900;letter-spacing:.06em;
+  box-shadow:0 10px 26px rgba(26,115,232,.32),inset 0 -4px 8px rgba(26,115,232,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:transform .08s}
+#jump svg{width:28px;height:28px;stroke:var(--p);stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:-2px}
+#jump:active{transform:scale(.93);background:linear-gradient(135deg,#4f9bff,#19c3b1) padding-box,linear-gradient(135deg,#4f9bff,#19c3b1) border-box;color:#fff}
+#jump:active svg{stroke:#fff}
+/* look-around button + place sheet with quiz */
+#act{position:fixed;left:50%;bottom:calc(46px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);opacity:0;border:0;border-radius:999px;padding:9px 20px 9px 9px;display:flex;align-items:center;gap:11px;
+  background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;box-shadow:0 10px 26px rgba(26,115,232,.42);transition:transform .28s cubic-bezier(.2,.9,.25,1.1),opacity .2s;pointer-events:none;z-index:3;max-width:calc(100% - 230px);cursor:pointer}
+#act.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#act.done{background:linear-gradient(145deg,#3fbf8f,#12a37f);box-shadow:0 10px 26px rgba(18,163,127,.4)}
+#act i{flex:none;width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center}
+#act svg{width:21px;height:21px;fill:none;stroke:var(--p);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#act.done svg{stroke:#12a37f}
+#act span{display:flex;flex-direction:column;align-items:flex-start;min-width:0;text-align:left}
+#act small{font-size:11px;font-weight:700;opacity:.9;line-height:1.3}
+#act b{font-size:15px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#act:active{filter:brightness(.94)}
+@media(max-width:560px){#act{bottom:calc(150px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}}
+#qz{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(18,24,38,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:14px;z-index:5}
+#qz.on{display:flex}
+#qz .sheet{position:relative;width:min(440px,100%);max-height:94%;touch-action:pan-y;user-select:text;-webkit-user-select:text}
+#qx{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(20,30,60,.25);font-size:20px;line-height:1;color:#3b4352;z-index:2;cursor:pointer}
+#qpic{position:relative;border-radius:28px 28px 0 0;overflow:hidden;background:#dfeaf6;aspect-ratio:16/9}
+#qpic canvas{position:static;display:block;width:100%;height:100%}
+#qpic em{position:absolute;left:12px;bottom:10px;font-style:normal;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.55);border-radius:999px;padding:4px 10px}
+#qb{padding:16px 20px 20px}
+#qb .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+#qr{font-size:12px;font-weight:700;color:var(--p);background:#e8f0fe;border-radius:999px;padding:3px 10px}
+#qs{font-size:12px;font-weight:900;color:#12a37f;display:none}
+#qb h2{margin:0 0 6px;font-size:20px;font-weight:900;letter-spacing:-.01em}
+#qd{margin:0 0 14px;font-size:14.5px;line-height:1.65;color:#3b4352;word-break:keep-all;font-weight:500}
+#qq{border-top:1px solid var(--line);padding-top:14px;display:none}
+#qz.quiz #qq{display:block}#qz.quiz #qg{display:none}
+#qq small{display:block;font-size:12px;font-weight:900;color:var(--p);letter-spacing:.04em;margin-bottom:3px}
+#qt{margin:0 0 10px;font-size:16px;font-weight:700;line-height:1.5;word-break:keep-all}
+#qo{display:grid;gap:8px}
+#qo button{border:2px solid #dbe3ee;background:#fff;border-radius:16px;padding:13px 14px;font-size:15px;font-weight:700;text-align:left;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s,border-color .15s;word-break:keep-all}
+#qo button i{flex:none;width:26px;height:26px;border-radius:50%;background:#eef3fa;color:var(--sub);font-style:normal;font-size:13px;font-weight:900;display:flex;align-items:center;justify-content:center}
+#qo button.ok{border-color:#12a37f;background:#e6f7f1;color:#0b6b53}#qo button.ok i{background:#12a37f;color:#fff}
+#qo button.no{border-color:#f0b4ae;background:#fdf1ef;color:#a04038;animation:shake .35s}#qo button.no i{background:#e06055;color:#fff}
+#qo button:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+#qm{min-height:22px;margin:-4px 0 10px;font-size:13.5px;font-weight:700;color:var(--sub);word-break:keep-all}
+#qm.ok{color:#0b6b53}#qm.no{color:#c5221f}
+#stamp{position:absolute;right:18px;top:92px;width:104px;height:104px;border-radius:50%;border:5px solid #e0453a;color:#e0453a;display:none;align-items:center;justify-content:center;text-align:center;font-size:17px;font-weight:900;line-height:1.15;transform:rotate(-14deg);background:rgba(255,255,255,.82);pointer-events:none;z-index:2;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 5px #e0453a}
+#stamp.on{display:flex;animation:stamp .5s cubic-bezier(.2,1.5,.4,1)}
+@keyframes stamp{0%{transform:rotate(-14deg) scale(2.6);opacity:0}60%{opacity:1}100%{transform:rotate(-14deg) scale(1)}}
+#qn{margin-top:12px;display:none}
+/* sheets */
+#intro,#list{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(18,24,38,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:16px;z-index:5}
+#list{display:none}
+.sheet{background:#fff;border-radius:28px;width:min(410px,100%);max-height:88%;overflow:auto;box-shadow:0 20px 60px rgba(10,20,50,.35)}
+.hero{padding:26px 24px 20px;background:linear-gradient(135deg,#1a73e8,#35a7ff 55%,#7fd4c1);color:#fff;border-radius:28px 28px 0 0}
+.hero small{font-weight:700;opacity:.85;font-size:12px;letter-spacing:.08em}
+.hero h1{margin:4px 0 6px;font-size:25px;font-weight:900;letter-spacing:-.02em}
+.hero p{margin:0;font-size:13.5px;line-height:1.6;opacity:.95;word-break:keep-all;font-weight:500}
+.body{padding:18px 22px 20px}
+.keys{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 16px;padding:0;list-style:none}
+.keys li{background:#f4f7fb;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.45;color:var(--sub);font-weight:500}
+.keys b{display:block;color:var(--ink);font-size:13px;margin-bottom:1px}
+.btn{display:block;width:100%;border:0;border-radius:999px;background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;font-size:16px;font-weight:700;padding:14px;box-shadow:0 6px 16px rgba(26,115,232,.35)}
+.btn:active{transform:scale(.98)}
+#list .sheet{padding:22px}
+#list h1{margin:0 0 6px;font-size:20px;font-weight:900}
+#list ul{margin:0 0 14px;padding:0;list-style:none;font-size:14px;color:#3b4352}
+#list h3{margin:14px 0 4px;font-size:12.5px;color:var(--p);font-weight:700;display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:4px}
+#list li{display:flex;gap:8px;align-items:center;line-height:2;font-weight:500}
+#list li em{font-style:normal;width:18px;height:18px;border-radius:50%;border:2px solid #d5dbe5;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex:none}
+#list li.v em{background:var(--p);border-color:var(--p)}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:rgba(31,36,48,.92);color:#fff;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:6}
+#toast.on{opacity:1}
+#err{position:fixed;inset:auto 12px 12px 12px;background:#fce8e6;color:#c5221f;border-radius:12px;padding:12px;font-size:13px;display:none;z-index:9}
+</style>
+<script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
+</head><body>
+<div id="labels"></div>
+<button id="count" class="chip glass"><span id="ring"></span><span><small>탐방 도장</small><b id="n">0</b> / <span id="tot">0</span></span></button>
+<div id="mmw" class="glass"><canvas id="mm" width="1350" height="688"></canvas></div>
+<div id="zoom" class="rail glass">
+  <button id="zi" aria-label="확대"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button id="zo" aria-label="축소"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+  <button id="zall" aria-label="전체 보기"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <button id="home" aria-label="출발 지점으로"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg></button>
+</div>
+<div id="sky" class="rail glass"><button id="tod" aria-label="시간 바꾸기"></button><button id="wx" aria-label="날씨 바꾸기"></button></div>
+<button id="jump" aria-label="점프"><svg viewBox="0 0 24 24"><path d="M6 12l6-6 6 6M6 18l6-6 6 6"/></svg>점프</button>
+<div id="joy"><i></i></div>
+<button id="act"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></i><span><small id="as">살펴보기</small><b id="an"></b></span></button>
+<div id="qz"><div class="sheet"><button id="qx" aria-label="닫기">×</button>
+  <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><em>블록으로 쌓은 모습</em></div><div id="stamp">탐방<br>도장</div>
+  <div id="qb"><div class="top"><span id="qr"></span><span id="qs">✓ 도장 받은 곳</span></div><h2 id="qh"></h2><p id="qd"></p>
+    <button class="btn" id="qg">다음 · 퀴즈 풀기</button>
+    <div id="qq"><small>탐방 퀴즈</small><p id="qt"></p><p id="qm"></p><div id="qo"></div><button class="btn" id="qn">계속 탐방하기</button></div></div>
+</div></div>
+<div id="toast"></div>
+<div id="list"><div class="sheet"><h1>탐방 도장판</h1><ul id="ul"></ul><button class="btn" id="lc">닫기</button></div></div>
+<div id="intro"><div class="sheet">
+  <div class="hero"><small>CHUNGNAM BLOCK TOUR</small><h1>충청남도 블록 탐방</h1><p>블록으로 쌓은 충청남도 열다섯 시·군을 걸어서 둘러보세요. 이름표가 붙은 곳에 다가가 살펴보기를 누르면 설명이 나오고, 다음을 누르면 퀴즈가 나와요. 퀴즈를 맞히면 도장이 찍혀요.</p></div>
+  <div class="body"><ul class="keys">
+    <li><b>걷기</b>조이스틱 · 방향키 · WASD</li>
+    <li><b>점프</b>오른쪽 아래 버튼 · 스페이스바</li>
+    <li><b>살펴보기</b>아래 파란 버튼 · E 키</li>
+    <li><b>둘러보기</b>화면을 끌어서 돌리기</li>
+    <li><b>확대·축소</b>두 손가락 · 휠 · + −</li>
+    <li><b>시간·날씨</b>오른쪽 ☀️ 🌤️ 버튼</li>
+    <li><b>길을 잃으면</b>집 모양 버튼으로 출발 지점에</li>
+  </ul><button class="btn" id="go">탐방 시작</button></div>
+</div></div>
+<div id="err"></div>
+<script>window.addEventListener('error',e=>{const d=document.getElementById('err');d.style.display='block';d.textContent='화면을 그리는 중 문제가 생겼어요: '+(e.message||'');});</script>
+<script type="module">
+import {QUIZ} from './quiz.js';
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
+document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene(); const SKY=0xe6f1fb;
+scene.background=new THREE.Color(SKY); scene.fog=new THREE.Fog(SKY,4200,11000);
+const camera=new THREE.PerspectiveCamera(42,1,0.3,16000);
+function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h); camera.aspect=w/h; camera.fov=w<h?52:42; camera.updateProjectionMatrix(); }
+addEventListener('resize',resize); resize();
+
+const hemi=new THREE.HemisphereLight(0xffffff,0xe6d8b8,1.25); scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff0d8,2.7);
+sun.position.set(800,634,806); sun.target.position.set(972,0,495);
+sun.castShadow=true; {const ms=Math.min(4096,renderer.capabilities.maxTextureSize); sun.shadow.mapSize.set(ms,ms);}
+const sc=sun.shadow.camera; sc.left=-1090;sc.right=1090;sc.top=750;sc.bottom=-750;sc.near=20;sc.far=2300;
+sun.shadow.bias=-0.0008; sun.shadow.normalBias=0.6;
+scene.add(sun,sun.target);
+
+const C={green:0x4fb04a,dgreen:0x2f7d3b,lime:0xa6d04a,sand:0xe8cf8f,tan:0xd2b27a,blue:0x2f8fe0,lblue:0x7cc4f2,navy:0x1f4f8f,water:0x2a9be6,
+  white:0xf6f6f2,lgray:0xb9bec4,gray:0x8d949c,dgray:0x4a5058,black:0x23262b,red:0xd9342b,orange:0xf08a24,yellow:0xf7c92b,brown:0x7a4a2a,rbrown:0xb5652d,
+  pink:0xf4a3b8,teal:0x2bb3a6,purple:0x8a63c9,cream:0xf3e6c4,road:0x3d4249,stone:0xc9c4b6,roof:0x3b4450,glass:0x8fd0f0,rice:0xd9cf4e,wood:0xa8743d,
+  thatch:0xd9b25a,bronze:0x6e5a3c,bamboo:0x74c043,gim:0x1c3a2c,grass:0xe9dfb8};
+
+const HW=270, HH=172, START=[677,344];
+const POI=[
+ {n:'홍주읍성',t:[146,63],r:5,l:[146,8,60],d:'조선 시대 홍주목을 지키던 돌성이에요. 지금도 남은 성벽을 따라 걷는 길이 있어요.'},
+ {n:'조양문',t:[166,57.5],r:5,l:[166,12.5,50.5],d:'홍주읍성의 동쪽 문이에요. 지금은 도로 한가운데에 우뚝 서서 홍성 읍내의 얼굴 노릇을 해요.'},
+ {n:'안회당·여하정',t:[147.5,49.5],r:5,l:[152.5,5.5,48],d:'안회당은 홍주목사가 일하던 동헌이고, 여하정은 그 뒤뜰 연못 위에 지은 작은 정자예요.'},
+ {n:'홍주의사총',t:[142,38.6],r:5,l:[142,5.5,33],d:'1906년 홍주성 전투에서 일본군과 싸우다 숨진 의병들을 함께 모신 무덤이에요.'},
+ {n:'홍성전통시장',t:[143,79.4],r:5,l:[143,6.5,72.5],d:'읍내 한복판에 있는 오래된 시장이에요. 닷새마다 큰 장이 서요.'},
+ {n:'홍성 한우',t:[122,87.2],r:5,l:[122,6,85.6],d:'홍성은 예부터 소를 많이 기르던 고장이에요. 홍성 한우는 이 지역의 대표 특산물이에요.'},
+ {n:'홍성역',t:[203,50.5],r:5,l:[199,8,50],d:'장항선 기차가 서는 역이에요. 역 건물을 기와지붕 한옥 모양으로 지었어요.'},
+ {n:'용봉산',t:[126,29.5],r:6,l:[130,22,11],d:'바위 봉우리가 줄지어 선 해발 381m의 산이에요. 경치가 좋아 충남의 금강산이라고도 불러요.'},
+ {n:'이응노의 집',t:[110,36],r:5,l:[110,5.5,32],d:'고암 이응노 화백의 생가 터에 세운 기념관이에요. 앞마당에는 연꽃 연못이 있어요.'},
+ {n:'충남도청·내포신도시',t:[160,17],r:6,l:[160,12.5,7],d:'홍성군과 예산군에 걸쳐 만든 내포신도시에 충청남도청이 있어요. 가까이에 홍예공원이 있어요.'},
+ {n:'최영 장군 사당·성삼문 유허지',t:[205,31.5],r:5,l:[205,7,26.5],d:'홍북읍 노은리는 고려의 명장 최영과 사육신 성삼문이 태어난 마을로 전해져요.'},
+ {n:'철마산 3·1공원',t:[203,68.6],r:5.5,l:[207,16.5,78],d:'금마면 사람들이 벌인 3·1 만세운동을 기리는 공원이에요.'},
+ {n:'문당 환경농업마을',t:[184.5,91],r:6,l:[184.5,4.5,90],d:'홍동면 문당리는 논에 오리를 풀어 농사짓는 오리농법으로 이름난 유기농 마을이에요.'},
+ {n:'김좌진 장군 생가',t:[74.5,46.5],r:5,l:[72,6.5,40.5],d:'청산리 대첩을 이끈 독립군 지도자 백야 김좌진 장군이 태어난 곳이에요. 갈산면에 있어요.'},
+ {n:'갈산 옹기마을',t:[74,32.5],r:5,l:[75,6,25.5],d:'갈산면에는 흙으로 빚은 옹기를 가마에 구워 온 옹기 마을이 있어요.'},
+ {n:'거북이마을',t:[95,60.5],r:5,l:[95,5,57.5],d:'구항면 보개산 자락의 농촌 체험 마을이에요. 땅 모양이 거북이를 닮았다고 해서 붙은 이름이에요.'},
+ {n:'만해 한용운 생가',t:[56,82.6],r:5,l:[55,6,77],d:'「님의 침묵」을 쓴 시인이자 독립운동가 만해 한용운이 태어난 초가집이에요. 결성면에 있어요.'},
+ {n:'결성동헌',t:[70,90.5],r:5,l:[70,6.5,87],d:'옛 결성현의 관아 건물이에요. 둘레에는 결성읍성의 흔적이 남아 있어요.'},
+ {n:'궁리포구·천수만 철새',t:[30.5,39.5],r:5.5,l:[20,5,40],d:'천수만 노을이 고운 작은 포구예요. 겨울이면 천수만 갯벌과 간척지에 철새 떼가 날아와요.'},
+ {n:'속동전망대·스카이타워',t:[27.5,59.5],r:5.5,l:[29,25.5,56],d:'천수만 갯벌과 서해 낙조를 보는 곳이에요. 높은 전망 타워에 오르면 바다가 한눈에 들어와요.'},
+ {n:'어사리 노을공원',t:[30.5,73.5],r:4.5,l:[30.5,6.5,71.8],d:'남당항과 속동전망대 사이 바닷가 공원이에요. 마주 보는 조형물 사이로 해가 져요.'},
+ {n:'남당항',t:[25,88],r:5.5,l:[20,5,87.5],d:'천수만에 닿은 항구예요. 가을에는 대하, 겨울에는 새조개 축제가 열려요.'},
+ {n:'죽도',t:[23,106],r:4.5,l:[8.5,7.5,106.5],d:'대나무가 많아 죽도라고 불리는 작은 섬이에요. 남당항에서 배를 타고 건너가요.'},
+ {n:'그림같은 수목원',t:[106,90.4],r:5.5,l:[106,5.5,88],d:'광천읍에 있는 수목원이에요. 꽃과 나무 사이로 난 길을 따라 걸을 수 있어요.'},
+ {n:'광천 토굴새우젓·광천김',t:[112.4,101.6],r:5,l:[116,6,101.5],d:'광천에서는 서늘한 토굴 속에서 새우젓을 익혀요. 고소한 광천김도 이름난 특산물이에요.'},
+ {n:'오서산',t:[150,110.6],r:6,l:[156,18.5,128],d:'가을이면 능선이 은빛 억새로 뒤덮이는 산이에요. 정상에 서면 서해가 내려다보여요.'},
+ {n:'백월산',t:[130.8,47],r:5,l:[121,12,47],d:'홍성읍 서쪽에 솟은 산이에요. 꼭대기에 오르면 읍내와 서해가 한눈에 보여요.'},
+ {n:'상하리 미륵불',t:[120,33.5],r:5,l:[120,9.5,30],d:'용봉산 기슭에 서 있는 키 큰 돌부처예요. 오랜 세월 마을을 지켜 왔다고 전해져요.'},
+ {n:'홍성조류탐사과학관',t:[34.5,-2.6],r:5,l:[34.5,8,-7.5],d:'천수만을 찾아오는 철새를 배우고 관찰하는 과학관이에요. 서부면 바닷가에 있어요.'},
+ {n:'사운고택',t:[244,131.5],r:5,l:[242,6.5,121],d:'장곡면에 있는 조선 시대 양반집이에요. 오래된 한옥과 마당이 잘 남아 있어요.'}
+].map(p=>(p.c='홍성군',p.t[1]+=188,p.l[2]+=188,p)).concat([
+ {n:'가야산·남연군묘',t:[29,39.5],r:5.5,l:[28,5.5,33],d:'가야산 자락에는 흥선대원군의 아버지 남연군의 묘가 있어요. 예부터 손꼽히는 명당으로 전해져요.'},
+ {n:'덕산온천',t:[65,40.5],r:5,l:[65,7,27.5],d:'예부터 이름난 온천 마을이에요. 따뜻한 온천물에 몸을 담그러 많은 사람이 찾아와요.'},
+ {n:'내포보부상촌',t:[45.5,42],r:5,l:[43.5,6.5,40.4],d:'봇짐과 등짐을 지고 장터를 돌던 보부상 이야기를 담은 체험 마을이에요. 덕산면에 있어요.'},
+ {n:'충의사',t:[66,74.5],r:5.5,l:[66,7.5,62.5],d:'윤봉길 의사를 기리는 사당이에요. 가까이에 윤 의사가 태어나고 자란 집이 남아 있어요.'},
+ {n:'수덕사',t:[40,78],r:5,l:[39.5,8.5,63],d:'덕숭산 자락의 오래된 절이에요. 대웅전은 고려 시대인 1308년에 지은 건물로 국보예요.'},
+ {n:'삽교 곱창',t:[92.5,61.5],r:5,l:[94,5.5,65.5],d:'너른 삽교평야가 펼쳐진 곳이에요. 삽교 곱창은 이 동네의 이름난 먹거리예요.'},
+ {n:'추사고택',t:[108,22.5],r:5,l:[104,6.5,10],d:'추사체로 이름난 조선의 학자이자 서예가 추사 김정희가 태어난 집이에요. 가까이에 껍질이 흰 백송이 있어요.'},
+ {n:'예산역',t:[162,31],r:5,l:[158,6,31],d:'장항선 기차가 서는 예산읍의 역이에요.'},
+ {n:'예산시장',t:[179.5,45],r:5,l:[179.5,6.5,42.5],d:'오래된 상설시장이에요. 국수와 국밥으로 이름나 있고, 장터 광장에 사람들이 모여요.'},
+ {n:'예산 사과',t:[226.5,31.5],r:5,l:[226.5,6.5,27.5],d:'예산은 사과가 맛있기로 이름난 고장이에요. 과수원마다 빨간 사과가 열려요.'},
+ {n:'예당호 출렁다리',t:[148.6,94],r:5,l:[170,17.5,94],d:'예당호는 아주 큰 농업용 저수지예요. 호수 위에 놓인 길이 402m의 출렁다리를 걸어서 건너요.'},
+ {n:'의좋은 형제 공원',t:[115.5,116.5],r:5,l:[115.5,5.5,113],d:'서로 볏단을 몰래 날라 주던 의좋은 형제 이야기가 전해 오는 대흥 마을이에요.'},
+ {n:'임존성·봉수산',t:[48,93.5],r:5.5,l:[48,16.5,112],d:'봉수산 꼭대기에 쌓은 백제의 산성이에요. 백제가 무너진 뒤 나라를 되찾으려던 부흥군이 여기서 싸웠어요.'},
+ {n:'예산황새공원',t:[112,143.5],r:5,l:[113,5.5,150],d:'우리나라에서 사라졌던 황새를 다시 길러 자연으로 돌려보내는 곳이에요. 광시면에 있어요.'},
+ {n:'광시 한우거리',t:[86.5,153.6],r:5,l:[86.5,6,151],d:'한우 식당이 줄지어 선 거리예요. 광시면은 예부터 한우로 이름난 마을이에요.'}
+].map(p=>(p.c='예산군',p.t[0]+=270,p.l[0]+=270,p.t[1]+=172,p.l[2]+=172,p)))
+.concat([
+ {n:'천북 굴단지',t:[45,14.5],r:5,l:[36,6,13],d:'겨울이면 굴 굽는 냄새가 가득한 바닷가 마을이에요. 천북면 바닷가에 굴 식당이 모여 있어요.'},
+ {n:'오천항·충청수영성',t:[36.5,55],r:5,l:[36,8.5,48],d:'조선 시대 충청도 바다를 지키던 수군의 본부가 있던 성이에요. 아래 오천항은 키조개로 이름나 있어요.'},
+ {n:'대천항·보령해저터널',t:[34,72.6],r:5,l:[34,7,67],d:'대천항과 원산도를 잇는 바다 밑 터널이에요. 길이가 약 6.9km로 우리나라에서 가장 긴 해저터널이에요.'},
+ {n:'대천해수욕장',t:[37,101.2],r:5.5,l:[37,6,100],d:'서해안에서 손꼽히는 큰 해수욕장이에요. 여름이면 온몸에 진흙을 바르고 노는 보령머드축제가 열려요.'},
+ {n:'죽도 상화원',t:[22,129],r:5,l:[11,7.5,129],d:'섬 전체를 한국식 정원으로 꾸민 곳이에요. 지붕 덮인 긴 회랑을 따라 섬을 한 바퀴 돌아요.'},
+ {n:'무창포 신비의 바닷길',t:[30,154],r:5,l:[18,5,154],d:'썰물이 크게 지는 날이면 바닷물이 갈라져 석대도까지 걸어갈 수 있는 길이 열려요.'},
+ {n:'대천역',t:[147,80],r:5,l:[142,6,80],d:'장항선 기차가 서는 보령의 역이에요. 대천해수욕장으로 가는 길목이에요.'},
+ {n:'청라 은행마을',t:[161,30.6],r:5.5,l:[160,7.5,25],d:'가을이면 마을이 온통 노란 은행잎으로 물드는 곳이에요. 청라면에 있어요.'},
+ {n:'성주사지',t:[194,108.5],r:5.5,l:[192,7,99],d:'통일신라 때 큰 절이던 성주사의 터예요. 지금은 석탑들과 국보 낭혜화상탑비가 남아 있어요.'},
+ {n:'보령석탄박물관',t:[216,110.5],r:5.5,l:[215,6.5,99],d:'보령 성주 일대는 예전에 석탄을 캐던 탄광 마을이었어요. 그때 이야기를 모아 둔 박물관이에요.'},
+ {n:'개화예술공원',t:[188,134],r:6,l:[189,6.5,121],d:'조각 작품과 미술관, 허브 온실이 모여 있는 공원이에요. 성주면에 있어요.'},
+ {n:'보령호',t:[202,146],r:5.5,l:[232,5,146],d:'보령댐을 막아 생긴 큰 호수예요. 봄이면 호숫가 길에 벚꽃이 피어요.'}
+].map(p=>(p.c='보령시',p.t[1]+=344,p.l[2]+=344,p))).concat([
+ {n:'다락골 줄무덤 성지',t:[40,48],r:5.5,l:[40,8,36],d:'천주교 박해 때 숨진 이들이 줄지어 묻힌 무덤이 있는 성지예요. 화성면에 있어요.'},
+ {n:'고운식물원',t:[112,60.5],r:5.5,l:[112,6.5,49],d:'산자락에 꽃과 나무를 가득 심어 가꾼 큰 식물원이에요. 청양읍에 있어요.'},
+ {n:'청양 고추·구기자',t:[121.5,83],r:5,l:[121,8.5,79],d:'청양은 매운 고추와 빨간 구기자로 이름난 고장이에요. 읍내 곳곳에서 두 열매 모양을 만나요.'},
+ {n:'칠갑산',t:[176,88],r:6,l:[176,20,58],d:'청양 한가운데 솟은 해발 561m의 산이에요. 숲이 깊고 골짜기가 많아 충남의 알프스라고 불러요.'},
+ {n:'칠갑산천문대',t:[172,21.5],r:5,l:[172,8,27],d:'칠갑산 자락에서 별과 행성을 관찰하는 천문대예요. 스타파크라고도 불러요.'},
+ {n:'장곡사',t:[141,111],r:5.5,l:[144,8.5,98],d:'칠갑산 서쪽 자락의 오래된 절이에요. 대웅전이 위아래로 두 채 있는 드문 절이에요.'},
+ {n:'칠갑산 장승공원',t:[118.5,121.5],r:5.5,l:[118.5,9.5,115],d:'마을을 지켜 준다는 나무 장승이 줄지어 서 있는 공원이에요. 장곡사로 들어가는 길목에 있어요.'},
+ {n:'천장호 출렁다리',t:[206,67],r:5,l:[227,13,67],d:'칠갑산 동쪽 천장호 위에 놓인 길이 207m의 출렁다리예요. 고추와 구기자 모양 기둥이 다리를 붙들고 있어요.'},
+ {n:'알프스마을',t:[233,108.5],r:6,l:[228,11,96],d:'칠갑산 아래 천장리 마을이에요. 겨울에는 얼음분수 축제, 여름에는 조롱박 축제가 열려요.'},
+ {n:'모덕사',t:[230,150.5],r:5.5,l:[229,7.5,137],d:'조선 말 의병을 일으킨 면암 최익현 선생을 모신 사당이에요. 목면에 있어요.'}
+].map(p=>(p.c='청양군',p.t[0]+=270,p.l[0]+=270,p.t[1]+=344,p.l[2]+=344,p)));
+POI.forEach(p=>{ p.t[0]+=270; p.l[0]+=270; });   // the whole map moved one column east when Taean was added
+// ---------- block collector
+const MAPW=1350,MAPH=688;
+const boxes=[],studs=[]; let OX=0,OZ=0,BX=0,BZ=0,SX=0; const WATER=new Set(),LAKES=[];
+function lake(x,z,w,d){ LAKES.push([x+BX+SX,z+BZ,w,d]); B(x,G,z,w,.25,d,C.water,{s:false}); WATER.add(boxes.length-1); }
+function B(x,y,z,w,h,d,c,o={}){
+  x+=OX+BX+SX; z+=OZ+BZ; boxes.push([x,y,z,w,h,d,c]);
+  if(o.s!==false){ const nx=Math.floor(w+1e-6),nz=Math.floor(d+1e-6),ox=(w-nx)/2,oz=(d-nz)/2;
+    for(let i=0;i<nx;i++)for(let j=0;j<nz;j++)studs.push([x+ox+i+.5,y+h,z+oz+j+.5,c]); }
+}
+const T=(x,y,z,w,h,d,c)=>B(x,y,z,w,h,d,c,{s:false});
+const at=(dx,dz,fn)=>{ OX=dx;OZ=dz; fn(); OX=0;OZ=0; };
+let seed=7; const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const G=1.2;
+
+// ---------- base, sea, land (smooth ground)
+// ---------- eight region tiles laid out roughly as on the real map
+const TW=270,TH=172;
+const CO={'태안군':[0,0],'서산시':[270,0],'당진시':[540,0],'아산시':[810,0],'천안시':[1080,0],'홍성군':[270,172],'예산군':[540,172],'보령시':[270,344],'청양군':[540,344],'공주시':[810,344],'계룡시':[1080,344],'서천군':[270,516],'부여군':[540,516],'논산시':[810,516],'금산군':[1080,516]};
+const WEST=new Set(['태안군','서산시','홍성군','보령시','서천군']),NORTH=new Set(['태안군','서산시','당진시','아산시']);
+const nameAt=(x,z)=>Object.keys(CO).find(k=>CO[k][0]===x&&CO[k][1]===z), WS=(x,z)=>WEST.has(nameAt(x,z)), NS=(x,z)=>NORTH.has(nameAt(x,z));
+const TILES=Object.values(CO), hasTile=(x,z)=>TILES.some(t=>t[0]===x&&t[1]===z);
+function sea(x,z,w,d){ T(x,0,z,w,.8,d,C.water); WATER.add(boxes.length-1); for(let i=0;i<w*d/30;i++){ rnd();rnd();rnd();rnd(); } }
+for(const [tx,tz] of TILES){ const c0=WS(tx,tz),r0=NS(tx,tz),lx=tx+(c0?27:0),lz=tz+(r0?22:0);
+  T(tx,-3,tz,TW,3,TH,C.black); T(lx,0,lz,tx+TW-lx,G,tz+TH-lz,C.green);
+  if(c0){ sea(tx,tz,27,TH); for(let z=lz;z<tz+TH;z+=5){ const o=Math.floor(rnd()*3); T(tx+24-o,0,z,3+o,1.0,5,C.sand); if(rnd()<.5) T(tx+27,G,z,2,0.2,5,C.sand); } }
+  if(r0){ sea(lx,tz,tx+TW-lx,22); for(let x=lx;x<tx+TW;x+=5){ const o=Math.floor(rnd()*3); T(x,0,tz+19-o,5,1.0,3+o,C.sand); } }
+  for(let i=0;i<330;i++) T(lx+1+Math.floor(rnd()*(tx+TW-lx-4)),G,lz+1+Math.floor(rnd()*(tz+TH-lz-4)),2,0.05,2,rnd()<.5?0x5ab955:0x47a544);
+  if(hasTile(tx+TW,tz)) T(tx+TW-.2,G,lz,.4,.1,tz+TH-lz,C.yellow);
+  if(hasTile(tx,tz+TH)) T(lx,G,tz+TH-.2,tx+TW-lx,.1,.4,C.yellow);
+}
+// open sea south of Taean, and bare land where Daejeon lies (terrain only, no places)
+const SEAT=[[0,172],[0,344],[0,516]], EXTRA=[[810,172],[1080,172]];
+for(const [tx,tz] of SEAT){ T(tx,-3,tz,TW,3,TH,C.black); T(tx,0,tz,TW,.8,TH,C.water); WATER.add(boxes.length-1);
+  for(let i=0;i<260;i++){ rnd();rnd();rnd();rnd(); } }
+for(const [tx,tz] of EXTRA){ T(tx,-3,tz,TW,3,TH,C.black); T(tx,0,tz,TW,G,TH,C.green);
+  for(let i=0;i<330;i++) T(tx+1+Math.floor(rnd()*(TW-4)),G,tz+1+Math.floor(rnd()*(TH-4)),2,0.05,2,rnd()<.5?0x5ab955:0x47a544); }
+T(810,G,171.8,540,.1,.4,C.yellow); T(810,G,343.8,540,.1,.4,C.yellow); T(809.8,G,172,.4,.1,172,C.yellow);
+const NG=boxes.length; SX=270;   // regions written before Taean existed are shifted one column east
+
+
+// ---------- helpers
+let seed2=99; const rnd2=()=>{seed2=(seed2*1664525+1013904223)>>>0;return seed2/4294967296;};
+function tree(x,z,s=1,lite){ const r=rnd2(); let c1=s?C.dgreen:C.green,c2=s?C.green:C.lime,c3=c2;
+  if(r<.11){ c1=0xd9482b; c2=0xf08a24; c3=0xf7c92b; } else if(r<.21){ c1=0xf08a24; c2=0xf7c92b; c3=0xf7c92b; } else if(r<.29){ c1=0xf7c92b; c2=0xe9d85a; c3=0xf3e27a; }
+  else if(r<.34){ c1=0xb5312b; c2=0xd9482b; c3=0xf08a24; } else if(r<.38){ c1=0xf4a3b8; c2=0xf9c6d3; c3=0xffffff; } else if(r<.48){ c1=0x7fb93e; c2=C.lime; c3=0xf7c92b; }
+  T(x+1,G,z+1,1,2.0,1,C.brown); B(x,G+2.0,z,3,1.2,3,c1,{s:!lite}); B(x+.5,G+3.2,z+.5,2,1.0,2,c2,{s:!lite}); B(x+1,G+4.2,z+1,1,.8,1,c3); }
+function pine(x,y,z){ T(x+.5,y,z+.5,1,0.8,1,C.brown); B(x,y+.8,z,2,0.8,2,C.dgreen); B(x+.5,y+1.6,z+.5,1,1.0,1,C.dgreen); }
+function fig(x,z,c,y=G){ T(x,y,z,.6,.6,.45,0x27407a); T(x-.05,y+.6,z-.03,.7,.65,.5,c); B(x+.03,y+1.25,z-.02,.54,.5,.5,C.yellow); }
+function statue(x,y,z){ T(x,y,z,.7,.8,.5,C.bronze); T(x-.1,y+.8,z-.05,.9,.9,.6,C.bronze); T(x+.05,y+1.7,z,.6,.6,.5,C.bronze); }
+function hanokRoof(x,y,z,w,d,c=C.roof){
+  let k=0,X=x-1,Z=z-1,Wd=w+2,D=d+2;
+  for(const [cx,cz] of [[X,Z],[X+Wd-1,Z],[X,Z+D-1],[X+Wd-1,Z+D-1]]) T(cx,y+.8,cz,1,.3,1,c);
+  while(Wd>=1&&D>=1){ B(X,y+k*.8,Z,Wd,.8,D,c); k++; X+=1;Wd-=2; Z+=1; D-=2; }
+}
+function hanok(x,z,w,d,h=2.0){ B(x,G,z,w,h,d,C.cream); for(let i=0;i<w;i+=2) T(x+i+.1,G,z+d-.05,.5,h,.3,C.red); hanokRoof(x,G+h,z,w,d); }
+function thatched(x,z,w=6,d=3){ B(x,G,z,w,1.8,d,C.cream); for(let i=0;i<w;i+=2.4) T(x+.3+i,G,z+d-.1,.5,1.8,.25,C.brown);
+  B(x-1,G+1.8,z-1,w+2,.7,d+2,C.thatch,{s:false}); B(x,G+2.5,z,w,.6,d,C.thatch,{s:false}); B(x+1,G+3.1,z+.8,w-2,.4,d-1.6,C.thatch,{s:false}); }
+function house(x,z,w,d,h,c,rc){
+  B(x,G,z,w,h,d,c); const fl=Math.round(h/1.2);
+  for(let f=0;f<fl;f++)for(let i=0;i<w-1;i+=2){ T(x+i+.6,G+f*1.2+.35,z-.07,.9,.6,.07,C.navy); T(x+i+.6,G+f*1.2+.35,z+d,.9,.6,.07,C.navy); }
+  if(rc){ B(x-.5,G+h,z-.5,w+1,.4,d+1,rc); B(x+.5,G+h+.4,z+.5,w-1,.6,d-1,rc); }
+  else { T(x,G+h,z,w,.4,.4,C.white);T(x,G+h,z+d-.4,w,.4,.4,C.white); if(rnd()<.6)B(x+1,G+h,z+1,1,.8,1,C.lgray); }
+}
+const pal=[C.cream,C.white,C.pink,C.lblue,C.yellow,C.orange,C.tan,C.teal,C.purple,C.red];
+function town(x0,z0,x1,z1,maxF=4){
+  for(let x=x0;x<x1-3;){ const w=3+Math.floor(rnd()*3);
+    for(let z=z0;z<z1-3;){ const d=3+Math.floor(rnd()*2),h=1.2*(2+Math.floor(rnd()*maxF));
+      if(x+w<=x1&&z+d<=z1){ if(rnd()<.84) house(x,z,w,d,h,pick(pal),rnd()<.45?pick([C.red,C.blue,C.roof,C.orange,C.dgreen]):0); else tree(x,z,rnd()<.5); }
+      z+=d+2+Math.floor(rnd()*2); }
+    x+=w+2; }
+}
+function stall(x,z,c){ B(x,G,z,4,2.0,3,C.cream); for(let i=0;i<4;i++) T(x+i,G+2.0,z-.8,1,.3,4.6,i%2?C.white:c); T(x+.4,G+.5,z+3,3.2,.9,.08,C.navy); }
+function boat(x,z,c,c2){ B(x,0.8,z,5,.8,2,c); T(x+5,0.8,z+.4,.8,.8,1.2,c); B(x+1,1.6,z+.3,2,1.0,1.4,c2);
+  T(x+3.6,1.6,z+.9,.2,2.2,.2,C.dgray); T(x+3.6,3.3,z+.95,.9,.5,.08,pick([C.red,C.yellow,C.orange])); }
+function lighthouse(x,z,c){ B(x,1.6,z,2,1.2,2,C.white); B(x,2.8,z,2,1.2,2,c); B(x,4.0,z,2,1.2,2,C.white); B(x,5.2,z,2,1.2,2,c);
+  T(x-.3,6.4,z-.3,2.6,.3,2.6,C.dgray); B(x+.5,6.7,z+.5,1,.9,1,C.yellow); B(x+.25,7.6,z+.25,1.5,.4,1.5,c); }
+function cow(x,z){ T(x,G+.5,z,2,.9,1,C.rbrown); T(x+.1,G,z+.1,.35,.5,.8,C.rbrown); T(x+1.55,G,z+.1,.35,.5,.8,C.rbrown); B(x+1.8,G+.9,z+.15,.8,.7,.7,C.rbrown); T(x+2.5,G+1.0,z+.3,.2,.3,.4,C.cream); }
+function mountain(x0,z0,nx,nz,peaks,kind){
+  for(let gx=0;gx<nx;gx++)for(let gz=0;gz<nz;gz++){
+    const x=x0+gx*2,z=z0+gz*2; let h=(rnd()-.5)*(kind==='hill'?1.2:2.2);
+    for(const [cx,cz,ph,r] of peaks) h+=ph*Math.exp(-((x+1-cx)**2+(z+1-cz)**2)/(r*r));
+    h=Math.round(h/1.2)*1.2; if(h<1.2) continue;
+    if(kind==='rock'){ const rock=h>7||rnd()<.3;
+      B(x,G,z,2,h,2,rock?pick([C.lgray,C.gray,C.tan,C.lgray,C.stone]):pick([C.dgreen,C.green]));
+      if(!rock&&rnd()<.55) pine(x,G+h,z); else if(rock&&h<12&&rnd()<.25) pine(x,G+h,z); }
+    else if(kind==='grass'){ const hi=h>6;
+      B(x,G,z,2,h,2,hi?pick([C.tan,C.grass,C.tan]):pick([C.green,C.dgreen,C.lime]),{s:false});
+      if(hi){ for(let k=0;k<5;k++) T(x+.2+rnd()*1.4,G+h,z+.2+rnd()*1.4,.25,.6+rnd()*.5,.25,C.grass); } else if(rnd()<.4) pine(x,G+h,z); }
+    else { B(x,G,z,2,h,2,pick([C.green,C.dgreen,C.green,C.lime]),{s:false}); if(rnd()<.5) pine(x,G+h,z); }
+  }
+}
+const ROADS=[];
+function roadEW(x,z,len){ ROADS.push([x+BX+SX,z+BZ,len,4]); T(x,G,z,len,.3,4,C.road); for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }
+function roadNS(x,z,len){ ROADS.push([x+BX+SX,z+BZ,4,len]); T(x,G,z,4,.3,len,C.road); for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }
+function railNS(x,z,len){ T(x,G,z,2.6,.2,len,C.gray); for(let i=z+.3;i<z+len;i+=1.2) T(x+.2,G+.2,i,2.2,.1,.4,C.brown); T(x+.6,G+.3,z,.18,.12,len,C.dgray); T(x+1.8,G+.3,z,.18,.12,len,C.dgray); }
+function railEW(x,z,len){ T(x,G,z,len,.2,2.6,C.gray); for(let i=x+.3;i<x+len;i+=1.2) T(i,G+.2,z+.2,.4,.1,2.2,C.brown); T(x,G+.3,z+.6,len,.12,.18,C.dgray); T(x,G+.3,z+1.8,len,.12,.18,C.dgray); }
+
+BZ=HH+16;
+// ---------- roads and railway (Janghang line: north-east -> Hongseong -> Gwangcheon)
+roadEW(39,64,501);            // main east-west road
+roadNS(39,-14,172);             // coast road
+T(26,G,89,13,.3,3,C.road);    // to Namdang port
+roadNS(84,16,48);             // Galsan road
+roadNS(173,-162,644);            // north-south through Hongseong-eup to Naepo
+roadNS(126,68,44);            // to Gwangcheon
+T(104,G,109,32,.3,3,C.road);
+T(150,G,18,23,.3,3,C.road);   // Naepo avenue
+railNS(192,36,66); railEW(194.6,36,230); railEW(136,100,58.6); railNS(136,100,56.2);
+
+// ================= WEST COAST (Seobu-myeon) =================
+// Gungni port + Cheonsu Bay birds (north)
+B(14,0.8,37,13,.6,2,C.lgray); boat(8,34,C.white,C.blue); boat(15,40,C.blue,C.white);
+T(4,0.8,27,23,1.0,1.6,C.gray);                       // sea wall
+T(6,0,44,16,0.95,7,0xb9a583);                        // tidal flat
+for(let i=0;i<12;i++){ const bx=7+rnd()*14,bz=44.5+rnd()*6,wc=rnd()<.6?C.white:C.lgray; T(bx,0.95+.3,bz,.6,.4,.4,wc); T(bx+.5,1.25+.35,bz+.1,.3,.3,.25,wc); T(bx+.8,1.65,bz+.15,.25,.1,.1,C.orange); T(bx+.2,0.95,bz+.15,.1,.3,.1,C.dgray); }
+B(28,G,34,5,.4,5,C.wood); T(30.2,G+.4,36.2,.3,1.2,.3,C.dgray); T(29.9,G+1.6,36,.9,.5,.6,C.blue); fig(29,35,C.orange,G+.4);
+stall(33,31,C.teal);
+// Sokdong observatory + sky tower
+at(0,46,()=>{
+  B(24,0,6,8,1.6,9,C.tan); B(26,1.6,7,5,.4,6,C.wood);
+  for(let i=0;i<15;i++) B(28,2.0+i*1.2,9,2,1.2,2,i%2?C.lblue:C.white);
+  B(26.5,20.0,7.5,5,.6,5,C.white); B(26,20.6,7,6,.4,6,C.blue);
+  for(const [ax,az] of [[26,7],[31,7],[26,12],[31,12],[28.5,7],[28.5,12],[26,9.5],[31,9.5]]) T(ax+.3,21.0,az+.3,.4,.9,.4,C.white);
+  B(28,21.0,9,2,1.2,2,C.white); B(28.5,22.2,9.5,1,1.6,1,C.yellow);
+  B(22,0.8,13,3,.5,6,C.wood); fig(23,15,C.red,1.3);
+});
+// Eosari sunset park
+B(27,G,69,7,.4,6,C.wood);
+T(28.6,G+.4,71.6,.7,2.6,.7,C.white); T(31.2,G+.4,71.6,.7,2.6,.7,C.white); T(28.9,G+3.0,71.55,.9,.9,.8,C.white); T(30.7,G+3.0,71.55,.9,.9,.8,C.white);
+T(29.2,G+2.2,71.7,.5,.3,.5,C.white); T(30.8,G+2.2,71.7,.5,.3,.5,C.white); T(29.95,G+3.3,71.7,.6,.6,.4,C.red);
+T(27.4,G+.4,69.4,2,.5,.6,C.brown); fig(32.6,73.4,C.pink,G+.4);
+// Namdang port + Jukdo
+at(0,46,()=>{
+  B(11,0.8,40,16,.6,3,C.lgray);
+  for(let x=15;x<26;x+=3) T(x+.2,1.4,40.1,.6,.5,.6,C.yellow);
+  B(3,0.8,25,12,.8,2,C.gray); B(2,0.8,24,3,1.2,4,C.dgray);
+  lighthouse(3,25,C.red); lighthouse(12,25,C.white);
+  boat(14,37.2,C.white,C.red); boat(19,43.6,C.red,C.white); boat(15,50,C.yellow,C.white); boat(7,33,C.white,C.teal);
+  stall(29,35,C.red); stall(34,35,C.blue); stall(29,39.5,C.orange); stall(34,39.5,C.teal); stall(29,51.5,C.blue); stall(34,51.5,C.red);
+  B(11.5,1.4,40.5,3,.5,2,C.white);   // giant prawn
+  T(11.7,2.3,41.1,.7,.5,.8,C.orange); T(12.2,2.6,41.0,.8,.9,1.0,C.orange); T(12.9,3.0,40.95,.9,1.1,1.1,C.orange); T(13.7,3.3,41.0,.7,1.0,1.0,C.red);
+  T(11.3,1.9,41.2,.5,.5,.6,C.red); T(14.3,4.0,41.15,1.3,.1,.1,C.red); T(14.3,3.7,41.75,1.1,.1,.1,C.red); T(14.1,3.8,41.1,.2,.2,.2,C.black);
+  for(let i=0;i<3;i++) T(12.4+i*.5,2.0,41.3,.15,.7,.15,C.orange);
+  T(4,0,56,9,1.3,9,C.sand); T(5,1.3,57,7,.5,7,C.green);   // Jukdo
+  for(let i=0;i<22;i++){ const bx=5.3+rnd()*6,bz=57.3+rnd()*6,bh=2.2+rnd()*1.8; T(bx,1.8,bz,.28,bh,.28,C.bamboo); T(bx-.3,1.8+bh,bz-.3,.9,.4,.9,pick([C.lime,C.bamboo,C.green])); }
+  B(13,0.8,59,2,.5,2,C.wood); B(21,0.8,59,4,.5,2,C.wood); T(24.4,1.3,59.8,.3,2.4,.3,C.dgray); T(24.7,3.0,59.85,1.5,.7,.08,C.blue);
+  boat(15.5,59,C.white,C.blue);
+});
+
+// ================= GALSAN (north-west) =================
+at(34,36,()=>{ // Kim Jwa-jin birthplace + statue
+  B(34,G,3,7,2.0,3,C.cream); for(let i=0;i<4;i++) T(34+i*2.1,G,5.9,.5,2.0,.3,C.brown); hanokRoof(34,G+2.0,3,7,3);
+  B(43,G,4,2,1.6,2,C.stone); statue(43.65,G+1.6,4.75); T(44.4,G+2.6,4.9,.2,1.6,.2,C.bronze);
+  T(33,G,8.2,13,.5,.4,C.stone);
+});
+tree(78,35);
+// Galsan onggi (pottery) village: climbing kiln + jars
+for(let i=0;i<5;i++) B(70+i*2,G,24,2,1.0+i*.5,3,C.rbrown,{s:false});
+T(69.6,G,24.8,.4,1.0,1.4,C.black); T(79.4,G+3.0,25,.8,1.4,.8,C.dgray);
+for(const [jx,jz,js] of [[70,28.5,1],[71.5,28.8,.8],[73,28.4,1.1],[74.6,28.9,.8],[76,28.5,1],[72.3,30.2,.9],[75.2,30.4,1.1]]){ T(jx,G,jz,js,js*1.1,js,pick([C.rbrown,C.brown,0x8a5a34])); T(jx+js*.15,G+js*1.1,jz+js*.15,js*.7,.15,js*.7,C.black); }
+thatched(61,26,5,3);
+town(90,20,104,34,2);
+
+// ================= GUHANG: turtle village + Bogaesan =================
+mountain(94,38,9,6,[[102,44,7,6]],'hill');
+B(93,G,56,4,.5,3,C.stone,{s:false});  // turtle statue
+T(93.4,G+.5,56.3,3.2,.9,2.4,C.dgreen); T(93.9,G+1.4,56.7,2.2,.6,1.6,C.green); T(96.6,G+.7,57.1,1.0,.7,.8,C.lime); T(97.3,G+1.1,57.2,.15,.15,.15,C.black);
+for(const [lx,lz] of [[93.2,56],[95.8,56],[93.2,58.6],[95.8,58.6]]) T(lx,G+.5,lz,.7,.4,.4,C.lime);
+thatched(99,54,5,3); hanok(100,59.5,5,3); tree(92,60,0);
+
+// ================= GYEOLSEONG =================
+at(13,20,()=>{ // Manhae Han Yong-un birthplace
+  B(39,G,55.5,6,1.8,3,C.cream); for(let i=0;i<3;i++) T(39.3+i*2.4,G,58.4,.5,1.8,.25,C.brown);
+  B(38,G+1.8,54.5,8,.7,5,C.thatch,{s:false}); B(39,G+2.5,55.5,6,.6,3,C.thatch,{s:false}); B(40,G+3.1,56.3,4,.4,1.4,C.thatch,{s:false});
+  T(37,G,60.2,11,.6,.5,C.stone); T(37,G,53.2,.5,.6,7,C.stone);
+  B(46,G,56.5,1.4,1.2,1.4,C.stone,{s:false}); T(46.3,G+1.2,56.85,.8,.7,.6,C.bronze); T(46.4,G+1.9,56.9,.6,.6,.5,C.bronze);
+});
+// Gyeolseong dongheon + old town wall
+hanok(66,85,8,4,2.2); hanok(76,86,4,3);
+T(63,G,91.5,14,1.8,1.2,C.stone); T(63,G,83,1.2,1.8,8.5,C.stone);
+for(let i=0;i<14;i+=2) T(63+i,G+1.8,91.5,1,.5,.5,C.stone);
+B(72.5,G,88.2,1,2.4,1,C.brown); B(71,G+2.4,86.7,4,1.6,4,C.dgreen); B(72,G+4.0,87.7,2,1.2,2,C.green);
+town(60,96,80,106,2);
+
+// ================= HONGSEONG-EUP (centre) =================
+const WH=2.4;
+function wall(x,z,w,d){ T(x,G,z,w,WH,d,C.stone);
+  if(w>d){ for(let i=0;i<w;i+=2){ T(x+i,G+WH,z,1,.6,.6,C.stone); T(x+i,G+WH,z+d-.6,1,.6,.6,C.stone); } }
+  else   { for(let i=0;i<d;i+=2){ T(x,G+WH,z+i,.6,.6,1,C.stone); T(x+w-.6,G+WH,z+i,.6,.6,1,C.stone); } } }
+at(89,19,()=>{
+  wall(45,21,24,2); wall(45,23,2,19); wall(47,40,8,2); wall(59,40,10,2); wall(67,21,2,9);
+  T(55,G+WH-.2,40,4,.4,2,C.stone);
+  for(const cx of [55,58.2]) for(const cz of [40,41.2]) T(cx,G+WH+.2,cz,.8,1.6,.8,C.red);
+  T(54.8,G+WH+1.8,39.8,4.4,.4,2.4,C.teal); hanokRoof(55,G+WH+2.2,40,4,2);
+  B(49,G,24.5,8,3.6,4,C.white); B(49,G+3.6,24.5,8,.4,4,C.blue);
+  for(let i=0;i<4;i++){ T(49.6+i*2,G+.4,28.5,.9,.7,.07,C.navy); T(49.6+i*2,G+1.7,28.5,.9,.7,.07,C.navy); }
+  B(49,G,33,7,2.0,4,C.cream); for(let i=0;i<4;i++) T(49+i*2+.1,G,36.9,.6,2.0,.3,C.red); hanokRoof(49,G+2.0,33,7,4);
+  T(60,G,26,7,.3,6,C.water); T(59.5,G,25.5,8,.4,.5,C.stone); T(59.5,G,32,8,.4,.5,C.stone);
+  B(62.5,G,28,2,.5,2,C.stone);
+  for(const [cx,cz] of [[62.5,28],[64,28],[62.5,29.5],[64,29.5]]) T(cx,G+.5,cz,.5,1.6,.5,C.red);
+  hanokRoof(62.5,G+2.1,28,2,2);
+  T(61,G+.3,31,1,.06,1,C.lime); T(65,G+.3,27,1,.06,1,C.pink);
+  tree(57,34);tree(62,35,0);tree(47.5,29);tree(63,22.6);
+  B(58.5,G,35,1,2.4,1,C.brown); B(57,G+2.4,33.5,4,1.6,4,C.dgreen); B(58,G+4.0,34.5,2,1.2,2,C.green);
+  fig(52,38,C.blue);fig(60.5,24.3,C.orange);fig(53,21.4,C.red,G+WH);fig(45.5,31,C.teal,G+WH);
+  // Joyangmun on its traffic island
+  T(71,G,27,2,.3,18,C.road); T(71,G,25,12,.3,2,C.road); T(71,G,37,12,.3,2,C.road); T(81,G,25,3,.3,14,C.road);
+  T(72.5,G,27,8.5,.3,10,C.lime);
+  const JY=G+.3;
+  B(74,JY,28,6,3.6,3,C.stone); B(74,JY,33,6,3.6,3,C.stone); B(74,JY+2.4,31,6,1.2,2,C.stone);
+  T(74,JY+2.0,31,6,.4,.3,C.gray);T(74,JY+2.0,32.7,6,.4,.3,C.gray);
+  for(let i=0;i<8;i+=2){ T(74,JY+3.6,28+i,.6,.6,1,C.stone); T(79.4,JY+3.6,28+i,.6,.6,1,C.stone); }
+  for(const cx of [74.8,78.6]) for(const cz of [28.8,31.6,34.6]) T(cx,JY+3.6,cz,.6,2.0,.6,C.red);
+  T(75.4,JY+3.6,29.4,3.2,1.6,5.2,C.rbrown); T(74.5,JY+5.6,28.5,5,.4,7,C.teal);
+  hanokRoof(74.6,JY+6.0,28.6,4.8,6.8); T(76.2,JY+8.6,31,1.6,.5,2,C.roof);
+});
+T(160,G,58,2,.3,6,C.road);
+// Hongju Uisachong (tomb of the righteous army)
+B(139,G,30,6,.8,6,C.green,{s:false}); B(140,G+.8,31,4,.8,4,C.green,{s:false}); B(141,G+1.6,32,2,.6,2,C.lime,{s:false});
+T(146.2,G,32.2,1.4,.4,1.4,C.stone); T(146.5,G+.4,32.5,.8,2.4,.8,C.dgray); T(146.3,G+2.8,32.3,1.2,.3,1.2,C.roof);
+T(138,G,37,10,.7,.5,C.stone); tree(150,29,0);
+// traditional market
+T(139.5,G,72,.5,3.2,.5,C.red); T(146,G,72,.5,3.2,.5,C.red); T(139.5,G+3.2,72,7,.9,.5,C.blue);
+for(let i=0;i<3;i++){ stall(134+i*6,75,pick([C.red,C.blue,C.orange])); stall(134+i*6,81.5,pick([C.teal,C.red,C.yellow])); }
+for(const [cx,cz,cc] of [[139,79.6,C.red],[140.2,79.6,C.orange],[145,79.6,C.lime],[146.2,79.6,C.yellow],[151,79.6,C.purple]]) B(cx,G,cz,1,.6,1,cc,{s:false});
+fig(142.4,79.4,C.pink);fig(148.6,79.8,C.blue);
+// town blocks
+town(154,70,171,92); town(131,88,152,97,3); town(106,56,130,62,3); town(178,70,190,76,3); town(150,22,170,26,3);
+// hanwoo pasture + statue (west of town)
+at(80,49,()=>{
+  T(32,G,21,.3,.9,13,C.white);T(44.7,G,21,.3,.9,13,C.white);T(32,G,21,13,.9,.3,C.white);T(32,G,33.7,5,.9,.3,C.white);T(40,G,33.7,5,.9,.3,C.white);
+  cow(34,23);cow(39,26);cow(35,29.5);cow(40,31);
+  B(41,G,22,3,2.4,2.5,C.red); B(40.5,G+2.4,21.5,4,.4,3.5,C.white); B(41.5,G+2.8,22.5,2,.5,1.5,C.white);
+  B(40,G,35.4,4,.8,2.4,C.white);
+  T(40.5,G+1.7,35.9,2.6,1.4,1.4,C.rbrown); for(const lx of [40.6,42.5]) for(const lz of [36.0,36.8]) T(lx,G+.8,lz,.45,.9,.45,C.rbrown);
+  T(43.0,G+2.3,36.05,.9,1.0,1.1,C.rbrown); T(43.8,G+2.4,36.25,.3,.5,.7,C.cream); T(43.1,G+3.3,35.9,.2,.4,.2,C.cream); T(43.1,G+3.3,37.1,.2,.4,.2,C.cream);
+});
+// Hongseong station (hanok-style), east of the tracks
+T(195,G,42,1.6,.5,16,C.lgray);
+B(197,G,44,3.6,2.6,12,C.cream); for(let i=0;i<5;i++) T(200.5,G,44.2+i*2.8,.4,2.6,.6,C.red);
+T(200.6,G+.2,47,.1,1.9,1.4,C.navy); T(200.6,G+.2,51.6,.1,1.9,1.4,C.navy);
+T(196.6,G+2.6,43.6,4.4,.4,12.8,C.teal); hanokRoof(197,G+3.0,44,3.6,12);
+T(201,G,49,19,.3,3,C.road); fig(202,46,C.red);fig(203.4,53,C.yellow);
+
+// ================= HONGBUK: Yongbongsan, Naepo =================
+mountain(104,3,22,12,[[118,13,12.5,9],[130,11,15.5,8.5],[140,15,9,7],[110,16,6,6]],'rock');
+T(130.8,G,10.8,.25,19.4,.25,C.white); T(131.05,G+18.6,10.85,1.0,.7,.08,C.red);
+at(62,20,()=>{ // House of Lee Ungno (south-west foot)
+  B(45.5,G,10,5,2.4,3,C.white); T(45.3,G+2.4,9.8,5.4,.3,3.4,C.dgray); T(46,G+.4,13,1.6,1.6,.08,C.navy);
+  B(48,G,13.2,3,2.4,3,C.wood); T(47.8,G+2.4,13,3.4,.3,3.4,C.dgray);
+  T(44.5,G,17,6,.3,2.6,C.water); for(const [lx,lz,lc] of [[45,17.4,C.lime],[46.6,18.4,C.pink],[48.2,17.5,C.lime],[49.4,18.6,C.pink],[47.4,17.2,C.pink]]) T(lx,G+.3,lz,.7,.08,.7,lc);
+});
+function office(x,z){
+  for(let f=0;f<7;f++){ T(x,G+f*1.2,z,18,.8,5,C.glass); B(x-.15,G+f*1.2+.8,z-.15,18.3,.4,5.3,C.white,{s:f===6?undefined:false}); }
+  for(const wx of [x,x+14]) for(let f=0;f<5;f++){ T(wx,G+f*1.2,z+5,4,.8,5,C.glass); B(wx-.15,G+f*1.2+.8,z+4.85,4.3,.4,5.3,C.white,{s:f===4?undefined:false}); }
+  B(x+6,G,z+5,6,2.4,2,C.white); B(x+5.5,G+2.4,z+4.5,7,.4,3.5,C.blue);
+  for(const cx of [x+6,x+11.4]) T(cx,G,z+7.6,.6,2.4,.6,C.white);
+  B(x+7,G+8.4,z+1,4,1.2,3,C.lblue);
+  for(let i=0;i<3;i++){ T(x+7.4+i*1.4,G,z+10,.2,4.2,.2,C.lgray); T(x+7.6+i*1.4,G+3.4,z+10.05,1.0,.7,.08,[C.white,C.blue,C.green][i]); }
+}
+office(151,4);
+T(178,G,22,11,.3,8,C.water); B(182,G+.3,25,2,.3,2,C.lime); T(183,G+.1,22,1.2,.45,8,C.wood);  // Hongye park pond
+tree(178,31,0);tree(186,31);
+function apt(x,z,h,c){ B(x,G,z,4,h,4,C.white); T(x+1.2,G,z+4,1.6,h,.12,c); T(x+1.2,G,z-.12,1.6,h,.12,c);
+  for(let y=.5;y<h-.6;y+=1.2){ T(x+.3,G+y,z+4,.7,.6,.08,C.navy);T(x+3,G+y,z+4,.7,.6,.08,C.navy); } B(x+1,G+h,z+1,2,.8,2,c); }
+apt(179,3,15.6,C.orange);apt(185,2,19.2,C.teal);apt(179,11,16.8,C.blue);apt(185,11,13.2,C.pink);apt(197,4,18,C.yellow);apt(203,3,14.4,C.purple);apt(209,5,16.8,C.teal);apt(198,13,12,C.orange);apt(205,12,15.6,C.blue);
+fig(158,16.5,C.red);fig(161,17,C.white);
+// General Choe Yeong shrine + Seong Sam-mun site (Noeun-ri)
+B(201,G,24,8,.8,6,C.stone,{s:false}); B(202.5,G+.8,25,5,1.8,3,C.cream); for(let i=0;i<3;i++) T(202.6+i*2.2,G+.8,27.9,.5,1.8,.3,C.red); hanokRoof(202.5,G+2.6,25,5,3);
+T(211,G,26,1.4,.4,1.4,C.stone); T(211.3,G+.4,26.3,.8,2.2,.8,C.dgray); T(211.1,G+2.6,26.1,1.2,.3,1.2,C.roof);
+T(200,G,33,14,.7,.5,C.stone); tree(213,30);tree(197,27,0);
+
+// ================= GEUMMA: Cheolmasan 3.1 park (east) =================
+mountain(198,70,9,8,[[207,78,6,6]],'hill');
+T(206.1,G,77.1,1.8,8,1.8,C.stone); T(206.6,G+8,77.6,.8,5,.8,C.white); T(206.3,G+13,77.3,1.4,.4,1.4,C.white);
+T(204.2,G,78.2,.2,11,.2,C.lgray); T(204.4,G+10.2,78.25,1.0,.7,.08,C.white);
+
+// ================= HONGDONG: Mundang organic duck-rice village =================
+for(let i=0;i<2;i++)for(let j=0;j<2;j++){ const x=179+i*6,z=84+j*7; T(x,G,z,5,.3,6,C.water); for(let r=0;r<5;r++) for(let q=0;q<5;q++) T(x+.4+r,G+.3,z+.6+q*1.1,.2,.4,.2,C.lime); }
+for(const [dx,dz] of [[180.5,86],[182,88.5],[186.5,85.5],[187.5,93],[181.5,94.5],[185.4,96]]){ T(dx,G+.3,dz,.7,.4,.45,C.white); T(dx+.5,G+.6,dz+.08,.3,.4,.3,C.white); T(dx+.8,G+.72,dz+.14,.22,.1,.16,C.orange); }
+thatched(178.5,79.5,5,2); B(186,G,79,4,2.4,3,C.wood); B(185.5,G+2.4,78.5,5,.4,4,C.dgreen); B(186.5,G+2.8,79.5,3,.6,2,C.dgreen);
+
+// ================= GWANGCHEON (south) =================
+at(26,44,()=>{ // cave-aged shrimp sauce + gim
+  B(89,G,55,5,2.6,5,C.tan,{s:false}); B(90,G+2.6,56,3,.8,3,C.green,{s:false});
+  T(88.92,G,56.6,.1,1.8,1.8,C.black); T(88.7,G,56.3,.3,2.1,.3,C.brown); T(88.7,G,58.4,.3,2.1,.3,C.brown); T(88.7,G+2.1,56.3,.3,.3,2.4,C.brown);
+  for(const [jx,jz] of [[86.8,55],[85.6,55.6],[86.9,59.4],[85.7,60]]){ T(jx,G,jz,.9,1.0,.9,C.rbrown); T(jx+.1,G+1.0,jz+.1,.7,.2,.7,C.brown); }
+  T(84.4,G,57.2,1.6,.5,1.6,C.wood); for(let i=0;i<3;i++) T(84.6,G+.5+i*.15,57.4,1.2,.14,1.2,C.gim);
+});
+mountain(114,94,5,3,[[120,97,4,4]],'hill');
+stall(106,104,C.red); stall(111,113.5,C.blue); stall(117,113.5,C.orange);
+B(140,G,104,3,2.4,8,C.white); B(139.6,G+2.4,103.6,3.8,.4,8.8,C.blue); T(139,G,103,1,.5,10,C.lgray); T(143,G+.3,107,.1,1.6,1.4,C.navy);  // Gwangcheon station
+town(106,117,124,128,2); town(144,104,160,110,2);
+// Geurim-gateun arboretum
+T(98,G,84,.4,.8,12,C.white); T(98,G,84,16,.8,.4,C.white); T(113.6,G,84,.4,.8,12,C.white);
+for(let i=0;i<4;i++)for(let j=0;j<2;j++){ const c=[C.pink,C.yellow,C.red,C.purple,C.orange,C.white,C.pink,C.yellow][i*2+j]; T(100+i*3.2,G,86+j*3.4,2.4,.3,2.4,C.brown); for(let q=0;q<4;q++) T(100.3+i*3.2+(q%2)*1.1,G+.3,86.3+j*3.4+(q>>1)*1.1,.7,.5,.7,c); }
+T(100,G,93,6,.3,2.4,C.water); B(108,G,92.4,4,2.4,3,C.white); B(107.6,G+2.4,92,4.8,.4,3.8,C.red);
+for(const [tx,tz] of [[99,97],[104,97.4],[110,97]]){ T(tx+1,G,tz+1,1,1.2,1,C.brown); B(tx,G+1.2,tz,3,1.6,3,pick([C.pink,C.lime,C.dgreen])); B(tx+.5,G+2.8,tz+.5,2,1.0,2,C.green); }
+// Oseosan (silver-grass ridge), far south
+mountain(142,112,15,14,[[156,128,14,9],[166,124,8,6],[148,122,7,6]],'grass');
+
+// ---------- scatter: hills, fields, trees on free land
+mountain(46,42,8,6,[[53,48,5,5]],'hill'); mountain(52,112,10,10,[[62,122,7,7]],'hill'); mountain(84,118,8,8,[[92,126,6,6]],'hill');
+mountain(200,100,9,12,[[209,112,8,7]],'hill'); mountain(46,6,12,7,[[58,12,6,7]],'hill'); mountain(150,96,5,2,[[155,98,3,4]],'hill');
+// ---------- Hongseong additions (old coordinates, shifted with the rest)
+mountain(114,41,7,6,[[121,47,8,5]],'hill');                                   // Baegwolsan
+B(119,G,29,2,.6,2,C.stone,{s:false}); T(119.3,G+.6,29.4,1.4,4.2,1.2,C.stone); T(119.4,G+4.8,29.5,1.2,1.2,1.0,C.stone); T(119.1,G+6.0,29.2,1.8,.3,1.6,C.gray); // Sangha-ri Mireuk
+B(31,G,-10,7,3.0,5,C.white); B(30.6,G+3.0,-10.4,7.8,.4,5.8,C.blue); T(32,G+.5,-5,1.6,1.8,.08,C.navy); T(35,G+.5,-5,1.6,1.8,.08,C.navy); // bird science museum
+T(36.2,G+3.4,-8.6,.3,1.6,.3,C.dgray); T(35.6,G+5.0,-8.7,1.5,.6,.5,C.white); T(37.1,G+5.2,-8.6,.6,.2,.3,C.orange); T(35.2,G+5.1,-8.9,.5,.3,.9,C.lgray);
+B(29,G,-3.4,1.2,.5,1.2,C.wood); T(29.4,G+.5,-3,.3,1.0,.3,C.dgray); T(29.1,G+1.5,-3.1,.9,.4,.5,C.blue);
+hanok(238,119,8,4,2.2); hanok(248,121,4,3); thatched(239,112,5,2);              // Saun gotaek (Janggok)
+T(236,G,128.5,18,1.2,.6,C.stone); T(236,G,110,.6,1.2,18.5,C.stone);
+B(249.5,G,125.5,1,2.4,1,C.brown); B(248,G+2.4,124,4,1.6,4,C.dgreen); B(249,G+4.0,125,2,1.2,2,C.green);
+mountain(228,86,10,10,[[238,96,7,7]],'hill'); mountain(232,4,12,8,[[244,12,7,7]],'hill'); mountain(60,142,12,6,[[72,148,6,6]],'hill'); mountain(186,142,12,6,[[198,148,6,6]],'hill');
+town(226,56,250,62,3); town(226,70,250,80,2);
+
+// ================= YESAN-GUN (east half) =================
+BX=HW; BZ=HH;
+for(const sz of [76.6,85]){ T(-1.2,G,sz,.3,3.4,.3,C.dgray); T(-2.6,G+2.2,sz,1.3,1.2,.3,C.blue); T(.2,G+2.2,sz,1.3,1.2,.3,C.teal); }
+roadNS(130,-146,490); roadNS(50,20,60); T(54,G,46,76,.3,3,C.road); T(134,G,44,72,.3,3,C.road);
+railNS(152,-148,202.6);
+function bigCow(x,z){ B(x,G,z,4,.8,2.4,C.white);
+  T(x+.5,G+1.7,z+.5,2.6,1.4,1.4,C.rbrown); for(const lx of [x+.6,x+2.5]) for(const lz of [z+.6,z+1.4]) T(lx,G+.8,lz,.45,.9,.45,C.rbrown);
+  T(x+3.0,G+2.3,z+.65,.9,1.0,1.1,C.rbrown); T(x+3.8,G+2.4,z+.85,.3,.5,.7,C.cream); T(x+3.1,G+3.3,z+.5,.2,.4,.2,C.cream); T(x+3.1,G+3.3,z+1.7,.2,.4,.2,C.cream); }
+function stork(x,z,y=G){ T(x+.3,y,z+.2,.1,1.0,.1,C.red); T(x+.6,y,z+.2,.1,1.0,.1,C.red); T(x,y+1.0,z,1.1,.6,.5,C.white); T(x-.2,y+1.1,z+.05,.4,.4,.4,C.black);
+  T(x+.9,y+1.5,z+.12,.25,.8,.25,C.white); T(x+.85,y+2.2,z+.1,.4,.35,.3,C.white); T(x+1.25,y+2.3,z+.17,.6,.1,.12,C.black); }
+function appleTree(x,z){ T(x+1,G,z+1,1,1.2,1,C.brown); B(x,G+1.2,z,3,1.6,3,C.green);
+  for(const [ax,ay,az] of [[-.2,1.6,.6],[2.8,2.0,1.8],[1.2,1.5,-.2],[2,2.1,2.8],[.5,2.3,2.8],[-.2,2.2,2]]) T(x+ax,G+ay,z+az,.4,.4,.4,C.red); }
+// Gayasan + Namyeongun tomb (north-west)
+mountain(4,2,20,13,[[20,12,15,9],[32,16,10,7],[10,20,8,6]],'rock');
+B(25,G,31,6,.8,5,C.green,{s:false}); B(26,G+.8,32,4,.8,3,C.green,{s:false}); B(27,G+1.6,32.6,2,.5,1.8,C.lime,{s:false});
+T(32.4,G,33,.8,1.8,.6,C.stone); T(23.4,G,32,.8,1.2,.8,C.stone); T(23.2,G+1.2,31.8,1.2,.3,1.2,C.gray); T(24,G,37,9,.6,.5,C.stone);
+// Deoksan hot spring
+B(60,G,25,10,3.6,5,C.white); B(59.5,G+3.6,24.5,11,.4,6,C.orange); for(let i=0;i<4;i++){ T(60.8+i*2.3,G+.5,30,1.2,.8,.07,C.navy); T(60.8+i*2.3,G+2.0,30,1.2,.8,.07,C.navy); }
+T(60,G,32.5,9,.3,5,C.lblue); T(59.5,G,32,10,.5,.5,C.stone); T(59.5,G,37.5,10,.5,.5,C.stone); T(59.5,G,32,.5,.5,6,C.stone); T(69,G,32,.5,.5,6,C.stone);
+for(const [sx,sy,sz] of [[62,1.2,34],[64.5,1.9,35.5],[66.5,1.4,33.6],[63.6,2.6,34.6]]) T(sx,G+sy,sz,.5,.5,.5,C.white);
+T(72.6,G,26,.3,3.4,.3,C.dgray); T(71.8,G+3.4,26,1.9,1.4,.3,C.red);
+town(58,6,78,20,3);
+// Naepo Bobusang village
+thatched(35,39,5,3); thatched(42,45.5,4,2); stall(35,46,C.orange);
+B(42.6,G,39.6,1.8,.8,1.6,C.stone,{s:false}); statue(43.2,G+.8,40.1); T(42.7,G+3.1,39.8,1.6,.2,1.3,C.cream); T(42.9,G+3.3,40.2,.3,.3,.3,C.white); T(43.8,G+3.3,40.2,.3,.3,.3,C.white); T(43.1,G+1.5,39.7,.9,1.2,.3,C.brown);
+// Chunguisa (Yun Bong-gil)
+B(60,G,60,12,.8,7,C.stone,{s:false}); B(62.5,G+.8,61,7,2.2,3.5,C.cream); for(let i=0;i<4;i++) T(62.6+i*2.1,G+.8,64.4,.5,2.2,.3,C.red); hanokRoof(62.5,G+3.0,61,7,3.5);
+T(64,G,70,.7,2.6,.7,C.red); T(67.3,G,70,.7,2.6,.7,C.red); T(63.4,G+2.6,69.6,5.2,.4,1.5,C.teal); hanokRoof(63.8,G+3.0,69.9,4.4,.9);
+B(74,G,66,2,1.6,2,C.stone,{s:false}); statue(74.65,G+1.6,66.75);
+T(57.4,G,66,.2,5,.2,C.lgray); T(57.6,G+4.2,66.05,1.2,.8,.08,C.white);
+// Sudeoksa + Deoksungsan (west)
+mountain(4,54,13,11,[[14,64,10,8],[22,70,6,5]],'hill');
+B(33,G,59,13,1.2,8,C.stone,{s:false}); B(35,G+1.2,60.5,9,2.4,4.5,C.rbrown); for(let i=0;i<5;i++) T(35.1+i*2.1,G+1.2,64.9,.5,2.4,.3,C.brown); hanokRoof(35,G+3.6,60.5,9,4.5);
+T(38.5,G,67,2,.8,.6,C.stone); T(38.5,G,67.6,2,.4,.6,C.stone);
+B(46.5,G,69,2,.5,2,C.stone,{s:false}); for(let i=0;i<3;i++){ T(46.8,G+.5+i,69.3,1.4,.6,1.4,C.stone); T(46.5,G+1.1+i,69,2,.4,2,C.gray); } T(47.3,G+3.5,69.8,.4,.9,.4,C.gray);
+T(38.4,G,75,.6,2.6,.6,C.red); T(41.6,G,75,.6,2.6,.6,C.red); T(37.8,G+2.6,74.6,5,.4,1.4,C.teal); hanokRoof(38.2,G+3.0,74.8,4.2,1);
+// Sapgyo: station + gopchang alley
+B(92,G,56.2,8,2.4,3,C.white); B(91.6,G+2.4,55.8,8.8,.4,3.8,C.blue); T(90,G,54.6,12,.5,1.2,C.lgray); T(95,G+.3,59.2,1.6,1.7,.08,C.navy);
+stall(88,64,C.red); stall(94,64,C.orange); B(91,G,70,1,.6,1,C.dgray,{s:false}); T(91.15,G+.6,70.15,.7,.15,.7,C.red); B(96,G,70,1,.6,1,C.dgray,{s:false}); T(96.15,G+.6,70.15,.7,.15,.7,C.red);
+town(74,58,86,76,2);
+// Chusa Kim Jeong-hui's house + white pine (north)
+hanok(100,8,8,4,2.2); hanok(110,9,5,3); hanok(104,14.6,6,3);
+T(98,G,19.6,21,1.2,.6,C.stone); T(98,G,5.4,.6,1.2,14.2,C.stone);
+T(115.8,G,15.6,.5,3.2,.5,C.white); T(116.7,G,16.2,.4,2.6,.4,C.white); B(115,G+3.2,14.8,3,1.2,3,C.dgreen); B(115.5,G+4.4,15.3,2,.8,2,C.green);
+// Yesan-eup: station, market with noodle racks, apple orchard
+B(156,G,26,3.6,2.6,10,C.white); B(155.6,G+2.6,25.6,4.4,.4,10.8,C.red); T(154.7,G,24,1.2,.5,14,C.lgray); T(159.6,G+.3,30,.1,1.8,1.6,C.navy);
+T(176,G,42.2,.5,3.2,.5,C.red); T(182.5,G,42.2,.5,3.2,.5,C.red); T(176,G+3.2,42.2,7,.9,.5,C.orange);
+for(let i=0;i<4;i++){ stall(167+i*6,29,pick([C.red,C.blue,C.orange])); stall(167+i*6,35.5,pick([C.teal,C.red,C.yellow])); }
+for(let r=0;r<3;r++){ const z=30+r*2.4; T(192,G,z,.2,2.1,.2,C.brown); T(196.2,G,z,.2,2.1,.2,C.brown); T(192,G+2.1,z,4.4,.15,.2,C.brown); for(let q=0;q<8;q++) T(192.5+q*.46,G+.5,z+.05,.3,1.6,.1,C.cream); }
+fig(180,39.6,C.pink);fig(173.4,40,C.blue);
+town(160,50,204,74,4); mountain(176,4,12,9,[[188,12,8,7]],'hill');
+for(let i=0;i<4;i++)for(let j=0;j<3;j++) appleTree(201+i*5.5,19+j*5.5);
+T(199.6,G,17.6,23,.8,.3,C.white); T(199.6,G,36,23,.8,.3,C.white);
+B(225,G,26,3,.6,3,C.white); B(225,G+.6,26,3,2.4,3,C.red,{s:false}); T(226.3,G+3.0,27.3,.4,.8,.4,C.brown); T(226.7,G+3.5,27.2,1,.2,.6,C.green);
+// Yedang reservoir + suspension bridge
+lake(140,100,66,42); lake(156,88,28,12);
+B(152,G+1.2,93,36,.3,2,C.white,{s:false}); T(152,G+1.5,93,36,.5,.15,C.lgray); T(152,G+1.5,94.85,36,.5,.15,C.lgray);
+for(let k=0;k<3;k++){ T(150.2+k*.6,G,93,.6,.4+k*.38,2,C.stone); T(189.2-k*.6,G,93,.6,.4+k*.38,2,C.stone); }
+for(const px of [160,180]) T(px,G,93.5,1,1.2,1,C.lgray);
+T(169.5,G,92.3,1,14,.5,C.white); T(169.5,G,95.2,1,14,.5,C.white); T(169.5,G+13.4,92.3,1,.6,3.4,C.white);
+for(let k=0;k<8;k++){ T(170.5+k*2.1,G+12.4-k*1.4,93.95,2.1,.12,.12,C.lgray); T(167.4-k*2.1,G+12.4-k*1.4,93.95,2.1,.12,.12,C.lgray); }
+for(const [fx,fz,fh] of [[168,112,3],[170,112,5],[172,112,3.6],[169,114,2.4],[171,114,2.8]]) T(fx,G+.25,fz,.4,fh,.4,C.white);
+B(192,G+.25,122,3,.6,1.6,C.yellow); B(150,G+.25,128,3,.6,1.6,C.pink);
+// Daeheung: good brothers park (west shore)
+thatched(105,107,6,3);
+B(113,G,112,5,.6,2.4,C.stone,{s:false}); statue(113.6,G+.6,112.8); statue(116.2,G+.6,112.8); T(113.5,G+1.6,113.5,.9,1.0,.5,C.thatch); T(116.1,G+1.6,113.5,.9,1.0,.5,C.thatch);
+for(const [rx,rz] of [[120.5,107.5],[123.5,109],[121,117.5]]){ B(rx,G,rz,2,1.6,2,C.thatch,{s:false}); B(rx+.5,G+1.6,rz+.5,1,.6,1,C.thatch,{s:false}); }
+// Bongsusan + Imjonseong fortress
+mountain(28,96,20,17,[[48,112,11,10],[60,122,7,6]],'hill');
+for(let a=0;a<13;a++){ const an=a/16*Math.PI*2+.6; T(Math.round(47.3+6.5*Math.cos(an)),G,Math.round(111.3+6.5*Math.sin(an)),1.6,13,1.6,C.stone); }
+// Yesan stork park (Gwangsi)
+T(105,G,146,14,.3,10,C.water); for(let i=0;i<10;i++) T(105.5+rnd()*13,G+.3,146.5+rnd()*9,.25,.8,.25,C.lime);
+stork(107,148.5,G+.3); stork(112.5,152,G+.3); stork(116,147.5,G+.3); stork(121,154); stork(102,152);
+T(122,G,148,.5,6,.5,C.brown); B(121.2,G+6,147.2,2,.4,2,C.thatch,{s:false}); stork(121.6,147.9,G+6.4);
+B(108,G,158.5,7,2.4,3.5,C.white); B(107.6,G+2.4,158.1,7.8,.4,4.3,C.wood);
+// Gwangsi hanwoo street
+house(72,147,5,4,2.4,C.cream,C.red); house(79,147,4,4,3.6,C.yellow,0); house(72,155,4,4,2.4,C.pink,C.roof); house(90,155,4,4,2.4,C.lblue,C.blue);
+bigCow(84.5,150);
+// more hills
+mountain(212,98,12,16,[[224,114,8,8]],'hill'); mountain(232,46,12,12,[[244,58,7,7]],'hill'); mountain(170,146,12,10,[[182,156,6,6]],'hill'); mountain(4,134,10,14,[[14,150,7,6]],'hill'); mountain(228,140,12,12,[[240,152,8,7]],'hill'); mountain(84,22,10,8,[[94,30,6,6]],'hill');
+BX=0; BZ=0;
+
+// ================= BORYEONG-SI (south-west) =================
+BX=0; BZ=HH*2;
+T(39,G,0,13,.3,3,C.road); roadNS(48,0,172); roadEW(48,86,222); railNS(136,0,172);
+function parasol(x,z,c){ T(x+.7,G+.15,z+.7,.2,1.9,.2,C.white); B(x,G+2.05,z,1.6,.3,1.6,c,{s:false}); T(x+.1,G+.15,z+1.7,1.4,.08,.7,pick([C.lblue,C.pink,C.yellow])); }
+function pagoda(x,z,y=G){ B(x,y,z,2,.5,2,C.stone,{s:false}); for(let i=0;i<3;i++){ T(x+.3,y+.5+i,z+.3,1.4,.6,1.4,C.stone); T(x,y+1.1+i,z,2,.4,2,C.gray); } T(x+.8,y+3.5,z+.8,.4,.9,.4,C.gray); }
+function ginkgo(x,z){ T(x-.5,G,z-.5,4,.05,4,C.yellow); T(x+1,G,z+1,1,2.0,1,C.brown); B(x,G+2.0,z,3,1.4,3,C.yellow); B(x+.5,G+3.4,z+.5,2,1.0,2,0xf2b61e); }
+function cherry(x,z){ T(x+1,G,z+1,1,1.6,1,C.brown); B(x,G+1.6,z,3,1.2,3,C.pink); B(x+.5,G+2.8,z+.5,2,1.0,2,0xf9c6d3); }
+// Cheonbuk oyster village
+stall(30,9,C.red); stall(36,9,C.blue); stall(30,15,C.orange); stall(36,15,C.teal);
+for(const gz of [10.5,16.5]){ B(42,G,gz,1.4,.6,1.4,C.dgray,{s:false}); for(const [ox,oz] of [[.1,.1],[.7,.2],[.3,.8],[.85,.8]]) T(42+ox,G+.6,gz+oz,.4,.2,.35,pick([C.white,C.lgray,C.stone])); }
+B(14,0.8,13,13,.6,2,C.lgray); boat(8,9.6,C.white,C.blue);
+// Ocheon port + Chungcheong naval fortress
+B(12,0.8,39,15,.6,3,C.lgray); boat(14,35.8,C.white,C.red); boat(17,42.6,C.blue,C.white);
+B(30,G,44,14,1.2,8,C.green,{s:false});
+T(30,G+1.2,51,5,2.4,1,C.stone); T(38,G+1.2,51,6,2.4,1,C.stone); T(35,G+3.6,51,3,.6,1,C.stone); for(let i=0;i<14;i+=2) T(30+i,G+3.6+(i>=4&&i<8?.6:0),51,1,.5,.5,C.stone);
+T(30,G+1.2,44,1,1.6,7,C.stone); T(43,G+1.2,44,1,1.6,7,C.stone);
+for(const [cx,cz] of [[33,45.5],[37.5,45.5],[33,48],[37.5,48]]) T(cx,G+1.2,cz,.5,1.8,.5,C.red); hanokRoof(33,G+3.0,45.5,5,3);
+T(35.2,G,52,2.6,.4,1.4,C.stone); T(35.2,G,52,2.6,.8,.7,C.stone);
+// Daecheon port + undersea tunnel
+B(10,0.8,72,18,.6,3,C.lgray); B(4,0.8,66,8,.8,2,C.gray); lighthouse(5,66,C.red);
+B(3,0.8,76.5,9,1.0,3,C.white); B(5,1.8,77,5,1.2,2,C.blue); T(10.5,1.8,77.5,.5,1.6,.5,C.red);
+B(30,G,65,8,3.2,3.5,C.lgray,{s:false}); T(31.5,G,68.5,5,2.5,.1,C.black); T(32,G+2.6,68.55,4,.5,.12,C.blue); T(31.5,G,68.5,5,.3,6,C.road);
+stall(40,72,C.blue); stall(40,77.5,C.red);
+// Daecheon beach + mud festival
+T(27,G,92,19,.15,24,C.sand);
+for(const [px,pz,pc] of [[29,94,C.red],[33,95,C.blue],[29.5,100,C.yellow],[31,107,C.red],[29,112,C.blue],[35,112.5,C.orange]]) parasol(px,pz,pc);
+T(34,G+.15,104,6,.3,4,0x8a7f72); T(33.6,G+.15,103.6,6.8,.5,.4,C.white); T(33.6,G+.15,108,6.8,.5,.4,C.white); T(33.6,G+.15,103.6,.4,.5,4.8,C.white); T(40,G+.15,103.6,.4,.5,4.8,C.white);
+fig(35.4,105.2,0x8a7f72,G+.45); fig(37.6,106.2,0x8a7f72,G+.45);
+B(40,G+.15,97,2,.6,2,C.white,{s:false}); T(40.6,G+.75,97.7,.7,.8,.5,0x8a7f72); T(40.5,G+1.55,97.65,.9,.9,.6,0x8a7f72); T(40.65,G+2.45,97.7,.6,.6,.5,0x8a7f72); T(40.2,G+2.2,97.75,.3,.9,.3,0x8a7f72); T(41.5,G+2.2,97.75,.3,.9,.3,0x8a7f72);
+T(43.6,G,113,2,9,2,C.lgray); B(43.1,G+9,112.5,3,.4,3,C.orange); for(let k=0;k<12;k++) T(41.6-k*2,G+9-k*.72,113.9,2,.12,.12,C.dgray);
+for(const [rx,rz] of [[18,98],[14,104],[20,109]]){ T(rx,0.8,rz,1.2,.3,1.2,C.yellow); T(rx+.35,0.8,rz+.35,.5,.6,.45,C.pink); }
+// Jukdo Sanghwawon (garden island) + causeway
+T(6,0,124,10,1.3,10,C.sand); T(7,1.3,125,8,.4,8,C.green); T(16,0,128,11,1.1,2,C.gray);
+B(9.5,1.7,128,4,1.6,2.4,C.cream); hanokRoof(9.5,3.3,128,4,2.4);
+for(let i=0;i<4;i++) T(7.3+i*2.3,1.7,125.2,.3,1.7,.3,C.brown); T(7,3.4,125,8,.3,1,C.roof);
+pine(13.4,1.7,130.4); pine(7.4,1.7,131);
+// Muchangpo sea-parting path
+T(27,G,146,12,.15,16,C.sand); T(10,0,153,17,.95,2,C.sand); T(4,0,150,7,1.4,8,C.tan); B(5,1.4,151,5,.6,6,C.green,{s:false}); pine(6,2.0,152); pine(8,2.0,154.6);
+T(33,G+.15,151.2,.3,2.8,.3,C.dgray); T(33,G+.15,156.5,.3,2.8,.3,C.dgray); T(33,G+2.4,151.2,.3,.9,5.6,C.blue);
+stall(35,146.8,C.teal); parasol(29,159,C.red);
+// Daecheon station + city
+B(140,G,74,3.6,2.6,12,C.white); B(139.6,G+2.6,73.6,4.4,.4,12.8,C.blue); T(138.7,G,72,1.2,.5,16,C.lgray); T(143.6,G+.3,79,.1,1.8,1.6,C.navy);
+town(96,66,132,84,4); town(96,92,132,108,4); town(146,92,170,104,3); town(56,70,84,84,2);
+// Cheongna ginkgo village
+for(const [gx,gz] of [[151,19],[156,18],[162,19.5],[167,18.5],[150,25],[166,26],[151,31.5],[156,33],[167,32]]) ginkgo(gx,gz);
+hanok(156,24,7,4,2.0); T(154,G,29.6,11,.9,.5,C.stone);
+// Seongjusan: temple site, coal museum, Gaehwa art park
+mountain(182,56,22,14,[[204,70,13,10],[218,76,9,7],[192,64,7,6]],'hill');
+T(185,G,93,18,.3,13,C.tan); pagoda(187.5,99,G+.3); pagoda(191,99,G+.3); pagoda(194.5,99,G+.3); pagoda(191,94.5,G+.3);
+B(199,G+.3,96,2,.6,2.6,C.gray,{s:false}); T(199.6,G+.9,96.6,.8,2.8,1.2,C.dgray); T(199.4,G+3.7,96.4,1.2,.4,1.6,C.gray);
+B(210,G,96,9,3.2,5,C.dgray); B(209.6,G+3.2,95.6,9.8,.4,5.8,C.orange); T(213,G+.3,101,2,2,.08,C.lblue);
+B(221,G,96.6,3,2.4,3.4,C.gray,{s:false}); T(221.5,G,100,2,1.8,.1,C.black);
+B(214,G,104,2,.8,1.2,C.rbrown,{s:false}); T(214.1,G+.8,104.1,1.8,.4,1.0,C.black); T(212,G,104.3,7,.12,.15,C.dgray); T(212,G,104.9,7,.12,.15,C.dgray);
+B(218.4,G,105,2,.8,2,C.black,{s:false}); B(218.9,G+.8,105.5,1,.5,1,C.black,{s:false});
+T(182,G,118,1,3.2,1,C.white); T(181.6,G+3.2,117.6,1.8,.6,1.8,C.white); B(186,G,117,2,2,2,C.red,{s:false});
+T(190,G,119,.6,2.6,.6,C.blue); T(192.2,G,119,.6,2.6,.6,C.blue); T(190,G+2.6,119,2.8,.6,.6,C.blue);
+T(183,G,124,8,.3,5,C.water); for(const [lx,lz,lc] of [[184,125,C.lime],[186.4,127,C.pink],[188.6,125.4,C.lime],[189.4,127.6,C.pink]]) T(lx,G+.3,lz,.7,.08,.7,lc);
+B(193,G,125,6,2.4,4,C.white); B(192.6,G+2.4,124.6,6.8,.4,4.8,C.purple);
+for(let r=0;r<4;r++) for(let q=0;q<5;q++) T(195+q*1.1,G,117+r*1.4,.7,.5,.7,r%2?C.purple:0xb79be6);
+// Boryeong lake + dam, cherry road
+lake(208,128,48,34); B(204.5,G,130,3,2.4,30,C.lgray,{s:false});
+for(let x=210;x<254;x+=6) cherry(x,123.4); for(let z=132;z<160;z+=7) cherry(257,z);
+mountain(60,20,14,12,[[74,32,8,8]],'hill'); mountain(60,116,16,20,[[76,136,9,9]],'hill'); mountain(100,126,14,18,[[114,144,7,8]],'hill'); mountain(230,10,14,16,[[244,26,9,8]],'hill'); mountain(146,132,10,16,[[156,148,7,7]],'hill'); mountain(96,16,14,14,[[110,30,7,7]],'hill'); mountain(190,6,12,12,[[202,18,7,7]],'hill');
+
+// ================= CHEONGYANG-GUN (south-east) =================
+BX=HW; BZ=HH*2;
+roadEW(0,86,270);
+function jang(x,z,h){ T(x,G,z,.9,h,.9,C.wood); T(x-.1,G+h-1.3,z+.9,1.1,1.0,.1,C.cream); T(x+.05,G+h-.75,z+1.0,.25,.2,.06,C.black); T(x+.6,G+h-.75,z+1.0,.25,.2,.06,C.black); T(x+.2,G+h-1.2,z+1.0,.5,.15,.06,C.red); T(x-.2,G+h,z-.2,1.3,.3,1.3,C.brown); }
+// Darakgol martyrs' graves (north-west)
+for(let r=0;r<3;r++) for(let q=0;q<5;q++){ B(31+q*3,G,36+r*3,1.8,.5,1.4,C.green,{s:false}); T(31.4+q*3,G+.5,36.3+r*3,1,.3,.8,C.lime); }
+T(38.8,G,31,.5,4.4,.5,C.white); T(37.6,G+3.0,31,2.9,.5,.5,C.white);
+B(47,G,37,4,2.4,3,C.white); B(46.6,G+2.4,36.6,4.8,.4,3.8,C.rbrown); B(47.6,G+2.8,37.6,2.8,.6,1.8,C.rbrown); T(48.8,G+3.8,38.3,.3,1.2,.3,C.white); T(48.4,G+4.5,38.3,1.1,.3,.3,C.white);
+// Goun botanical garden
+T(100,G,40,.4,.8,18,C.white); T(100,G,40,24,.8,.4,C.white); T(123.6,G,40,.4,.8,18,C.white);
+for(let i=0;i<5;i++)for(let j=0;j<2;j++){ const c=[C.pink,C.yellow,C.red,C.purple,C.orange,C.white,C.pink,C.red,C.yellow,C.purple][i*2+j]; T(102+i*3.4,G,42+j*3.4,2.4,.3,2.4,C.brown); for(let q=0;q<4;q++) T(102.3+i*3.4+(q%2)*1.1,G+.3,42.3+j*3.4+(q>>1)*1.1,.7,.5,.7,c); }
+T(102,G,50,6,.8,4,C.glass); B(102,G+.8,50,6,1.6,4,C.glass,{s:false}); B(103,G+2.4,51,4,.8,2,C.glass,{s:false}); T(102,G+2.4,50,6,.15,4,C.white);
+T(112,G,51,7,.3,4,C.water); for(const [tx,tz] of [[120,49],[119,54],[110,56]]){ T(tx+1,G,tz+1,1,1.2,1,C.brown); B(tx,G+1.2,tz,3,1.6,3,pick([C.pink,C.lime,C.dgreen])); B(tx+.5,G+2.8,tz+.5,2,1.0,2,C.green); }
+// Cheongyang-eup: chili + goji statues, market
+B(119,G,77.6,5,.6,2.6,C.white);
+T(119.4,G+.6,78.4,1.0,3.2,1.0,C.red); T(119.6,G+3.8,78.6,.6,.9,.6,C.red); T(119.75,G+4.7,78.75,.3,.6,.3,C.green);
+T(122.3,G+.6,78.8,.2,2.8,.2,C.green); for(const [bx,by,bz] of [[-.4,2.6,0],[.2,2.2,.1],[-.35,1.7,.1],[.2,1.3,-.1],[-.3,.9,0],[.15,3.0,0]]) T(122.3+bx,G+.6+by,78.7+bz,.4,.5,.4,0xe8452c);
+stall(104,77,C.red); stall(110,77,C.orange); fig(108.6,82.4,C.blue);
+town(86,66,116,74,3); town(86,92,126,108,3);
+// Chilgapsan + observatory + lake
+mountain(150,34,26,25,[[176,58,14,12],[164,72,8,7],[192,48,8,7]],'hill'); mountain(156,92,20,10,[[176,100,7,8]],'hill');
+B(170,G,25,4,2.4,4,C.white); B(170.5,G+2.4,25.5,3,1.0,3,C.lgray); B(171,G+3.4,26,2,.7,2,C.lgray); T(171.6,G+2.4,25.4,.8,1.9,.2,C.dgray); T(174.4,G,26,.3,1.4,.3,C.dgray); T(174,G+1.4,25.8,1.1,.4,.5,C.navy);
+lake(138,60,10,20);
+// Janggoksa (two main halls)
+hanok(138,104,6,3); B(140,G,95,9,1.6,5,C.stone,{s:false}); B(141.5,G+1.6,96,6,2.0,3,C.cream); for(let i=0;i<3;i++) T(141.6+i*2.6,G+1.6,98.9,.5,2.0,.3,C.red); hanokRoof(141.5,G+3.6,96,6,3);
+T(146.5,G,100,1.6,.5,.8,C.stone); T(146.5,G,100,1.6,1.0,.4,C.stone);
+// Jangseung park
+for(const [jx,jz,jh] of [[112,113,4.5],[115,112.4,6],[118,113,3.6],[121,112.6,5.2],[124,113.2,4],[113.5,117,3.8],[117,117.4,5],[121.5,117,4.4]]) jang(jx,jz,jh);
+// Cheonjangho suspension bridge (chili + goji pylons), dragon + tiger
+lake(212,56,30,24);
+B(209.8,G+1.2,66,34.4,.3,2,C.white,{s:false}); T(209.8,G+1.5,66,34.4,.5,.15,C.lgray); T(209.8,G+1.5,67.85,34.4,.5,.15,C.lgray);
+for(let k=0;k<3;k++){ T(208+k*.6,G,66,.6,.4+k*.38,2,C.stone); T(245.4-k*.6,G,66,.6,.4+k*.38,2,C.stone); }
+T(213.4,G,64.9,1.3,9,1.0,C.red); T(213.6,G+9,65.1,.9,1.4,.6,C.red); T(213.8,G+10.4,65.2,.4,.8,.4,C.green);
+T(213.5,G,68.1,1.1,6,1.0,0xe8452c); T(213.7,G+6,68.3,.7,1,.6,0xe8452c); T(213.9,G+7,68.4,.3,.6,.3,C.green);
+for(let k=0;k<10;k++) T(214.6+k*2.6,G+8.6-k*.7,66.95,2.6,.12,.12,C.lgray);
+B(247.5,G,62,3,.6,2,C.stone,{s:false}); T(247.8,G+.6,62.4,2,.9,1.1,C.orange); T(249.4,G+1.2,62.5,.9,.9,.9,C.orange); for(let i=0;i<3;i++) T(248+i*.6,G+1.5,62.4,.2,.05,1.1,C.black); T(247.9,G+.6,62.5,.3,.0+.6,.3,C.orange);
+B(247.5,G,69.6,4,.6,2,C.stone,{s:false}); T(247.8,G+.6,70,1.2,.8,1,C.teal); T(248.8,G+1.2,70.1,1.2,.8,.9,C.teal); T(249.8,G+1.8,70.1,1.2,.8,.9,C.blue); T(250.8,G+2.4,70.15,.9,.8,.8,C.blue); T(251.5,G+2.9,70.3,.5,.2,.5,C.yellow);
+// Alps village: ice fountains + chalets
+for(const [ix,iz,ih] of [[224,94,5],[225.6,95.4,7.5],[227.4,94.2,4],[229,96,6],[223.4,97,3.4],[227,97.6,5.4],[231,94.6,3.2]]){ T(ix,G,iz,1.6,ih*.6,1.6,C.lblue); T(ix+.3,G+ih*.6,iz+.3,1.0,ih*.3,1.0,C.white); T(ix+.55,G+ih*.9,iz+.55,.5,ih*.2,.5,C.white); }
+T(221,G,92,13,.1,8.6,C.white);
+house(236,93,5,4,2.4,C.cream,C.red); house(243,94,4,4,2.4,C.wood,C.red); house(237,101,4,3,2.4,C.white,C.dgreen);
+// Modeoksa shrine (south-east)
+T(222,G,144,12,.3,5,C.water); hanok(225,134,8,4,2.2); hanok(236,136,4,3);
+T(223,G,141.5,5,1.2,.6,C.stone); T(232,G,141.5,10,1.2,.6,C.stone); T(228.2,G,141.2,.6,2.6,.6,C.red); T(231.2,G,141.2,.6,2.6,.6,C.red); T(227.8,G+2.6,140.9,4.4,.4,1.4,C.teal); hanokRoof(228.2,G+3.0,141.1,3.6,1);
+mountain(20,100,16,20,[[36,120,9,9]],'hill'); mountain(64,124,12,14,[[76,138,7,7]],'hill'); mountain(150,124,16,16,[[166,140,9,8]],'hill'); mountain(20,56,10,10,[[30,66,6,6]],'hill'); mountain(230,6,14,16,[[244,22,8,8]],'hill'); mountain(60,6,14,10,[[74,16,7,7]],'hill'); mountain(190,120,10,10,[[200,130,6,6]],'hill');
+// ================= SEOSAN-SI (north-west) =================
+BX=0; BZ=0;
+roadEW(39,92,231); roadNS(39,30,144);
+mountain(226,112,20,26,[[250,142,13,10],[240,126,8,7]],'rock'); mountain(46,112,10,8,[[56,120,8,6]],'hill');
+town(110,100,160,118,4); town(110,72,150,88,3); town(196,150,222,166,2);
+// ================= DANGJIN-SI (north) =================
+BX=HW; BZ=0;
+roadEW(0,92,270); lake(238,64,32,58);
+town(96,58,126,84,4); town(140,98,166,112,3); mountain(20,40,12,10,[[32,50,7,7]],'hill');
+// ================= GONGJU-SI (south-east) =================
+BX=HW*2; BZ=HH*2;
+lake(0,70,270,8); roadEW(0,86,270); roadNS(120,0,172);
+mountain(190,112,36,28,[[226,142,15,11],[212,128,9,8],[244,130,8,7]],'rock'); mountain(20,10,16,14,[[36,24,9,8]],'hill'); mountain(200,10,16,12,[[216,22,8,7]],'hill');
+town(92,94,116,112,4); town(128,94,160,110,4); town(60,40,84,52,2);
+// ================= SEOCHEON-GUN (far south-west) =================
+BX=0; BZ=HH*3;
+lake(27,158,243,14); roadNS(48,0,154); roadEW(48,80,222); railNS(136,0,157);
+B(138.7,G,70,1.2,.5,12,C.lgray,{s:false}); B(140,G,71,3.6,2.6,9,C.white); B(139.6,G+2.6,70.6,4.4,.4,9.8,C.teal);
+town(92,58,130,74,3); town(58,128,90,146,3); mountain(90,20,14,12,[[104,32,8,7]],'hill'); mountain(180,20,14,12,[[194,32,7,7]],'hill');
+SX=0;
+// ================= TAEAN-GUN (far north-west peninsula) =================
+BX=0; BZ=0;
+roadNS(120,26,144); roadEW(30,92,279);
+town(96,70,118,88,3); town(126,98,150,112,3); mountain(150,30,10,8,[[160,38,6,6]],'hill');
+// ================= ASAN-SI =================
+BX=810; BZ=0;
+roadEW(0,92,270); roadNS(120,26,146);
+town(94,100,118,118,4); town(126,100,160,116,4); mountain(204,118,14,12,[[218,130,8,7]],'hill');
+// ================= CHEONAN-SI (north-east) =================
+BX=1080; BZ=0;
+roadEW(0,92,268); roadNS(130,2,170); railNS(160,0,172);
+town(96,60,126,88,4); town(96,98,126,114,4); town(170,60,190,84,3); mountain(36,128,14,12,[[50,140,9,8]],'hill');
+// ================= GYERYONG-SI =================
+BX=1080; BZ=344;
+roadEW(0,86,268); roadNS(130,0,172);
+mountain(20,16,20,16,[[40,32,13,10],[52,24,7,6]],'rock'); town(108,96,128,112,3); town(136,96,170,110,3);
+// ================= BUYEO-GUN =================
+BX=540; BZ=516;
+lake(236,0,10,70); lake(110,62,136,10); lake(110,62,10,110); lake(0,158,120,14);
+roadEW(0,80,270); roadNS(130,0,170);
+town(134,86,160,100,3); town(140,40,170,54,3); mountain(20,10,14,12,[[34,22,8,7]],'hill');
+// ================= NONSAN-SI =================
+BX=810; BZ=516;
+lake(150,92,50,40); roadEW(0,80,270); roadNS(120,0,170);
+town(88,58,116,76,4); town(30,96,56,112,3); mountain(214,104,20,20,[[236,126,13,9]],'rock');
+// ================= GEUMSAN-GUN (far south-east) =================
+BX=1080; BZ=516;
+lake(212,18,8,56); roadEW(0,80,268); roadNS(130,0,170);
+town(108,58,128,76,3); town(136,58,166,76,3);
+// ================= DAEJEON (terrain only: real mountains, streams and Daecheong lake; no places) =================
+BX=810; BZ=172;
+function riv(x,z,w,d){ LAKES.push([x+BX,z+BZ,w,d]); T(x,G,z,w,.25,d,C.water); }   // shallow, can be waded
+riv(300,2,236,7);                                                   // Geumgang along the north
+riv(150,130,7,42); riv(150,124,70,7); riv(214,70,7,60); riv(214,64,72,7); riv(280,8,7,62);   // Gapcheon: south-west -> centre -> north
+riv(310,100,7,72); riv(284,94,32,7); riv(284,70,7,30);              // Yudeungcheon
+riv(380,112,7,60); riv(316,106,70,7);                               // Daejeoncheon
+riv(482,10,48,56); riv(500,66,30,44); riv(470,28,12,22); riv(486,110,22,30);   // Daecheong lake on the east edge
+mountain(4,96,30,36,[[30,130,14,11],[50,116,9,8],[20,108,8,7]],'rock');   // Gyeryongsan east face (Sutonggol)
+mountain(40,10,26,20,[[66,30,10,9],[86,20,7,6]],'hill');                  // Usanbong, Geumbyeongsan
+mountain(108,136,16,14,[[124,150,9,7]],'rock');                           // Gubongsan
+mountain(170,138,16,16,[[186,154,8,7]],'hill');                           // Jangtaesan
+mountain(322,116,26,26,[[348,142,11,9]],'hill');                          // Bomunsan
+mountain(410,104,30,32,[[440,136,15,11],[458,118,8,7]],'rock');           // Sikjangsan
+mountain(390,14,30,24,[[420,38,12,10],[436,24,7,6]],'hill');              // Gyejoksan
+mountain(230,128,14,18,[[244,150,7,7]],'hill'); mountain(120,40,12,10,[[132,50,5,5]],'hill');
+// Daejeon city basics: roads, a station, the expo tower, shops and houses in the basin (no stamp places)
+roadEW(0,80,540); roadNS(160,0,172); roadNS(392,64,108); roadEW(160,36,232); roadEW(160,120,150);
+B(262,G,84,12,2.8,4,C.white); B(261.6,G+2.8,83.6,12.8,.5,4.8,C.blue); T(260,G,88.4,16,.5,1.4,C.lgray);           // Daejeon station
+for(let i=0;i<8;i++) B(300,G+i*1.2,40,2,1.2,2,i%2?C.lgray:C.white,{s:false}); B(298.5,G+9.6,38.5,5,.6,5,C.lgray,{s:false}); B(299.5,G+10.2,39.5,3,1.6,3,C.orange,{s:false}); T(300.8,G+11.8,40.8,.4,4,.4,C.lgray);   // expo tower
+town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
+BX=0; BZ=0;
+// map-centre plaza (start)
+T(674.5,G,338,10,.12,12,C.cream);
+T(682.4,G,347.4,.5,4.4,.5,C.dgray); T(680.6,G+3.4,347.5,1.7,.7,.3,C.blue); T(683,G+3.4,347.5,1.7,.7,.3,C.teal); T(680.6,G+2.4,347.5,1.7,.7,.3,C.orange); T(683,G+2.4,347.5,1.7,.7,.3,C.purple);
+
+// ---------- free-land bookkeeping
+const occ=new Uint8Array(MAPW*MAPH);
+function mark(){ occ.fill(0); for(let n=NG;n<boxes.length;n++){ const b=boxes[n]; if(b[4]<=.06) continue;
+  for(let j=Math.max(0,Math.floor(b[2]-1));j<Math.min(MAPH,b[2]+b[5]+1);j++) for(let i=Math.max(0,Math.floor(b[0]-1));i<Math.min(MAPW,b[0]+b[3]+1);i++) occ[j*MAPW+i]=1; } }
+function inLand(x,z){ if(EXTRA.some(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2)) return true; const t=TILES.find(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2); return !!t&&!(WS(t[0],t[1])&&x<t[0]+30)&&!(NS(t[0],t[1])&&z<27); }
+function free(x,z,w,d){ if(!inLand(x,z)||!inLand(x+w,z+d)) return false; for(let j=z;j<z+d;j++)for(let i=x;i<x+w;i++) if(occ[j*MAPW+i]) return false; return true; }
+function take(x,z,w,d){ for(let j=Math.max(0,z);j<Math.min(MAPH,z+d);j++)for(let i=Math.max(0,x);i<Math.min(MAPW,x+w);i++) occ[j*MAPW+i]=1; }
+mark();
+for(const [cx,cz] of [START].concat(POI.map(p=>p.t))) take(Math.floor(cx)-2,Math.floor(cz)-2,5,5);
+
+// ---------- prefabs: each draws inside a 10x10 pad (origin = north-west corner) and returns its label height
+const MUD=0x8a7f72;
+const PF={
+ temple(){ B(0,G,1,10,1.0,6,C.stone,{s:false}); B(2,G+1,2,6,2.2,3.5,C.rbrown); for(let i=0;i<3;i++) T(2.1+i*2.6,G+1,5.4,.5,2.2,.3,C.brown); hanokRoof(2,G+3.2,2,6,3.5); T(4,G,7,2,.5,.7,C.stone); pagoda(.4,7.6); T(8.4,G,8,.6,1.2,.6,C.stone); T(8.2,G+1.2,7.8,1,.3,1,C.gray); return 8.5; },
+ hanok(o){ if(o.thatch) thatched(2,2.5,6,3); else hanok(1.5,1.5,7,4,2.2); T(0,G,0,.5,1.0,9,C.stone); T(0,G,0,10,1.0,.5,C.stone); T(8.6,G,6.6,.8,2,.8,C.brown); B(7.5,G+2,5.5,3,1.4,3,C.dgreen); return 7; },
+ shrine(){ B(0,G,0,10,.8,7,C.stone,{s:false}); B(2,G+.8,1,6,2.0,3,C.cream); for(let i=0;i<3;i++) T(2.1+i*2.6,G+.8,3.9,.5,2.0,.3,C.red); hanokRoof(2,G+2.8,1,6,3); T(3.2,G,8.4,.6,2.6,.6,C.red); T(6.2,G,8.4,.6,2.6,.6,C.red); T(2.6,G+2.6,8,4.8,.4,1.4,C.teal); hanokRoof(3,G+3.0,8.2,4,1); return 8; },
+ pagoda(o){ T(0,G,0,10,.3,10,C.tan); pagoda(4,4,G+.3); if(o.n){ pagoda(.6,5,G+.3); pagoda(7.4,5,G+.3); } T(8.4,G+.3,1,.8,2.4,1,C.dgray); T(.6,G+.3,1,.5,2.8,.5,C.stone); T(1.8,G+.3,1,.5,2.8,.5,C.stone); return 7.5; },
+ buddha(o){ if(o.rock) B(1.5,G,.5,7,7.6,2.6,C.lgray,{s:false}); B(3.5,G,3.5,3,.6,3,C.stone,{s:false}); T(4.1,G+.6,4.2,1.8,4.4,1.4,C.stone); T(4.3,G+5.0,4.3,1.4,1.3,1.2,C.stone); T(3.9,G+6.3,4,2.2,.3,1.8,C.gray); return 9.5; },
+ museum(o){ const c=o.c||C.blue; B(1,G,1.5,8,3.2,5,C.white); B(.6,G+3.2,1.1,8.8,.4,5.8,c); for(let i=0;i<3;i++){ T(1.8+i*2.6,G+.5,6.5,1.4,2,.08,C.navy); } T(8.9,G,8,.3,2.6,.3,C.dgray); T(7.6,G+2.6,8,2.3,1,.3,c); if(o.dome){ B(3,G+3.6,2.5,4,1,3,C.glass,{s:false}); B(4,G+4.6,3,2,2.6,2,C.glass,{s:false}); } return o.dome?10:7; },
+ statue(o){ T(1,G,1,8,.15,8,C.cream); B(4,G+.15,4,2,1.8,2,C.stone,{s:false}); if(o.bear){ T(4.3,G+1.95,4.3,1.4,1.2,1.6,C.brown); T(4.5,G+3.15,4.9,1,.9,1,C.brown); T(4.5,G+4.0,4.9,.3,.3,.3,C.brown); T(5.2,G+4.0,4.9,.3,.3,.3,C.brown); } else statue(4.65,G+1.95,4.75); if(o.hoe) T(5.5,G+2.2,5.2,.15,.15,1.6,C.wood); return 7.5; },
+ peak(o){ const h=o.h||9; mountain(0,0,6,6,[[6,6,h,4.2]],o.rock?'rock':'hill'); T(5.9,G,5.9,.25,h+3.4,.25,C.white); T(6.15,G+h+2.6,5.95,1,.7,.08,C.red); return h+6; },
+ fort(){ T(0,G,6,3.6,2.4,1.4,C.stone); T(6.4,G,6,3.6,2.4,1.4,C.stone); T(3.6,G+2.4,6,2.8,.6,1.4,C.stone); for(let i=0;i<10;i+=2) if(i<3||i>6) T(i,G+2.4,6.8,1,.6,.6,C.stone);
+   T(0,G,0,1.2,2.4,6,C.stone); T(8.8,G,0,1.2,2.4,6,C.stone); for(const cx of [3.7,5.9]) T(cx,G+3.0,6.4,.4,1.5,.4,C.red); hanokRoof(3.5,G+4.5,6.2,3,1); hanok(3,1,4,3); return 8.5; },
+ church(o){ const c=o.c||C.rbrown; B(2,G,1,6,3.6,5.5,c); B(1.6,G+3.6,.6,6.8,.4,6.3,C.roof); B(2.6,G+4.0,1.6,4.8,.6,4.3,C.roof); B(4,G,6.5,2,7.2,2,c,{s:false}); T(4.4,G+7.2,6.9,1.2,1.6,1.2,C.roof);
+   T(4.85,G+8.8,7.35,.3,1.8,.3,C.white); T(4.4,G+9.7,7.35,1.2,.3,.3,C.white); T(4.5,G,8.5,1,1.8,.08,C.brown); if(o.twin){ B(1.4,G,6.5,1.6,6,1.6,c,{s:false}); B(7,G,6.5,1.6,6,1.6,c,{s:false}); } return 12.5; },
+ market(o){ stall(.5,1.2,C.red); stall(5.5,1.2,C.blue); T(1,G,8.6,.5,3,.5,C.red); T(8.5,G,8.6,.5,3,.5,C.red); T(1,G+3,8.6,8,.8,.5,o.c||C.orange);
+   for(const [cx,cc] of [[2.2,C.red],[3.4,C.lime],[6.2,C.orange],[7.4,C.lblue]]) B(cx,G,6,1,.6,1,cc,{s:false}); return 6.5; },
+ tower(o){ const n=o.n||10,c=o.c||C.lblue; for(let i=0;i<n;i++) B(4,G+i*1.2,4,2,1.2,2,i%2?c:C.white,{s:false}); B(2.5,G+n*1.2,2.5,5,.5,5,C.white); B(3,G+n*1.2+.5,3,4,.3,4,c); B(4.5,G+n*1.2+.8,4.5,1,1.4,1,C.yellow); return n*1.2+5; },
+ chimney(){ B(2,G,2,6,2.4,6,C.tan,{s:false}); B(3,G+2.4,3,4,1.6,4,C.green,{s:false}); for(let i=0;i<10;i++) B(4.2,G+4+i*1.2,4.2,1.6,1.2,1.6,i%2?C.rbrown:C.lgray,{s:false}); return 19; },
+ farm(o){ T(0,G,0,10,.9,.3,C.white); T(0,G,0,.3,.9,10,C.white); T(9.7,G,0,.3,.9,10,C.white);
+   if(o.cow){ cow(1.5,2); cow(5.5,4.5); cow(2,7); B(6.5,G,.8,3,2.4,2.5,C.red); B(6,G+2.4,.3,4,.4,3.5,C.white); }
+   else for(let r=0;r<8;r++){ T(.9+r*1.1,G,1,.6,.25,8,C.brown); for(let q=0;q<7;q++) T(.95+r*1.1,G+.25,1.2+q*1.1,.5,o.tall?.9:.45,.5,(o.c2&&q%2)?o.c2:(o.c||C.lime)); } return 5; },
+ flower(o){ const cs=o.cs||[C.pink,C.yellow,C.red,C.purple,C.orange,C.white]; for(let i=0;i<3;i++)for(let j=0;j<2;j++){ T(.5+i*3.2,G,1+j*4,2.6,.3,3,C.brown); for(let q=0;q<4;q++) T(.8+i*3.2+(q%2)*1.2,G+.3,1.3+j*4+(q>>1)*1.4,.8,.55,.8,cs[(i*2+j)%cs.length]); }
+   if(o.deck){ for(const px of [1,5,9]) T(px,G,9,.3,3,.3,C.wood); T(0,G+3,8.6,10,.3,1.2,C.wood); } return 5.5; },
+ forest(o){ if(o.reed){ T(0,G,0,10,.3,10,C.water); for(let i=0;i<60;i++) T(.3+rnd()*9.2,G+.3,.3+rnd()*9.2,.22,1.6+rnd()*1.4,.22,rnd()<.5?C.tan:C.grass); return 5.5; }
+   const c=o.c||C.dgreen; for(const [tx,tz] of [[0,0],[3.6,.4],[7,0],[1.4,3.6],[5.4,3.8],[0,7],[7,7]]){ T(tx+1,G,tz+1,1,2.2,1,C.brown); B(tx,G+2.2,tz,3,1.3,3,c); B(tx+.5,G+3.5,tz+.5,2,1.0,2,o.c2||c);
+     if(o.dot) for(const [ax,ay,az] of [[-.2,2.6,.6],[2.8,2.9,1.8],[1.2,2.5,-.2],[2,3,2.8]]) T(tx+ax,G+ay,tz+az,.4,.4,.4,o.dot); if(o.under) T(tx-.2,G,tz-.2,3.4,.3,3.4,o.under); }
+   if(o.cabin){ B(3.6,G,7.4,3,1.8,2.2,C.wood); B(3.2,G+1.8,7,3.8,.5,3,C.rbrown); } return 7; },
+ pond(o){ T(0,G,0,10,.3,9,C.water); T(-.3,G,-.3,10.6,.45,.3,C.stone); for(const [lx,lz,lc] of [[1,1.4,C.lime],[3,3,C.pink],[6,1.6,C.lime],[7.6,4,C.pink],[2,6,C.pink],[5,6.6,C.lime]]) T(lx,G+.3,lz,.8,.08,.8,lc);
+   if(o.jets) for(const [fx,fz,fh] of [[3,3,3],[5,3,5.5],[7,3,3.6],[4,5,2.4],[6,5,2.8]]) T(fx,G+.3,fz,.4,fh,.4,C.white); if(o.rocks) for(const [rx,rz] of [[1,7],[8,6],[4,1]]) T(rx,G,rz,1.2,.9,1,C.lgray); return o.jets?8:4.5; },
+ bridge(o){ const h=o.h||8,c=o.c||C.lgray; T(0,G,2.5,10,.25,5,C.water); T(-.5,G+1.6,4,11,.4,2,c); for(const px of [2.2,7]){ T(px,G,3.7,.8,h,.5,C.white); T(px,G,5.8,.8,h,.5,C.white); T(px,G+h-.5,3.7,.8,.5,2.6,C.white); }
+   if(o.arch) for(let i=0;i<3;i++){ T(.4+i*3.3,G+2.0,3.9,.5,1.6,.2,c); T(2.6+i*3.3,G+2.0,3.9,.5,1.6,.2,c); T(.4+i*3.3,G+3.6,3.9,2.7,.4,.2,c); } return h+3; },
+ factory(){ B(0,G,3,5,3,4,C.lgray); B(5.5,G,4,4,2.4,3,C.gray); T(.5,G+3,3.5,4,.4,3,C.blue); for(const cx of [1,3.4,6.6]) for(let i=0;i<7;i++) B(cx,G+(cx>6?2.4:3.4)+i*1.1,1,1.2,1.1,1.2,i%2?C.red:C.white,{s:false});
+   for(const [sx,sy] of [[1.2,12],[3.8,12.6],[6.6,11]]) T(sx,G+sy,1.2,.9,.7,.9,C.white); return 13.5; },
+ tomb(o){ if(o.big){ for(const [mx,mz,ms] of [[.5,.5,5],[5,2,4.5],[2,5,4]]){ B(mx,G,mz,ms,1.0,ms,C.green,{s:false}); B(mx+.7,G+1,mz+.7,ms-1.4,.9,ms-1.4,C.green,{s:false}); B(mx+1.4,G+1.9,mz+1.4,ms-2.8,.6,ms-2.8,C.lime,{s:false}); } T(2.4,G,9,1.6,1.4,.1,C.black); return 6; }
+   for(let r=0;r<2;r++)for(let q=0;q<3;q++){ B(.6+q*3.2,G,1+r*4,2.4,.6,2.4,C.green,{s:false}); T(1.1+q*3.2,G+.6,1.5+r*4,1.4,.4,1.4,C.lime); } T(4.6,G,8.6,.8,1.6,.5,C.stone); return 4.5; },
+ village(o){ thatched(1,1.5,4,2.5); house(6.4,.8,3,3,2.4,C.cream,o.c||C.red); house(6.4,6,3,3,2.4,o.c3||C.white,o.c2||C.blue);
+   if(o.jars) for(const [jx,jz] of [[.6,6],[1.9,6.4],[3.2,6],[1.2,7.8],[2.6,7.8]]){ T(jx,G,jz,.9,1.0,.9,C.rbrown); T(jx+.1,G+1.0,jz+.1,.7,.2,.7,C.brown); } return 6; },
+ wheel(){ T(4.5,G,4.4,1,7,.5,C.white); T(4.5,G,5.6,1,7,.5,C.white); for(let a=0;a<12;a++){ const an=a/12*Math.PI*2; B(4.5+5*Math.cos(an),G+7+5*Math.sin(an)-.4,4.7,1,.8,1,[C.red,C.yellow,C.blue,C.teal][a%4],{s:false}); T(5+2.5*Math.cos(an)-.1,G+7+2.5*Math.sin(an)-.1,5.1,.2,.2,.2,C.lgray); }
+   B(.5,G,8,2,1.6,1.6,C.pink); return 14.5; },
+ ship(o){ if(o.sail){ T(0,G,2.5,10,.25,5,C.water); B(1.5,G+.25,4,6.5,.9,2,C.wood,{s:false}); T(8,G+.25,4.4,.8,.9,1.2,C.wood); T(4.4,G+1.15,4.9,.3,4.2,.3,C.brown); T(2.6,G+2.0,4.95,3.8,3.0,.12,C.thatch); B(0,G,8,2.4,.5,2,C.wood); return 7.5; }
+   T(0,G,2.5,10,.25,5,C.water); B(.8,G+.25,4,8,1.2,2,C.gray,{s:false}); T(8.8,G+.25,4.4,.8,1.2,1.2,C.gray); B(3,G+1.45,4.3,3,1.2,1.4,C.lgray); T(4.2,G+2.65,4.8,.4,2.2,.4,C.dgray); T(6.8,G+1.45,4.8,1.6,.3,.3,C.dgray); T(1.4,G+1.45,4.8,1.2,.3,.3,C.dgray); return 6.5; },
+ cave(o){ B(2,G,1,6,3,5,C.tan,{s:false}); B(3,G+3,2,4,.8,3,C.green,{s:false}); T(3.8,G,6,2.4,2,.1,C.black); T(3.5,G,6,.3,2.3,.3,C.brown); T(6.2,G,6,.3,2.3,.3,C.brown); T(3.5,G+2.3,6,3,.3,.3,C.brown);
+   if(o.cold) for(const [mx,my,mz] of [[4.2,.2,6.6],[5.2,.7,7.2],[4.6,1.2,7.8],[3.6,.5,7.6]]) T(mx,G+my,mz,.5,.5,.5,C.lblue); return 6.5; },
+ rock(){ T(1,G,3,2.6,5.2,3,C.tan); T(6,G,3,2,3.6,3,C.tan); T(3.6,G+3.6,3,2.6,1.6,3,C.tan); T(8,G,3.4,1.2,1.6,2,C.tan); T(1.4,G+5.2,3.4,1.6,.8,2,C.stone); T(0,G,6.2,10,.15,3.6,C.sand); return 8.5; },
+ kiln(){ for(let i=0;i<4;i++) B(.5+i*2,G,1,2,1.0+i*.5,3,C.rbrown,{s:false}); T(.1,G,1.8,.4,1.0,1.4,C.black); T(8.2,G+2.5,2,.8,1.4,.8,C.dgray);
+   for(const [jx,jz,jc] of [[1,6,C.cream],[2.6,6.4,C.white],[4.2,6,C.cream],[5.8,6.5,C.lgray],[7.4,6,C.white]]){ T(jx,G,jz,.9,1.1,.9,jc); T(jx+.2,G+.3,jz-.02,.5,.3,.05,C.brown); T(jx+.15,G+1.1,jz+.15,.6,.15,.6,C.brown); } return 5.5; },
+ dome(){ B(1,G,1.5,8,1.6,6,C.glass,{s:false}); B(2,G+1.6,2.5,6,1.2,4,C.glass,{s:false}); B(3,G+2.8,3.5,4,.8,2,C.glass,{s:false}); T(1,G+1.6,1.5,8,.12,6,C.white); T(4.6,G,7.5,.8,1.4,.1,C.navy);
+   T(.2,G,8.2,.6,2.4,.6,C.brown); B(-.6,G+2.4,7.4,2.2,.8,2.2,C.lime,{s:false}); return 6.5; },
+ glide(){ mountain(0,0,5,5,[[5,5,7,3.6]],'hill'); B(1,G+12,2,2.6,.3,1.2,C.red,{s:false}); T(2,G+10.6,2.4,.5,.7,.4,C.navy); B(6.5,G+13.4,6,2.6,.3,1.2,C.yellow,{s:false}); T(7.5,G+12,6.4,.5,.7,.4,C.navy); return 15.5; },
+ beach(o){ T(0,G,0,10,.15,10,o.mud?0xb9a583:C.sand); if(o.mud){ for(const [sx,sz] of [[1,2],[4,5],[7,1.6],[6,7.6],[2,7]]) T(sx,G+.15,sz,.5,.25,.4,C.white); fig(3,3,C.yellow,G+.15); fig(6.4,4.6,C.pink,G+.15); T(3.9,G+.15,3.2,.5,.6,.5,C.red); }
+   else { parasol(1,1,C.red); parasol(5.5,2,C.blue); parasol(2.5,6,C.yellow); if(o.sun){ T(7.6,G+.15,6.6,.4,3,.4,C.white); B(6.6,G+3.15,6.4,2.4,2.4,.6,C.orange,{s:false}); } } return 5.5; },
+ rail(o){ for(let i=0;i<4;i++) T(.3+i*3,G,4.8,.4,2.4,.4,C.lgray); T(0,G+2.4,4.5,10,.3,1,o.c||C.white); B(3,G+2.7,4.4,2.2,1,1.2,o.c2||C.red); T(3.3,G+3.1,4.38,1.6,.4,.03,C.navy); B(0,G,7,2.4,1.8,2,C.cream); return 6; },
+ stones(o){ const c=o.c||C.lgray; T(1,G,1.5,1.2,3.4,1.2,c); T(.7,G+3.4,1.2,1.8,.6,1.8,c); T(4.4,G,1,1.4,2.2,1.4,C.white); T(7.4,G,2,1.6,1.6,1.6,c); T(7.7,G+1.6,2.3,1,1,1,C.white); T(2.6,G,6,2.4,.6,1.6,c); T(2.8,G+.6,6.2,2,.2,1.2,C.dgray); T(6,G,6,.6,2.6,.6,c); T(8,G,6,.6,2.6,.6,c); T(6,G+2.6,6,2.6,.6,.6,c); return 6; },
+ skywalk(){ for(const px of [.2,4.8,9.4]) for(const pz of [4,5.8]) T(px,G,pz,.4,5,.4,C.lgray); B(0,G+5,3.8,10,.3,2.6,C.wood,{s:false}); T(0,G+5.3,3.8,10,.6,.12,C.white); T(0,G+5.3,6.28,10,.6,.12,C.white);
+   for(let k=0;k<12;k++) T(10+k*.5,G+4.6-k*.42,4.4,.5,.4,1.4,C.stone); pine(1,G,.5); pine(5,G,0); pine(7.6,G,1); pine(2.6,G,7.6); pine(6.4,G,7.4); return 9; },
+ dune(){ T(0,G,0,10,.15,10,C.sand); for(const [dx,dz,ds,dh] of [[.5,1,5,3],[4.5,3.5,5,4],[1,6,4,2]]) for(let k=0;k<dh;k++) T(dx+k*.6,G+.15+k*.6,dz+k*.5,ds-k*1.2,.6,ds-k*1.0,k%2?C.sand:C.tan); for(const [gx,gz] of [[8,1],[9,6],[.4,4.6],[7,8.6]]) T(gx,G+.15,gz,.3,.9,.3,C.lime); return 6; },
+ sign(){ T(4.6,G,4.6,.4,2.8,.4,C.wood); T(3.4,G+1.8,4.6,2.8,1.2,.3,C.cream); T(3.4,G+3.0,4.5,2.8,.2,.5,C.brown); return 5; }
+};
+const PSIZE={peak:12};
+// [region, name, local x, local z, prefab, options, description]
+const SITES=[
+['예산군','한국고건축박물관',70,48,'museum',{c:C.roof},'나무를 짜 맞춰 지은 옛 건축물 모형을 모아 둔 박물관이에요. 덕산면에 있어요.'],
+['예산군','삽교 석조보살입상',86,34,'buddha',{},'수암산 중턱에 서 있는 고려 시대 돌부처예요. 돌 두 개를 이어 세운 키 큰 보살상이에요.'],
+['예산군','예당호 음악분수',140,84,'pond',{jets:1},'밤이면 예당호 물 위에서 음악에 맞춰 물줄기가 춤을 춰요. 호수에 떠 있는 아주 큰 분수예요.'],
+['예산군','예당호 모노레일',192,84,'rail',{c2:C.yellow},'예당호 둘레 산자락을 한 바퀴 도는 모노레일이에요. 호수와 출렁다리를 내려다보며 달려요.'],
+['예산군','예당호 조각공원',212,90,'stones',{},'예당호 옆 잔디밭에 조각 작품을 세워 둔 공원이에요.'],
+['예산군','대흥동헌',108,126,'hanok',{},'조선 시대 대흥 고을의 관아 건물이에요. 의좋은 형제 마을 가까이에 있어요.'],
+['예산군','봉수산수목원',82,104,'flower',{deck:1},'봉수산 자락에 꾸민 수목원이에요. 숲 위로 난 하늘 데크 길을 걸을 수 있어요.'],
+['예산군','향천사',206,6,'temple',{},'예산읍 금오산 자락에 있는 오래된 절이에요. 백제 때 처음 세웠다고 전해져요.'],
+['예산군','금오산',186,24,'sign',{l:[188,13,12]},'예산읍 뒤에 솟은 산이에요. 읍내 사람들이 즐겨 오르는 산책길이 나 있어요.'],
+['예산군','예산성당',210,58,'church',{},'붉은 벽돌로 지은 오래된 성당이에요. 예산읍에 있어요.'],
+['예산군','화전리 사면석불',92,6,'buddha',{},'돌기둥 네 면에 부처를 새긴 백제 시대 석불이에요. 봉산면 화전리에 있어요.'],
+['예산군','여사울성지',136,26,'church',{c:C.white},'충청도에 천주교가 일찍 퍼져 나간 마을로 알려진 성지예요. 신암면에 있어요.'],
+['예산군','화암사',120,28,'temple',{},'추사 김정희 집안이 아끼던 절이에요. 절 뒤 바위에 추사가 쓴 글씨가 남아 있어요.'],
+['예산군','수당고택',216,138,'hanok',{},'독립운동가 수당 이남규 선생 집안이 대대로 살아온 옛집이에요. 대술면에 있어요.'],
+['예산군','대련사',70,132,'temple',{},'봉수산 임존성 아래에 있는 작은 절이에요. 광시면에 있어요.'],
+['보령시','원산도',5,54,'island',{s:'W',f:'beach'},'보령해저터널을 지나면 닿는 큰 섬이에요. 모래 고운 해수욕장이 여럿 있어요.'],
+['보령시','삽시도',5,82,'island',{s:'W'},'화살을 메긴 활처럼 생겼다고 삽시도라 불러요. 물이 빠지면 바위틈에서 샘물이 솟는 곳이 있어요.'],
+['보령시','외연도',5,137,'island',{s:'W',f:'light'},'보령에서 가장 멀리 떨어진 섬이에요. 오래된 상록수 숲이 마을을 지켜요.'],
+['보령시','대천 스카이바이크',32,84,'rail',{c:C.lblue,c2:C.orange},'바닷가 위로 난 레일을 페달로 밟아 달리는 자전거예요. 대천해수욕장 북쪽에 있어요.'],
+['보령시','대천 짚트랙',52,116,'sign',{l:[44.6,13,113.5]},'높은 탑에서 줄을 타고 바다 위를 날아 내려오는 놀이 시설이에요.'],
+['보령시','보령머드테마파크',56,98,'museum',{c:MUD},'보령 갯벌 진흙으로 여러 체험을 하는 곳이에요. 대천해수욕장 가까이에 있어요.'],
+['보령시','도미부인 사당',58,42,'shrine',{},'남편과의 의리를 끝까지 지킨 백제 여인 도미부인을 기리는 사당이에요. 오천면에 있어요.'],
+['보령시','갈매못 순교성지',32,56,'church',{c:C.white},'바닷가 모래밭에서 천주교 신자들이 순교한 곳이에요. 오천면에 있어요.'],
+['보령시','보령 냉풍욕장',176,42,'cave',{cold:1},'한여름에도 옛 탄광 굴에서 찬 바람이 나오는 곳이에요. 그 바람으로 버섯도 길러요.'],
+['보령시','성주산 자연휴양림',230,58,'forest',{cabin:1},'성주산 깊은 골짜기에 있는 숲이에요. 편백나무 숲길과 계곡이 있어요.'],
+['보령시','옥마산 패러글라이딩',150,58,'glide',{},'옥마산 꼭대기 활공장에서 패러글라이더가 날아올라요. 보령 시내와 바다가 내려다보여요.'],
+['보령시','남포읍성',92,116,'fort',{},'왜구를 막으려고 쌓은 조선 시대 돌성이에요. 남포면에 성벽과 관아 건물이 남아 있어요.'],
+['보령시','남포 벼루',76,150,'stones',{c:C.black},'보령 남포에서 나는 검은 돌 오석으로 만든 벼루는 예부터 으뜸으로 쳤어요.'],
+['보령시','독산해수욕장',32,160,'beach',{},'물이 빠지면 홀로 선 바위섬까지 걸어갈 수 있는 조용한 해수욕장이에요.'],
+['보령시','보령에너지월드',62,54,'factory',{},'보령발전본부 옆에 있는 전시관이에요. 전기가 어떻게 만들어지는지 배워요.'],
+['보령시','주산 벚꽃길',180,158,'forest',{c:C.pink,c2:0xf9c6d3},'봄이면 보령댐 아래 길을 따라 벚꽃이 길게 터널을 이뤄요. 주산면에 있어요.'],
+['보령시','웅천 돌문화공원',112,156,'stones',{},'돌 다듬는 장인이 많던 웅천에 만든 공원이에요. 돌 조각과 석재 전시관이 있어요.'],
+['보령시','오서산 자연휴양림',170,4,'forest',{cabin:1},'오서산 남쪽 자락의 숲이에요. 여기서 억새 능선으로 오르는 길이 시작돼요.'],
+['청양군','칠갑호',142,82,'sign',{l:[143,5,70]},'칠갑산 서쪽 골짜기 물을 모은 호수예요. 호숫가를 따라 산책길이 나 있어요.'],
+['청양군','칠갑산 자연휴양림',144,122,'forest',{cabin:1},'칠갑산 자락 숲속에 통나무집이 모여 있는 휴양림이에요. 대치면에 있어요.'],
+['청양군','백제문화체험박물관',124,112,'museum',{c:C.orange},'백제 사람들이 그릇과 기와를 굽던 가마터 가까이에 세운 박물관이에요. 대치면에 있어요.'],
+['청양군','지천구곡·까치내',158,116,'pond',{rocks:1},'칠갑산을 휘돌아 흐르는 지천이 만든 골짜기예요. 까치내는 여름 물놀이터로 이름나 있어요.'],
+['청양군','우산성',96,52,'fort',{},'청양읍 뒷산에 쌓은 옛 산성이에요. 지금은 성터를 따라 산책길이 나 있어요.'],
+['청양군','서정리 구층석탑',236,116,'pagoda',{},'들판 한가운데 서 있는 고려 시대의 구층 돌탑이에요. 정산면에 있어요.'],
+['청양군','방기옥 가옥',70,126,'hanok',{},'조선 후기 양반집의 모습이 잘 남은 옛집이에요. 남양면에 있어요.'],
+['청양군','목재문화자연사체험관',126,126,'museum',{c:C.wood},'나무와 화석, 곤충을 함께 볼 수 있는 체험관이에요. 칠갑산 자락에 있어요.'],
+['청양군','고추문화마을',164,118,'village',{c:C.red,c2:C.red},'매운 청양고추를 주제로 꾸민 체험 마을이에요. 고추 박물관과 쉼터가 있어요.'],
+['청양군','구기자 밭',66,40,'farm',{c:0xe8452c,c2:C.green,tall:1},'가을이면 줄기마다 빨간 구기자가 조롱조롱 열려요. 청양은 구기자가 많이 나는 고장이에요.'],
+['청양군','도림사지 삼층석탑',128,144,'pagoda',{},'칠갑산 남쪽 절터에 남은 고려 시대 삼층 돌탑이에요. 장평면에 있어요.'],
+['청양군','청양전통시장',76,78,'market',{},'청양읍에 서는 시장이에요. 고추와 구기자, 산나물이 가득해요.'],
+['청양군','칠갑산 산꽃마을',196,116,'flower',{},'산꽃과 들꽃을 가꾸는 칠갑산 자락의 체험 마을이에요.'],
+['청양군','콩밭 매는 아낙네상',146,112,'statue',{hoe:1},'노래 「칠갑산」에 나오는 콩밭 매는 아낙네를 새긴 조각상이에요.'],
+['청양군','최익현 동상·칠갑광장',148,92,'statue',{},'칠갑산 고갯마루 광장에 면암 최익현 선생의 동상이 서 있어요. 산에 오르는 길이 여기서 시작돼요.'],
+['청양군','맥문동 꽃밭',112,150,'farm',{c:C.purple,c2:C.green},'여름이면 보랏빛 맥문동 꽃이 밭을 가득 채워요. 청양은 맥문동이 많이 나는 곳이에요.'],
+['청양군','표고버섯 재배사',40,88,'farm',{c:C.brown,c2:C.cream},'참나무 토막에 표고버섯을 길러요. 청양 표고는 향이 진하기로 이름나 있어요.'],
+['청양군','청양 밤나무 숲',236,36,'forest',{c:C.lime,dot:C.brown},'가을이면 알밤이 툭툭 떨어지는 밤나무 숲이에요. 청양은 밤도 많이 나요.'],
+['청양군','정혜사',178,128,'temple',{},'칠갑산 남쪽 자락에 있는 고요한 절이에요. 장평면에 있어요.'],
+['청양군','가파마을',196,16,'village',{},'칠갑산 북쪽 자락의 농촌 체험 마을이에요. 떡 만들기와 농사 체험을 해요.'],
+['서산시','해미읍성',212,134,'fort',{},'조선 시대에 쌓은 돌성이 거의 그대로 남아 있는 곳이에요. 성 안에는 옛 관아와 민속 가옥이 있어요.'],
+['서산시','해미순교성지',180,150,'church',{c:C.white},'천주교 박해 때 수많은 신자가 목숨을 잃은 곳이에요. 2014년에 프란치스코 교황이 다녀갔어요.'],
+['서산시','서산 용현리 마애여래삼존상',240,94,'buddha',{rock:1},'바위에 새긴 백제 시대 부처님 세 분이에요. 환한 웃음 때문에 백제의 미소라고 불러요.'],
+['서산시','보원사지',252,80,'pagoda',{},'가야산 골짜기에 있던 큰 절의 터예요. 오층석탑과 당간지주가 남아 있어요.'],
+['서산시','개심사',210,112,'temple',{},'가야산 자락의 작은 절이에요. 봄이면 연둣빛 청벚꽃과 겹벚꽃이 피어요.'],
+['서산시','간월암',6,150,'island',{s:'W',f:'hermit',path:1},'바닷물이 차면 섬이 되고, 빠지면 걸어서 건너가는 작은 암자예요. 간월도는 어리굴젓으로도 이름나 있어요.'],
+['서산시','서산버드랜드',52,152,'museum',{c:C.teal},'천수만을 찾는 철새를 관찰하고 배우는 생태공원이에요. 겨울이면 큰 새 떼가 날아와요.'],
+['서산시','서산 한우목장',196,76,'farm',{cow:1},'둥글둥글한 초록 언덕이 끝없이 이어지는 목장이에요. 봄에는 벚꽃이 언덕을 둘러요.'],
+['서산시','삼길포항',180,30,'market',{c:C.blue},'배 위에서 갓 잡은 생선을 파는 포구예요. 대산읍 북쪽 끝에 있어요.'],
+['서산시','황금산 코끼리바위',120,30,'rock',{},'황금산을 넘어 바닷가로 내려가면 코를 물에 담근 코끼리 모양 바위가 서 있어요.'],
+['서산시','팔봉산',60,56,'peak',{rock:1,h:10},'봉우리 여덟 개가 줄지어 선 산이에요. 꼭대기에서 가로림만 바다가 보여요.'],
+['서산시','부석사',62,128,'temple',{},'도비산 자락에서 천수만을 내려다보는 절이에요. 영주 부석사와 이름이 같아요.'],
+['서산시','유기방가옥',212,54,'hanok',{},'백 년 넘은 한옥 뒷동산이 봄마다 노란 수선화로 뒤덮여요. 운산면에 있어요.'],
+['서산시','웅도',70,5,'island',{s:'N',path:1},'가로림만에 떠 있는 섬이에요. 물이 빠져야 길이 드러나 건너갈 수 있어요.'],
+['서산시','서산 육쪽마늘',96,130,'farm',{c:C.white,c2:C.lime},'쪽이 여섯 개로 갈라지는 서산 마늘은 맛이 좋기로 이름나 있어요.'],
+['서산시','서산동부전통시장',164,100,'market',{},'서산 시내에 있는 큰 시장이에요. 갯벌에서 난 해산물이 가득해요.'],
+['당진시','왜목마을',104,30,'beach',{sun:1},'바다에서 해가 뜨고 지는 모습을 한 자리에서 볼 수 있는 마을이에요.'],
+['당진시','장고항',84,30,'market',{c:C.blue},'봄이면 실치 잡이 배가 드나드는 포구예요. 실치는 이 무렵에만 맛볼 수 있어요.'],
+['당진시','난지섬',50,5,'island',{s:'N',f:'beach'},'당진 앞바다에 있는 섬이에요. 모래 고운 해수욕장이 있어요.'],
+['당진시','당진 해나루쌀',160,146,'farm',{c:C.rice,c2:0xc4b63c},'너른 들에서 나는 당진 쌀이에요. 가을이면 들판이 온통 황금빛이에요.'],
+['당진시','삽교호 놀이동산',222,128,'wheel',{},'삽교호 방조제 옆 놀이동산이에요. 커다란 대관람차가 멀리서도 보여요.'],
+['당진시','삽교호 함상공원',222,146,'ship',{},'바다를 지키던 군함을 물가에 세워 두고 안을 둘러보게 만든 공원이에요.'],
+['당진시','서해대교',224,34,'bridge',{h:11},'당진과 평택 사이 바다를 건너는 긴 다리예요. 높은 주탑 두 개가 다리를 붙들고 있어요.'],
+['당진시','솔뫼성지',196,150,'hanok',{},'우리나라 첫 천주교 사제 김대건 신부가 태어난 마을이에요. 소나무 숲이 둘러싸고 있어요.'],
+['당진시','신리성지',172,128,'church',{c:C.white},'너른 들판 한가운데 있는 천주교 성지예요. 조선 시대에 큰 교우 마을이 있던 곳이에요.'],
+['당진시','합덕성당',196,128,'church',{twin:1},'언덕 위에 붉은 벽돌로 지은 오래된 성당이에요. 종탑 두 개가 나란히 서 있어요.'],
+['당진시','합덕제',208,110,'pond',{},'옛날에 쌓은 큰 저수지예요. 여름이면 연꽃이 가득 피어요.'],
+['당진시','면천읍성',60,118,'fort',{},'조선 시대에 쌓은 읍성이에요. 성 안 마을 골목에 옛 정취가 남아 있어요.'],
+['당진시','아미미술관',100,122,'museum',{c:C.pink},'문 닫은 시골 학교를 고쳐 만든 미술관이에요. 담쟁이가 건물을 뒤덮고 있어요.'],
+['당진시','기지시줄다리기박물관',136,62,'museum',{c:C.orange},'수많은 사람이 굵은 줄을 당기는 기지시줄다리기를 보여 주는 박물관이에요. 유네스코 인류무형문화유산이에요.'],
+['당진시','필경사',196,54,'hanok',{thatch:1},'소설 「상록수」를 쓴 심훈이 직접 짓고 글을 쓰던 집이에요.'],
+['당진시','아그로랜드 태신목장',36,130,'farm',{cow:1},'젖소와 양에게 먹이를 주며 뛰놀 수 있는 큰 체험 목장이에요. 면천면에 있어요.'],
+['당진시','당진제철소',170,32,'factory',{},'쇳물을 끓여 철을 만드는 아주 큰 공장이에요. 송악읍 바닷가에 있어요.'],
+['공주시','공산성',130,80,'fort',{},'금강을 끼고 쌓은 백제의 산성이에요. 백제가 웅진에 도읍했을 때 왕궁을 지키던 성이에요.'],
+['공주시','무령왕릉과 왕릉원',94,80,'tomb',{big:1},'백제 무령왕과 왕비가 잠든 무덤이에요. 1971년에 도굴되지 않은 채 발견됐어요.'],
+['공주시','국립공주박물관',76,96,'museum',{c:C.roof},'무령왕릉에서 나온 금제 꾸미개와 유물을 보여 주는 박물관이에요.'],
+['공주시','공주 한옥마을',64,80,'hanok',{},'기와집에서 하룻밤 묵을 수 있는 마을이에요. 무령왕릉 가까이에 있어요.'],
+['공주시','고마나루',56,56,'statue',{bear:1},'곰과 나무꾼의 슬픈 전설이 전해 오는 금강 나루터예요. 솔밭에 곰을 모신 사당이 있어요.'],
+['공주시','금강철교',140,56,'bridge',{c:C.lblue,h:4,arch:1},'금강을 건너는 오래된 철다리예요. 둥근 아치가 줄지어 이어져요.'],
+['공주시','석장리박물관',200,56,'museum',{c:C.tan},'우리나라에서 처음 구석기 유적을 발굴한 금강 가의 박물관이에요.'],
+['공주시','우금치 전적지',108,130,'tower',{n:6,c:C.white},'동학농민군이 일본군과 관군에 맞서 크게 싸운 고개예요. 지금은 위령탑이 서 있어요.'],
+['공주시','마곡사',44,30,'temple',{},'태화산 골짜기의 오래된 절이에요. 유네스코 세계유산 「산사, 한국의 산지승원」 가운데 하나예요.'],
+['공주시','갑사',176,138,'temple',{},'계룡산 서쪽 자락의 절이에요. 가을 단풍이 고와서 추갑사라는 말이 있어요.'],
+['공주시','동학사',252,98,'temple',{},'계룡산 동쪽 골짜기의 절이에요. 봄이면 절로 가는 길에 벚꽃이 터널을 이뤄요.'],
+['공주시','계룡산',200,150,'sign',{l:[226,23,142]},'닭 볏을 쓴 용처럼 생겼다는 산이에요. 국립공원으로 지정돼 있어요.'],
+['공주시','계룡산 도예촌',196,98,'kiln',{},'도예가들이 모여 사는 마을이에요. 검붉은 무늬를 그린 철화분청사기를 다시 살려 내고 있어요.'],
+['공주시','정안 밤',132,18,'forest',{c:C.lime,dot:C.brown},'공주 정안은 알이 굵고 단 밤으로 이름난 곳이에요. 가을이면 밤 줍기 체험을 해요.'],
+['공주시','유구 색동수국정원',20,48,'flower',{cs:[C.lblue,C.pink,C.purple,C.white,C.blue,C.pink]},'여름이면 유구천을 따라 색색의 수국이 가득 피어요.'],
+['공주시','황새바위 순교성지',104,96,'church',{c:C.white},'공산성 가까운 언덕에 있는 천주교 성지예요. 많은 신자가 이곳에서 순교했어요.'],
+['서천군','국립생태원',150,112,'dome',{},'세계 여러 기후대의 동식물을 커다란 온실에 옮겨 놓은 곳이에요. 마서면에 있어요.'],
+['서천군','국립해양생물자원관',52,112,'museum',{c:C.blue,dome:1},'바다 생물 표본을 층층이 쌓아 올린 유리 탑이 있는 전시관이에요. 장항에 있어요.'],
+['서천군','장항 스카이워크',32,112,'skywalk',{},'키 큰 소나무 숲 위로 난 하늘길이에요. 끝까지 걸으면 서해 갯벌이 발아래 펼쳐져요.'],
+['서천군','장항 송림산림욕장',32,96,'forest',{under:C.purple},'바닷가를 따라 곰솔이 빽빽한 숲이에요. 늦여름이면 나무 아래 보랏빛 맥문동이 피어요.'],
+['서천군','장항제련소 굴뚝',36,140,'chimney',{},'바위산 위에 우뚝 선 오래된 제련소 굴뚝이에요. 장항의 옛 모습을 알려 주는 상징이에요.'],
+['서천군','금강하굿둑',184,144,'bridge',{c:C.gray,h:3},'금강이 바다와 만나는 곳을 막은 긴 둑이에요. 겨울이면 철새 떼가 날아와요.'],
+['서천군','신성리 갈대밭',244,142,'forest',{reed:1},'금강 가에 사람 키보다 큰 갈대가 끝없이 펼쳐진 곳이에요.'],
+['서천군','한산모시관',222,104,'museum',{c:C.cream},'모시풀에서 실을 뽑아 옷감을 짜는 한산모시를 보여 주는 곳이에요. 한산모시짜기는 유네스코 인류무형문화유산이에요.'],
+['서천군','한산 소곡주',240,120,'village',{jars:1},'한산에서 대대로 빚어 온 전통술이에요. 백제 때부터 내려온다고 전해져요.'],
+['서천군','문헌서원',200,86,'hanok',{},'고려 말의 학자 목은 이색을 모신 서원이에요. 기산면에 있어요.'],
+['서천군','이상재 선생 생가',240,90,'hanok',{thatch:1},'독립운동가 월남 이상재 선생이 태어난 초가집이에요. 한산면에 있어요.'],
+['서천군','서천특화시장',110,86,'market',{c:C.teal},'서천 앞바다에서 잡은 해산물이 모이는 큰 시장이에요.'],
+['서천군','춘장대해수욕장',32,40,'beach',{},'소나무와 아카시아 숲이 모래밭을 감싼 해수욕장이에요. 물이 얕아 놀기 좋아요.'],
+['서천군','홍원항',32,24,'market',{c:C.blue},'가을 전어와 꽃게로 이름난 작은 항구예요.'],
+['서천군','마량리 동백나무숲',32,6,'forest',{dot:C.red},'바닷가 언덕에 오백 년쯤 된 동백나무가 모여 있어요. 봄이면 붉은 꽃이 피어요.'],
+['서천군','선도리 갯벌',32,66,'beach',{mud:1},'물이 빠지면 넓은 갯벌이 드러나요. 조개를 캐며 갯벌 체험을 해요.']
+,['태안군','신두리 해안사구',38,30,'dune',{},'바닷바람이 모래를 쌓아 만든 큰 모래 언덕이에요. 천연기념물로 지정돼 있어요.'],
+['태안군','천리포수목원',34,48,'flower',{},'바닷가에 가꾼 수목원이에요. 목련과 호랑가시나무가 많기로 이름나 있어요.'],
+['태안군','만리포해수욕장',32,66,'beach',{},'서해안에서 손꼽히는 긴 모래밭이에요. 노래 「만리포 사랑」으로도 알려져 있어요.'],
+['태안군','유류피해극복기념관',50,66,'museum',{c:C.teal},'2007년 기름 유출 사고 때 온 국민이 바닷가를 닦아 낸 이야기를 담은 곳이에요.'],
+['태안군','태안 마애삼존불',132,58,'buddha',{rock:1},'백화산 바위에 새긴 백제 시대 부처님 세 분이에요. 가운데 작은 보살을 두 부처가 양옆에서 지키는 드문 모습이에요.'],
+['태안군','백화산',142,40,'peak',{rock:1,h:8},'태안읍 뒤에 솟은 바위산이에요. 꼭대기에서 서해와 가로림만이 함께 보여요.'],
+['태안군','안흥성',34,100,'fort',{},'서해 바닷길을 지키려고 조선 시대에 쌓은 돌성이에요. 근흥면 바닷가 언덕에 있어요.'],
+['태안군','옹도 등대',5,112,'island',{s:'W',f:'light'},'항아리처럼 생긴 작은 섬이에요. 꼭대기에 백 년 넘은 등대가 서 있어요.'],
+['태안군','몽산포해수욕장',60,116,'beach',{},'솔숲과 넓은 모래밭이 이어진 해수욕장이에요. 물이 빠지면 갯벌 체험을 해요.'],
+['태안군','팜카밀레 허브농원',94,120,'flower',{cs:[C.purple,C.pink,C.white,C.purple,C.yellow,C.pink]},'허브와 꽃을 가꾸는 농원이에요. 남면에 있어요.'],
+['태안군','청산수목원',128,122,'pond',{},'여름에는 연꽃, 가을에는 은빛 팜파스 풀이 가득한 수목원이에요.'],
+['태안군','대하랑꽃게랑 다리',90,138,'bridge',{c:C.orange,h:6},'백사장항과 드르니항을 잇는, 걸어서 건너는 다리예요. 꽃게와 대하를 본떠 만들었어요.'],
+['태안군','꽃지해수욕장',56,152,'beach',{sun:1},'할미바위와 할아비바위 사이로 해가 지는 모습이 이름난 해수욕장이에요. 안면도에 있어요.'],
+['태안군','코리아플라워파크',76,152,'flower',{cs:[C.red,C.yellow,C.pink,C.orange,C.purple,C.white]},'봄이면 튤립이 끝없이 피는 꽃 공원이에요. 꽃지 바닷가 옆에 있어요.'],
+['태안군','안면도 자연휴양림',128,150,'forest',{cabin:1},'곧게 뻗은 붉은 소나무 안면송이 빽빽한 숲이에요.'],
+['태안군','안면암',150,150,'temple',{},'천수만을 바라보는 절이에요. 물 위에 뜬 다리를 건너 작은 섬까지 걸어가요.'],
+['아산시','현충사',150,66,'shrine',{},'충무공 이순신 장군을 모신 사당이에요. 장군이 자라난 옛집과 활터가 함께 있어요.'],
+['아산시','외암민속마을',170,140,'village',{},'돌담길을 따라 기와집과 초가집이 모여 있는 오래된 마을이에요. 지금도 사람들이 살고 있어요.'],
+['아산시','온양온천',104,78,'pond',{jets:1},'조선 임금들도 찾아와 쉬어 가던 오래된 온천이에요.'],
+['아산시','온양민속박물관',140,122,'museum',{c:C.roof},'옛사람들이 쓰던 살림살이와 농사 도구를 모아 둔 박물관이에요.'],
+['아산시','공세리성당',60,34,'church',{},'오래된 나무들에 둘러싸인 붉은 벽돌 성당이에요. 지은 지 백 년이 넘었어요.'],
+['아산시','맹씨행단',192,150,'hanok',{},'조선의 정승 맹사성 집안이 살던 옛집이에요. 뜰에 큰 은행나무 두 그루가 서 있어요.'],
+['아산시','곡교천 은행나무길',142,78,'forest',{c:C.yellow,c2:0xf2b61e},'곡교천을 따라 은행나무가 길게 늘어선 길이에요. 가을이면 노란 터널이 돼요.'],
+['아산시','신정호',80,124,'pond',{},'아산 시내 가까이에 있는 큰 호수 공원이에요. 여름이면 연꽃이 피어요.'],
+['아산시','피나클랜드',70,60,'flower',{},'언덕을 따라 꽃밭과 잔디밭을 가꾼 정원이에요. 영인면에 있어요.'],
+['아산시','지중해마을',222,80,'village',{c:C.blue,c2:C.blue,c3:C.white},'하얀 벽과 파란 지붕이 지중해 바닷가 마을을 닮은 거리예요. 탕정면에 있어요.'],
+['아산시','영인산 자연휴양림',92,42,'peak',{h:8},'아산만이 내려다보이는 영인산의 숲이에요. 꼭대기에 옛 산성 터가 있어요.'],
+['아산시','봉곡사 천년의 숲길',126,150,'forest',{},'절로 올라가는 길에 구불구불한 소나무가 줄지어 선 숲길이에요.'],
+['아산시','세계꽃식물원',30,110,'dome',{},'커다란 온실에서 사철 꽃을 볼 수 있는 식물원이에요. 도고면에 있어요.'],
+['아산시','아산 레일바이크',40,130,'rail',{c:C.gray,c2:C.teal},'기차가 다니지 않게 된 옛 철길을 발로 굴러 달려요. 도고면에 있어요.'],
+['아산시','아산 배',204,50,'farm',{c:C.cream,c2:C.lime,tall:1},'아산은 달고 시원한 배가 많이 나는 곳이에요. 봄이면 하얀 배꽃이 피어요.'],
+['천안시','독립기념관',200,112,'museum',{c:C.roof,dome:1},'나라를 되찾으려던 독립운동의 역사를 모아 둔 큰 기념관이에요. 높이 솟은 겨레의 탑이 맞아 줘요.'],
+['천안시','유관순 열사 사적지',222,66,'shrine',{},'아우내 만세운동을 이끈 유관순 열사를 기리는 곳이에요. 가까이에 열사가 태어난 집이 있어요.'],
+['천안시','아우내장터',236,96,'market',{},'1919년 봄, 수많은 사람이 모여 독립 만세를 외친 장터예요.'],
+['천안시','병천순대거리',250,112,'village',{c:C.orange},'아우내장터에서 시작된 병천순대 식당이 줄지어 선 거리예요.'],
+['천안시','천안삼거리공원',140,120,'forest',{c:C.lime,c2:C.green},'옛날 서울과 영남, 호남으로 가는 길이 갈리던 곳이에요. 능수버들과 민요 「천안삼거리」로 이름나 있어요.'],
+['천안시','각원사',192,38,'buddha',{},'태조산 자락의 절이에요. 앉은 모습의 아주 큰 청동 부처님이 있어요.'],
+['천안시','태조산',210,44,'peak',{h:8},'고려 태조 왕건이 머물렀다는 이야기에서 이름이 온 산이에요.'],
+['천안시','광덕사',70,150,'temple',{},'광덕산 자락의 절이에요. 절 앞에 아주 오래된 호두나무가 서 있어요.'],
+['천안시','천안 호두과자',146,100,'village',{c:C.brown,c2:C.rbrown},'호두를 넣어 구운 동글동글한 과자예요. 천안을 대표하는 먹거리예요.'],
+['천안시','아라리오 조각광장',140,66,'stones',{c:C.red},'천안 시내 터미널 앞 광장에 커다란 현대 조각 작품이 놓여 있어요.'],
+['천안시','천안역',170,98,'rail',{c:C.gray,c2:C.blue},'경부선과 장항선이 갈리는 큰 역이에요.'],
+['천안시','홍대용과학관',246,56,'museum',{c:C.navy,dome:1},'조선의 과학자 홍대용을 기리는 과학관이에요. 별을 관찰하는 천문대가 있어요.'],
+['천안시','이동녕 선생 생가',196,134,'hanok',{},'대한민국 임시정부를 이끈 석오 이동녕 선생이 태어난 집이에요. 목천읍에 있어요.'],
+['천안시','성환 배',110,20,'farm',{c:C.cream,c2:C.lime,tall:1},'봄이면 하얀 배꽃이 들판을 덮어요. 성환은 배로 이름난 곳이에요.'],
+['천안시','입장 거봉포도',170,14,'farm',{c:C.purple,c2:C.green,tall:1},'알이 굵은 거봉포도가 많이 나는 마을이에요.'],
+['천안시','봉선홍경사 갈기비',80,30,'pagoda',{},'고려 시대에 세운 절의 내력을 적은 비석이에요. 국보로 지정돼 있어요.'],
+['부여군','부소산성',150,26,'fort',{},'백제의 마지막 도읍 사비를 지키던 산성이에요. 백마강을 끼고 부소산을 둘러 쌓았어요.'],
+['부여군','낙화암·고란사',124,44,'temple',{},'백마강 절벽 위의 바위예요. 백제가 무너질 때의 슬픈 이야기가 전해 오고, 아래에는 고란사가 있어요.'],
+['부여군','정림사지 오층석탑',166,84,'pagoda',{},'백제 사비 도읍 한가운데 있던 절의 터예요. 국보인 오층석탑이 천사백 년쯤 서 있어요.'],
+['부여군','궁남지',150,108,'pond',{},'백제 무왕 때 만든 연못이에요. 여름이면 연꽃이 못을 가득 채워요.'],
+['부여군','국립부여박물관',180,100,'museum',{c:C.roof},'백제금동대향로를 볼 수 있는 박물관이에요. 사비 시대 백제의 유물을 모아 두었어요.'],
+['부여군','백제문화단지',84,40,'shrine',{},'백제의 왕궁과 절, 마을을 실제 크기로 다시 지은 곳이에요.'],
+['부여군','부여 왕릉원',204,84,'tomb',{big:1},'사비 시대 백제 왕과 왕족의 무덤이 모여 있는 곳이에요. 백제금동대향로가 바로 옆 절터에서 나왔어요.'],
+['부여군','구드래나루터',92,62,'ship',{sail:1},'백마강을 오가는 황포돛배를 타는 나루터예요.'],
+['부여군','무량사',30,40,'temple',{},'만수산 자락의 큰 절이에요. 이층으로 보이는 극락전과 오층석탑이 있어요.'],
+['부여군','성흥산성 사랑나무',200,134,'peak',{h:6},'산성 꼭대기에 선 커다란 느티나무예요. 가지 모양이 하트를 닮아 사랑나무라고 불러요.'],
+['부여군','서동요테마파크',234,118,'village',{},'드라마를 찍으려고 지은 백제 마을 세트장이에요. 서동과 선화공주 이야기를 담았어요.'],
+['부여군','신동엽문학관',140,104,'museum',{c:C.gray},'시 「껍데기는 가라」를 쓴 시인 신동엽의 집터 옆에 세운 문학관이에요.'],
+['부여군','대조사 석조미륵보살입상',180,136,'buddha',{},'성흥산 중턱 절에 서 있는 키 큰 고려 시대 돌부처예요. 네모난 갓을 쓰고 있어요.'],
+['부여군','만수산 자연휴양림',50,60,'forest',{cabin:1},'만수산 자락의 깊은 숲이에요. 숲속에 통나무집이 있어요.'],
+['부여군','세도 방울토마토',160,146,'farm',{c:C.red,c2:C.green,tall:1},'금강 가 세도 들판은 방울토마토가 많이 나는 곳이에요.'],
+['부여군','송국리 유적',232,40,'village',{},'청동기 시대 사람들이 살던 큰 마을 터예요. 둥근 움집 자리가 많이 나왔어요.'],
+['논산시','관촉사 은진미륵',96,100,'buddha',{},'관촉사에 서 있는 고려 시대의 아주 큰 돌부처예요. 높이가 18m쯤 되고 국보로 지정돼 있어요.'],
+['논산시','탑정호 출렁다리',160,76,'bridge',{h:9},'탑정호 위를 가로지르는 길이 600m의 출렁다리예요.'],
+['논산시','돈암서원',150,56,'hanok',{},'조선의 학자 김장생을 모신 서원이에요. 유네스코 세계유산 「한국의 서원」 가운데 하나예요.'],
+['논산시','계백장군 유적지',204,84,'statue',{},'황산벌에서 끝까지 싸운 백제 장군 계백의 무덤과 군사박물관이 있는 곳이에요.'],
+['논산시','선샤인랜드',76,40,'village',{c:C.rbrown,c2:C.roof},'옛 서울 거리를 본떠 지은 드라마 세트장과 체험장이 있는 곳이에요.'],
+['논산시','강경 젓갈시장',30,120,'market',{},'금강 뱃길로 생선이 모이던 강경은 젓갈로 이름난 고장이에요.'],
+['논산시','강경 근대거리',48,122,'museum',{c:C.rbrown},'옛 은행과 상점 같은 붉은 벽돌 건물이 남아 있는 거리예요. 강경이 큰 포구였던 때의 모습이에요.'],
+['논산시','옥녀봉',30,140,'peak',{h:6},'강경 읍내와 금강이 내려다보이는 낮은 봉우리예요. 해 질 무렵 풍경이 고와요.'],
+['논산시','종학당',96,18,'hanok',{},'파평 윤씨 집안이 자녀들을 모아 가르치던 서당이에요.'],
+['논산시','논산 딸기',66,92,'farm',{c:C.red,c2:C.green},'논산은 딸기가 맛있기로 이름난 고장이에요. 봄이면 딸기 축제가 열려요.'],
+['논산시','명재고택',136,18,'hanok',{},'조선의 학자 윤증의 옛집이에요. 마당에 장독이 가지런히 놓여 있어요.'],
+['논산시','쌍계사',196,142,'temple',{},'꽃무늬를 새긴 문살이 고운 절이에요. 양촌면에 있어요.'],
+['논산시','개태사',204,30,'temple',{},'고려 태조 왕건이 후삼국 통일을 기념해 세운 절이에요. 아주 큰 쇠솥이 남아 있어요.'],
+['논산시','견훤왕릉',70,132,'tomb',{big:1},'후백제를 세운 견훤의 무덤으로 전해 오는 곳이에요. 연무읍에 있어요.'],
+['논산시','미내다리',62,108,'bridge',{c:C.stone,h:2,arch:1},'조선 시대에 돌을 쌓아 만든 무지개다리예요. 강경천에 있어요.'],
+['논산시','온빛자연휴양림',206,56,'forest',{cabin:1,c2:C.orange},'메타세쿼이아 숲과 호숫가 노란 집이 그림 같은 휴양림이에요.'],
+['계룡시','사계고택',150,122,'hanok',{},'조선의 학자 사계 김장생이 말년에 살던 옛집이에요.'],
+['계룡시','괴목정',84,70,'forest',{},'무학대사가 꽂은 지팡이가 자랐다는 이야기가 전해 오는 커다란 느티나무 쉼터예요.'],
+['계룡시','신도안 주초석',70,92,'stones',{},'조선이 처음 도읍을 지으려던 자리에 남은 큰 주춧돌이에요.'],
+['계룡시','숫용추·암용추',62,56,'pond',{rocks:1},'계룡산 골짜기에 있는 두 개의 깊은 못이에요. 용이 하늘로 올라갔다는 전설이 전해져요.'],
+['계룡시','계룡병영체험관',100,60,'museum',{c:C.dgreen},'군인들의 생활과 훈련을 체험해 볼 수 있는 곳이에요.'],
+['계룡시','계룡문',136,64,'fort',{},'계룡대로 들어가는 길목에 선 커다란 한옥 모양 문이에요.'],
+['계룡시','향적산',56,130,'peak',{h:9},'계룡산 남쪽으로 이어진 산이에요. 꼭대기 국사봉에서 계룡시가 내려다보여요.'],
+['계룡시','입암저수지',200,130,'pond',{},'산자락 아래 고요한 저수지예요. 둘레길을 따라 걷기 좋아요.'],
+['계룡시','계룡역',184,92,'rail',{c:C.gray,c2:C.blue},'호남선 기차가 서는 역이에요.'],
+['계룡시','두계 팥거리',176,120,'village',{c:C.rbrown},'옛날부터 팥죽과 팥칼국수 집이 모여 있던 거리예요.'],
+['금산군','금산인삼약초시장',142,90,'market',{c:C.red},'전국의 인삼이 모이는 큰 시장이에요. 금산은 인삼의 고장으로 이름나 있어요.'],
+['금산군','금산인삼관',108,90,'museum',{c:C.red},'인삼이 자라는 과정과 쓰임새를 보여 주는 전시관이에요.'],
+['금산군','개삼터공원',90,122,'village',{},'금산에서 인삼을 처음 심었다는 이야기가 전해 오는 곳이에요. 진악산 아래에 있어요.'],
+['금산군','금산 인삼밭',170,110,'farm',{c:C.black,c2:C.dgray},'검은 그늘막 아래에서 인삼이 여러 해 동안 자라요.'],
+['금산군','칠백의총',136,36,'tomb',{big:1},'임진왜란 때 금산 싸움에서 숨진 의병 칠백 명을 함께 모신 무덤이에요.'],
+['금산군','보석사 은행나무',110,142,'forest',{c:C.yellow,c2:0xf2b61e},'보석사 앞에 선 천 년 넘은 은행나무예요. 천연기념물로 지정돼 있어요.'],
+['금산군','대둔산',30,28,'peak',{rock:1,h:11},'바위 봉우리가 병풍처럼 둘러선 산이에요. 가을 단풍이 고와요.'],
+['금산군','태고사',50,50,'temple',{},'대둔산 높은 자락에 자리한 절이에요. 바위틈 석문을 지나 올라가요.'],
+['금산군','서대산',186,20,'peak',{rock:1,h:12},'충청남도에서 가장 높은 산이에요. 해발 904m예요.'],
+['금산군','적벽강',226,92,'rock',{},'붉은 바위 절벽 아래로 금강이 굽이쳐 흐르는 곳이에요. 부리면에 있어요.'],
+['금산군','월영산 출렁다리',234,122,'bridge',{h:7,c:C.orange},'금강 위 높은 곳에 걸린 출렁다리예요. 월영산과 부엉산을 이어요.'],
+['금산군','하늘물빛정원',170,36,'dome',{},'호숫가에 온실 식물원과 정원을 가꾼 쉼터예요. 추부면에 있어요.'],
+['금산군','십이폭포',150,150,'pond',{rocks:1},'골짜기를 따라 크고 작은 폭포 열두 개가 이어져요. 남이면에 있어요.'],
+['금산군','추부 깻잎',196,56,'farm',{c:C.green,c2:C.dgreen},'향이 진한 깻잎이 많이 나는 마을이에요.'],
+['금산군','진악산',70,96,'peak',{h:9},'금산읍 남쪽에 솟은 산이에요. 금산 인삼 이야기가 시작된 산이에요.']
+,['태안군','안면도쥬라기박물관',96,150,'museum',{c:C.green},'공룡 뼈 화석과 움직이는 공룡 모형을 볼 수 있는 박물관이에요. 남면에 있어요.'],
+['태안군','네이처월드 빛축제',76,122,'flower',{cs:[C.yellow,C.lblue,C.pink,C.white,C.purple,C.orange]},'밤이면 수많은 전구가 꽃밭을 환하게 밝히는 빛 축제가 열려요.'],
+['태안군','학암포해수욕장',62,30,'beach',{},'물이 빠지면 앞바다 작은 섬까지 길이 드러나는 해수욕장이에요. 태안 북쪽 끝에 있어요.'],
+['태안군','신진도항',34,118,'market',{c:C.blue},'오징어와 꽃게 배가 드나드는 큰 항구예요. 안흥성 가까이에 있어요.'],
+['태안군','원산안면대교',160,132,'bridge',{h:9},'안면도 끝 영목항과 보령 원산도를 잇는 긴 바다 다리예요.'],
+['서산시','류방택천문기상과학관',150,134,'museum',{c:C.navy,dome:1},'고려 말에 하늘의 별자리를 계산한 천문학자 류방택을 기리는 과학관이에요.'],
+['서산시','안견기념관',110,56,'museum',{c:C.tan},'「몽유도원도」를 그린 조선의 화가 안견을 기리는 곳이에요. 지곡면에 있어요.'],
+['서산시','문수사',232,62,'temple',{},'봄이면 절로 가는 길에 겹벚꽃이 터널을 이루는 절이에요. 운산면에 있어요.'],
+['서산시','용유지',180,76,'pond',{},'한우목장 초록 언덕 아래 있는 저수지예요. 봄이면 물 위에 벚꽃이 비쳐요.'],
+['서산시','서산 생강',130,140,'farm',{c:C.tan,c2:C.lime},'서산은 향이 진한 생강이 많이 나는 고장이에요.'],
+['당진시','안국사지',50,70,'buddha',{},'고려 시대 절터에 키 큰 돌부처 세 분과 석탑이 남아 있어요. 정미면에 있어요.'],
+['당진시','영탑사',76,138,'temple',{},'면천 상왕산 자락의 오래된 절이에요. 작은 금동 불상이 전해 와요.'],
+['당진시','한진포구',200,30,'market',{c:C.blue},'서해대교가 한눈에 보이는 포구예요. 바지락으로 이름나 있어요.'],
+['당진시','삼선산수목원',116,104,'flower',{deck:1},'당진 시내 가까이에 가꾼 수목원이에요. 숲 위로 난 하늘길을 걸어요.'],
+['당진시','도비도',20,5,'island',{s:'N',path:1},'방조제로 뭍과 이어진 작은 섬이에요. 갯벌 체험을 하러 많이 찾아요.'],
+['아산시','도고온천',20,96,'pond',{jets:1},'오래전부터 이름난 온천 마을이에요. 도고면에 있어요.'],
+['아산시','이충무공 묘소',180,40,'tomb',{big:1},'충무공 이순신 장군이 잠든 곳이에요. 음봉면 어라산 자락에 있어요.'],
+['아산시','아산그린타워',172,96,'tower',{n:12,c:C.green},'높이 150m의 전망대예요. 아산 시내와 곡교천이 한눈에 들어와요.'],
+['아산시','장영실과학관',190,104,'museum',{c:C.orange,dome:1},'조선의 과학자 장영실을 기리는 과학관이에요. 직접 만지고 실험해 볼 수 있어요.'],
+['천안시','국립망향의동산',60,50,'tomb',{},'고향에 돌아오지 못한 해외 동포들이 잠든 곳이에요. 성거읍에 있어요.'],
+['천안시','우정박물관',200,152,'museum',{c:C.red},'우체통과 우표, 옛 집배원의 모습을 볼 수 있는 박물관이에요.'],
+['천안시','김시민 장군 유허지',240,132,'shrine',{},'임진왜란 때 진주성을 지켜 낸 김시민 장군이 태어난 곳이에요. 병천면에 있어요.'],
+['천안시','천호지',150,44,'pond',{},'대학가 옆에 있는 호수예요. 밤이면 호숫가 불빛이 고와요.'],
+['천안시','성거산 성지',224,20,'church',{c:C.white},'박해를 피해 산속에 숨어 살던 천주교 신자들의 흔적이 남은 성지예요.'],
+['홍성군','홍주성역사관',162,60,'museum',{c:C.roof},'홍주읍성과 홍성의 옛이야기를 모아 둔 역사관이에요. 읍성 곁에 있어요.'],
+['홍성군','남당 노을전망대',32,112,'tower',{n:5,c:C.orange},'남당항 바닷가에 선 전망대예요. 천수만으로 해가 지는 모습을 봐요.'],
+['홍성군','정암사',148,152,'temple',{},'오서산 중턱에 있는 절이에요. 억새 능선으로 오르는 길목에 있어요.'],
+['홍성군','충남도서관',164,40,'museum',{c:C.lblue},'내포신도시에 있는 충청남도의 대표 도서관이에요.'],
+['홍성군','홍예공원',196,48,'sign',{l:[183.5,5,42]},'충남도청 옆에 호수를 끼고 만든 공원이에요.'],
+['예산군','추사기념관',116,2,'museum',{c:C.gray},'추사 김정희의 글씨와 그림, 삶을 보여 주는 기념관이에요. 추사고택 옆에 있어요.'],
+['예산군','보덕사',44,28,'temple',{},'남연군묘 가까이에 있는 절이에요. 흥선대원군이 세웠다고 전해져요.'],
+['예산군','예산 국수거리',196,46,'village',{c:C.cream},'햇볕과 바람에 국수 가락을 말리는 오래된 국숫집이 모인 거리예요.'],
+['예산군','스플라스 리솜',78,22,'pond',{jets:1},'덕산 온천물로 물놀이를 하는 큰 온천 워터파크예요.'],
+['보령시','천북 청보리밭',62,20,'farm',{c:C.lime,c2:C.green},'봄이면 언덕 가득 초록 보리가 바람에 일렁여요. 천북면에 있어요.'],
+['보령시','청소역',142,30,'rail',{c:C.gray,c2:C.teal},'장항선에서 가장 오래된 작은 역이에요. 옛 모습이 남은 역 건물이 문화재예요.'],
+['보령시','김좌진 장군 묘',118,44,'tomb',{big:1},'청산리 대첩을 이끈 김좌진 장군이 잠든 곳이에요. 청소면에 있어요.'],
+['보령시','학성리 공룡발자국',32,24,'rock',{},'바닷가 바위에 공룡 발자국 화석이 남아 있어요. 천북면 학성리에 있어요.'],
+['보령시','고대도',5,22,'island',{s:'W'},'대천항에서 배로 가는 작은 섬이에요. 아주 오래전 서양 선교사가 다녀간 이야기가 전해져요.'],
+['보령시','보령문화의전당',112,58,'museum',{c:C.purple},'보령의 역사와 문학을 함께 보여 주는 박물관이에요. 대천 시내에 있어요.'],
+['청양군','지천생태공원',100,96,'pond',{},'청양읍 옆을 흐르는 지천 물가에 만든 공원이에요.'],
+['청양군','청양향교',106,58,'hanok',{},'조선 시대에 고을 학생들을 가르치던 학교예요.'],
+['공주시','신원사',214,158,'temple',{},'계룡산 남쪽 자락의 절이에요. 산신에게 제사를 올리던 중악단이 있어요.'],
+['공주시','공주 산성시장',142,98,'market',{},'공산성 아래에 있는 큰 시장이에요. 밤으로 만든 먹거리가 많아요.'],
+['공주시','중동성당',112,114,'church',{},'언덕 위에 붉은 벽돌로 지은 오래된 성당이에요.'],
+['공주시','풀꽃문학관',98,120,'hanok',{},'시 「풀꽃」을 쓴 나태주 시인의 문학관이에요. 오래된 집을 고쳐 만들었어요.'],
+['공주시','연미산자연미술공원',70,48,'stones',{c:C.brown},'숲속에 자연을 소재로 한 미술 작품을 세워 둔 공원이에요. 커다란 곰 조형물이 있어요.'],
+['공주시','계룡산자연사박물관',240,88,'museum',{c:C.green},'공룡 뼈와 화석, 광물을 볼 수 있는 자연사박물관이에요. 반포면에 있어요.'],
+['공주시','제민천',124,112,'pond',{},'공주 옛 시가지를 가로지르는 작은 하천이에요. 물길 따라 골목과 찻집이 이어져요.'],
+['계룡시','계룡산 천황봉',36,58,'sign',{l:[40,20,32]},'계룡산에서 가장 높은 봉우리예요. 해발 800m가 넘어요.'],
+['서천군','희리산 해송자연휴양림',72,60,'forest',{cabin:1},'산 전체가 바닷바람을 맞고 자란 해송으로 덮인 숲이에요.'],
+['서천군','비인 오층석탑',56,46,'pagoda',{},'백제 탑을 닮게 지은 고려 시대 돌탑이에요. 비인면에 있어요.'],
+['서천군','판교 시간이 멈춘 마을',170,40,'village',{c:C.rbrown},'오래된 극장과 가게가 옛 모습 그대로 남아 있는 마을이에요.'],
+['서천군','서천 김',60,86,'farm',{c:C.gim,c2:C.black},'서천 앞바다에서 기른 김은 맛이 좋기로 이름나 있어요.'],
+['서천군','서천군 조류생태전시관',150,140,'museum',{c:C.teal},'금강 하구를 찾는 철새를 배우고 관찰하는 곳이에요.'],
+['서천군','마량포구',52,6,'market',{c:C.blue},'해돋이와 해넘이를 모두 볼 수 있는 포구예요. 우리나라에 성경이 처음 전해진 곳으로 알려져 있어요.'],
+['서천군','유부도',5,146,'island',{s:'W'},'금강 하구 앞바다의 작은 섬이에요. 넓은 갯벌에 도요새와 물떼새가 쉬어 가요.'],
+['부여군','백제보',214,48,'bridge',{c:C.lgray,h:5},'금강 물길을 조절하는 큰 보예요. 전망대에서 강이 한눈에 보여요.'],
+['부여군','부여 나성',216,100,'fort',{},'사비 도읍 바깥을 빙 둘러 쌓은 백제의 성벽이에요.'],
+['부여군','관북리 유적',166,30,'stones',{},'백제 사비 시대 왕궁이 있던 자리로 여겨지는 곳이에요.'],
+['부여군','수북정',94,90,'hanok',{},'백마강 가 바위 언덕에 선 정자예요. 강 풍경이 시원하게 내려다보여요.'],
+['부여군','홍산객사',30,100,'hanok',{},'조선 시대에 나랏일로 온 손님이 묵던 건물이에요. 홍산면에 있어요.'],
+['부여군','석성 양송이',232,146,'farm',{c:C.white,c2:C.cream},'부여 석성은 양송이버섯이 많이 나는 곳이에요.'],
+['논산시','육군훈련소',76,150,'museum',{c:C.dgreen},'군인이 되는 사람들이 처음 훈련을 받는 곳이에요. 연무읍에 있어요.'],
+['논산시','대둔산 수락계곡',240,150,'pond',{rocks:1},'대둔산 깊은 골짜기를 따라 맑은 물이 흐르는 계곡이에요. 벌곡면에 있어요.'],
+['논산시','연산 대추',172,30,'forest',{c:C.lime,dot:C.rbrown},'연산은 알이 굵은 대추로 이름난 곳이에요. 가을이면 대추 축제가 열려요.'],
+['논산시','죽림서원·임리정',34,84,'hanok',{},'금강이 내려다보이는 언덕에 조선의 학자들이 글을 가르치던 서원과 정자가 있어요.'],
+['논산시','탑정호 수변생태공원',134,120,'flower',{deck:1},'탑정호 물가에 연꽃과 갈대를 가꾼 공원이에요.'],
+['금산군','보곡산골 산벚꽃',224,150,'forest',{c:C.pink,c2:0xf9c6d3},'봄이면 산자락 가득 산벚꽃이 피는 마을이에요. 군북면에 있어요.'],
+['금산군','남이자연휴양림',126,160,'forest',{cabin:1},'깊은 숲에 하늘다리와 숲속의 집이 있는 휴양림이에요. 남이면에 있어요.'],
+['금산군','요광리 은행나무',180,72,'forest',{c:C.yellow,c2:0xf2b61e},'천 년쯤 된 커다란 은행나무예요. 천연기념물로 지정돼 있어요.'],
+['금산군','이치대첩지',40,72,'shrine',{},'임진왜란 때 권율 장군이 왜군을 막아 낸 고개예요. 대둔산 자락에 있어요.'],
+['금산군','홍도마을',172,140,'forest',{c:C.red,c2:C.pink},'봄이면 붉은 복숭아꽃 홍도화가 길가에 가득 피는 마을이에요.']
+,['태안군','태안 염전',150,70,'farm',{c:C.white,c2:C.lgray},'태안 갯벌 염전에서는 햇볕과 바람으로 바닷물을 말려 소금을 만들어요.'],
+['서산시','대산 석유화학단지',150,30,'factory',{},'대산읍 바닷가에 큰 석유화학 공장들이 모여 있어요.'],
+['서산시','서산 호수공원',140,110,'pond',{jets:1},'서산 시내 한가운데 있는 호수 공원이에요. 저녁이면 산책하는 사람이 많아요.'],
+['당진시','당진전통시장',110,90,'market',{},'당진 시내에 서는 오래된 시장이에요.'],
+['당진시','면천 두견주',50,136,'village',{jars:1},'면천에서 진달래 꽃잎을 넣어 빚어 온 전통술이에요.'],
+['아산시','온양온천시장',110,96,'market',{c:C.teal},'온양온천역 앞에 있는 큰 시장이에요. 온천을 하러 온 사람들이 들러요.'],
+['아산시','인주 자동차 공장',40,60,'factory',{},'인주면에 자동차를 만드는 큰 공장이 있어요.'],
+['아산시','천안아산역',240,110,'rail',{c:C.white,c2:C.blue},'고속열차 KTX가 서는 역이에요. 아산과 천안의 경계에 있어요.'],
+['천안시','천안중앙시장',110,104,'market',{c:C.purple},'천안 옛 시가지에 있는 큰 시장이에요. 호떡과 만두 골목으로 알려져 있어요.'],
+['천안시','성성호수공원',110,44,'pond',{},'호수 둘레로 산책길과 생태 체험장이 이어진 공원이에요.'],
+['홍성군','용봉산 자연휴양림',150,48,'forest',{cabin:1},'용봉산 자락 숲속에 통나무집이 있는 휴양림이에요.'],
+['홍성군','광천전통시장',112,134,'market',{c:C.orange},'새우젓과 김을 사러 사람들이 모이는 광천의 시장이에요.'],
+['보령시','대천항 수산시장',52,72,'market',{c:C.blue},'대천항에 들어온 생선과 조개를 파는 큰 시장이에요.'],
+['공주시','미르섬',120,62,'flower',{},'금강 한가운데 꽃밭을 가꾼 섬이에요. 공산성이 바로 건너다보여요.'],
+['공주시','상신리 돌담마을',234,104,'village',{},'계룡산 자락에 돌담이 구불구불 이어진 마을이에요.'],
+['서천군','서천갯벌',32,52,'beach',{mud:1},'수많은 철새가 쉬어 가는 넓은 갯벌이에요. 유네스코 세계자연유산이에요.'],
+['부여군','백마강 억새밭',90,110,'forest',{reed:1},'백마강 가에 억새와 갈대가 넓게 펼쳐진 곳이에요.'],
+['논산시','노성 궐리사',112,34,'shrine',{},'공자를 모신 사당이에요. 노성면에 있어요.']
+];
+for(const [reg,name,lx,lz,kind,o,desc] of SITES){
+  const [cx,cz]=CO[reg]; let x=cx+lx,z=cz+lz,h,t;
+  if(kind==='island'){
+    at(x,z,()=>{ T(0,0,0,8,1.3,8,C.sand); T(1,1.3,1,6,.4,6,C.green);
+      if(o.f==='hermit'){ B(2.5,1.7,3,3,1.4,2,C.cream); hanokRoof(2.5,3.1,3,3,2); pine(5.6,1.7,1.2); }
+      else if(o.f==='light'){ B(3,1.7,3,2,1.2,2,C.white); B(3,2.9,3,2,1.2,2,C.red); B(3.5,4.1,3.5,1,.8,1,C.yellow); pine(1.2,1.7,5); pine(5.4,1.7,1.4); }
+      else if(o.f==='beach'){ T(1,1.7,5,6,.1,2,C.sand); parasol(2,3.5,C.red); pine(1.2,1.7,1.2); pine(5.2,1.7,1.6); }
+      else { pine(1.2,1.7,1.2); pine(4.6,1.7,1.6); pine(2.6,1.7,4.4); T(5.4,1.7,4.6,1,.8,1,C.lgray); }
+      if(o.path){ if(o.s==='W') T(8,0,3,27-lx-8,.95,2,C.sand); else T(3,0,8,2,.95,22-lz-8,C.sand); } });
+    t=o.s==='W'?[cx+31.5,z+4]:[x+4,cz+29]; take(Math.floor(t[0])-2,Math.floor(t[1])-2,5,5);
+    POI.push({n:name,c:reg,t,r:5.5,l:[x+4,7.5,z+4],d:desc}); continue;
+  }
+  const S=PSIZE[kind]||10; let ok=false;
+  search: for(let r=0;r<150;r+=2) for(let dz=-r;dz<=r;dz+=2) for(let dx=-r;dx<=r;dx+=2){ if(Math.max(Math.abs(dx),Math.abs(dz))!==r) continue;
+    const px=Math.round(x+dx),pz=Math.round(z+dz); if(px<cx+2||pz<cz+2||px+S>cx+TW-2||pz+S+4>cz+TH-2) continue;
+    if(free(px-1,pz-1,S+2,S+5)){ x=px; z=pz; ok=true; break search; } }
+  if(!ok) continue;
+  take(x-1,z-1,S+2,S+5); at(x,z,()=>{ h=PF[kind](o); });
+  POI.push({n:name,c:reg,t:[x+S/2,z+S+2],r:5.5,l:o.l?[cx+o.l[0],o.l[1],cz+o.l[2]]:[x+S/2,h,z+S/2],d:desc});
+}
+// ---------- big cities (Asan, Cheonan, Daejeon): apartment blocks and office towers
+function apt2(x,z,h,c){ B(x,G,z,4,h,4,pick([C.white,C.cream,0xeef1f4])); T(x+1.3,G,z+4,1.4,h,.12,c); T(x+1.3,G,z-.12,1.4,h,.12,c);
+  for(const wx of [.35,2.95]){ T(x+wx,G+.6,z+4,.7,h-1.2,.08,C.navy); T(x+wx,G+.6,z-.08,.7,h-1.2,.08,C.navy); } T(x-.08,G+.6,z+1.4,.08,h-1.2,1.2,C.navy); T(x+4,G+.6,z+1.4,.08,h-1.2,1.2,C.navy);
+  B(x+1,G+h,z+1,2,.8,2,c); }
+function tower(x,z,h){ const c=pick([C.glass,0x7fb8e6,0x9ad7d0,0xb8c7e6]); B(x,G,z,5,h,5,c,{s:false}); for(let y=1.2;y<h;y+=2.4) T(x-.06,G+y,z-.06,5.12,.25,5.12,C.white); B(x-.2,G+h,z-.2,5.4,.5,5.4,C.white,{s:false}); B(x+1.5,G+h+.5,z+1.5,2,1.2,2,C.lgray); }
+const CITY=[[810,0,1080,172,130,16],[1080,0,1350,172,180,26],[810,172,1080,344,150,24],[1080,172,1350,344,230,46]];   // x0,z0,x1,z1, apartments, towers
+for(const [x0,z0,x1,z1,na,nt] of CITY){
+  for(let n=0,k=0;n<nt*400&&k<nt;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,7,7)) continue; take(x-1,z-1,7,7); k++; tower(x,z,1.2*(6+Math.floor(rnd()*10))); }
+  for(let n=0,k=0;n<na*300&&k<na;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
+    apt2(x,z,1.2*(8+Math.floor(rnd()*9)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow,C.purple,C.red])); }
+}
+const inCity=(x,z)=>x>=808&&z<346;
+// ---------- ambient life: hamlets, greenhouses, ponds, people, boats, sea islands
+function rndLand(){ return [Math.floor(rnd()*MAPW),Math.floor(rnd()*MAPH)]; }
+const inDJ=(x,z)=>x>=806&&z>=170&&z<346;
+for(let n=0,k=0;n<30000&&k<170;n++){ const [x,z]=rndLand(); if(inDJ(x,z)||!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
+  house(x,z,3,3,1.2*(1+Math.floor(rnd()*2)),pick(pal),pick([C.red,C.blue,C.roof,C.orange,C.dgreen])); if(rnd()<.7) house(x+5,z+.5,3,3,2.4,pick(pal),rnd()<.5?pick([C.red,C.roof,C.blue]):0); else thatched(x+5.5,z+1,3,2); if(rnd()<.5) fig(x+3.6,z+4,pick([C.red,C.blue,C.yellow,C.pink,C.teal])); }
+for(let n=0,k=0;n<20000&&k<100;n++){ const [x,z]=rndLand(); if(inDJ(x,z)||!free(x-1,z-1,9,8)) continue; take(x-1,z-1,9,8); k++;
+  for(let r=0;r<2;r++){ B(x,G,z+r*3,7,1.0,2.2,C.white,{s:false}); B(x+.3,G+1.0,z+r*3+.3,6.4,.4,1.6,0xe9f0f4,{s:false}); } }
+for(let n=0,k=0;n<12000&&k<50;n++){ const [x,z]=rndLand(); if(!free(x-1,z-1,8,7)) continue; take(x-1,z-1,8,7); k++; T(x,G,z,6,.3,5,C.water); T(x+1,G+.3,z+1,.7,.08,.7,C.lime); T(x+3.6,G+.3,z+3,.7,.08,.7,C.pink); }
+for(let n=0,k=0;n<20000&&k<260;n++){ const [x,z]=rndLand(); if(inDJ(x,z)||!free(x,z,2,2)) continue; take(x,z,2,2); k++; fig(x+.5,z+.5,pick([C.red,C.blue,C.yellow,C.pink,C.teal,C.orange,C.white,C.purple])); }
+for(let i=0;i<54;i++){ const [tx,tz]=SEAT[i%3], x=tx+12+Math.floor(rnd()*230), z=tz+8+Math.floor(rnd()*150);
+  if(i%6===5){ T(x,0,z,7,1.4,7,C.tan); T(x+1,1.4,z+1,5,.5,5,C.green); pine(x+1.4,1.9,z+1.4); pine(x+3.6,1.9,z+3); if(i%12===5) lighthouse(x+4.4,z+.6,C.red); }
+  else boat(x,z,pick([C.white,C.red,C.blue,C.yellow]),pick([C.white,C.blue,C.red,C.teal])); }
+// ---------- scatter fields and trees on free land
+for(let n=0,k=0;n<40000&&k<760;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(x>=808&&z>=170&&z<344) continue; if(!free(x-1,z-1,8,9)) continue; take(x-1,z-1,8,9); k++;
+  const c=pick([C.rice,C.lime,C.rice,0xc8d85a]); T(x,G,z,6,.4,7,c); for(let r=0;r<6;r++) T(x+.4+r,G+.4,z+.4,.2,.25,6.2,c===C.rice?0xc4b63c:C.green); }
+for(let n=0,k=0;n<140000&&k<5000;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(!free(x,z,3,3)) continue; if(inCity(x,z)&&rnd2()<.72) continue; take(x,z,3,3); k++; tree(x,z,rnd()<.5,true); }
+for(let i=0;i<40;i++){ rnd();rnd();rnd(); }
+
+
+// ---------- shore-distance map (1 cell per unit): 0 at the water's edge, 1 sixteen units out. It tints shallows and places the surf
+const SHORE=(()=>{ const W=MAPW,H=MAPH,wat=new Uint8Array(W*H),dist=new Uint8Array(W*H).fill(255),WC=C.water;
+  for(const b of boxes){ const isW=b[6]===WC&&b[1]+b[4]<=G+.5; if(!isW&&(b[4]<=.07||b[1]>3||b[1]+b[4]<=.81)) continue;
+    const x0=Math.max(0,Math.round(b[0])),x1=Math.min(W,Math.round(b[0]+b[3])),z0=Math.max(0,Math.round(b[2])),z1=Math.min(H,Math.round(b[2]+b[5]));
+    for(let j=z0;j<z1;j++) for(let i=x0;i<x1;i++) wat[j*W+i]=isW?1:0; }
+  let q=[]; for(let j=0;j<H;j++) for(let i=0;i<W;i++){ const k=j*W+i; if(!wat[k]){ dist[k]=0; continue; }
+    if((i>0&&!wat[k-1])||(i<W-1&&!wat[k+1])||(j>0&&!wat[k-W])||(j<H-1&&!wat[k+W])){ dist[k]=1; q.push(k); } }
+  for(let d=2;d<=16&&q.length;d++){ const n=[]; for(const k of q){ const i=k%W; for(const m of [i>0?k-1:-1,i<W-1?k+1:-1,k-W,k+W]) if(m>=0&&m<W*H&&wat[m]&&dist[m]===255){ dist[m]=d; n.push(m); } } q=n; }
+  const px=new Uint8Array(W*H); for(let k=0;k<W*H;k++) px[k]=dist[k]===255?255:Math.round(Math.max(0,dist[k]-1)/15*255);
+  const tx=new THREE.DataTexture(px,W,H,THREE.RedFormat); tx.magFilter=tx.minFilter=THREE.LinearFilter; tx.needsUpdate=true; return tx; })();
+// ---------- the whole world is enlarged 1.2x around the same-sized explorer
+const S=1.44, MW=MAPW*S, MH=MAPH*S;
+for(const b of boxes) for(let i=0;i<6;i++) b[i]*=S;
+for(const s of studs){ s[0]*=S; s[1]*=S; s[2]*=S; }
+POI.forEach(p=>{ p.m=[p.t[0],p.t[1]]; p.t=[p.t[0]*S,p.t[1]*S]; p.l=p.l.map(v=>v*S); p.r*=S; });
+const SPOS=[START[0]*S,START[1]*S];
+// ---------- collision grid (4-unit cells). Thin decals (h<=0.12) and clouds do not collide.
+const CS=4,GW=Math.ceil(MW/CS),GH=Math.ceil(MH/CS),grid=Array.from({length:GW*GH},()=>[]);
+boxes.forEach((b,n)=>{ if(b[4]<=.18||b[1]>31) return;
+  for(let j=Math.max(0,Math.floor(b[2]/CS));j<=Math.min(GH-1,Math.floor((b[2]+b[5])/CS));j++) for(let i=Math.max(0,Math.floor(b[0]/CS));i<=Math.min(GW-1,Math.floor((b[0]+b[3])/CS));i++) grid[j*GW+i].push(n); });
+const PR=.4,PH=2.66,STEP=.66;
+function around(x,z,fn){ const i0=Math.max(0,Math.floor((x-PR)/CS)),i1=Math.min(GW-1,Math.floor((x+PR)/CS)),j0=Math.max(0,Math.floor((z-PR)/CS)),j1=Math.min(GH-1,Math.floor((z+PR)/CS));
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){ const c=grid[j*GW+i]; for(let k=0;k<c.length;k++){ const n=c[k],b=boxes[n];
+    if(x+PR>b[0]+.001&&x-PR<b[0]+b[3]-.001&&z+PR>b[2]+.001&&z-PR<b[2]+b[5]-.001) fn(b,n); } } }
+// highest surface under the footprint that is not above `lim`; returns [top, isSea]
+function ground(x,z,lim){ let top=-9,sea=false; around(x,z,(b,n)=>{ const t=b[1]+b[4]; if(t<=lim&&t>top){ top=t; sea=WATER.has(n); } }); return [top,sea]; }
+function hits(x,y,z){ let h=false; around(x,z,b=>{ if(b[1]<y+PH&&b[1]+b[4]>y+.02) h=true; }); return h; }
+// ---------- instanced blocks with brick seams
+// brick bevels, ocean waves and the stud were modelled and baked in Blender (see blender/bake.py in the project notes)
+const flatTex=new THREE.DataTexture(new Uint8Array([128,128,255,255]),1,1); flatTex.needsUpdate=true;
+const BU={uTime:{value:0},uGlow:{value:0},uWin:{value:new THREE.Color(C.navy)},uWat:{value:new THREE.Color(C.water)},uBrick:{value:flatTex},uOcean:{value:flatTex},uShore:{value:SHORE},uMapSize:{value:new THREE.Vector2(MW,MH)}};
+{ const tl=new THREE.TextureLoader(); const ld=(f,k)=>tl.load(f,tx=>{ tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.colorSpace=THREE.NoColorSpace; tx.anisotropy=4; BU[k].value=tx; });
+  ld('./brick.png','uBrick'); ld('./ocean.png','uOcean'); }
+const STUD={"p":[0.2427,0.0,-0.1763,0.3,0.165,-0.0,0.3,0.0,-0.0,0.0927,0.0,-0.2853,0.2427,0.165,-0.1763,0.2427,0.0,-0.1763,-0.0927,0.0,-0.2853,0.0927,0.165,-0.2853,0.0927,0.0,-0.2853,-0.2427,0.0,-0.1763,-0.0927,0.165,-0.2853,-0.0927,0.0,-0.2853,-0.3,0.0,-0.0,-0.2427,0.165,-0.1763,-0.2427,0.0,-0.1763,-0.2427,0.0,0.1763,-0.3,0.165,-0.0,-0.3,0.0,-0.0,-0.0927,0.0,0.2853,-0.2427,0.165,0.1763,-0.2427,0.0,0.1763,0.0927,0.0,0.2853,-0.0927,0.165,0.2853,-0.0927,0.0,0.2853,0.2427,0.0,0.1763,0.0927,0.165,0.2853,0.0927,0.0,0.2853,0.3,0.0,-0.0,0.2427,0.165,0.1763,0.2427,0.0,0.1763,0.2427,0.165,-0.1763,0.2895,0.1895,-0.0,0.3,0.165,-0.0,0.0927,0.165,-0.2853,0.2342,0.1895,-0.1702,0.2427,0.165,-0.1763,-0.0927,0.165,-0.2853,0.0895,0.1895,-0.2753,0.0927,0.165,-0.2853,-0.2427,0.165,-0.1763,-0.0895,0.1895,-0.2753,-0.0927,0.165,-0.2853,-0.2427,0.165,-0.1763,-0.2895,0.1895,-0.0,-0.2342,0.1895,-0.1702,-0.2427,0.165,0.1763,-0.2895,0.1895,-0.0,-0.3,0.165,-0.0,-0.0927,0.165,0.2853,-0.2342,0.1895,0.1702,-0.2427,0.165,0.1763,0.0927,0.165,0.2853,-0.0895,0.1895,0.2753,-0.0927,0.165,0.2853,0.2427,0.165,0.1763,0.0895,0.1895,0.2753,0.0927,0.165,0.2853,0.2427,0.165,0.1763,0.2895,0.1895,-0.0,0.2342,0.1895,0.1702,0.2342,0.1895,-0.1702,0.265,0.2,-0.0,0.2895,0.1895,-0.0,0.0895,0.1895,-0.2753,0.2144,0.2,-0.1558,0.2342,0.1895,-0.1702,-0.0895,0.1895,-0.2753,0.0819,0.2,-0.252,0.0895,0.1895,-0.2753,-0.2342,0.1895,-0.1702,-0.0819,0.2,-0.252,-0.0895,0.1895,-0.2753,-0.2895,0.1895,-0.0,-0.2144,0.2,-0.1558,-0.2342,0.1895,-0.1702,-0.2342,0.1895,0.1702,-0.265,0.2,-0.0,-0.2895,0.1895,-0.0,-0.0895,0.1895,0.2753,-0.2144,0.2,0.1558,-0.2342,0.1895,0.1702,0.0895,0.1895,0.2753,-0.0819,0.2,0.252,-0.0895,0.1895,0.2753,0.2342,0.1895,0.1702,0.0819,0.2,0.252,0.0895,0.1895,0.2753,0.2895,0.1895,-0.0,0.2144,0.2,0.1558,0.2342,0.1895,0.1702,-0.0819,0.2,0.252,0.2144,0.2,-0.1558,0.0819,0.2,-0.252,0.2427,0.0,-0.1763,0.2427,0.165,-0.1763,0.3,0.165,-0.0,0.0927,0.0,-0.2853,0.0927,0.165,-0.2853,0.2427,0.165,-0.1763,-0.0927,0.0,-0.2853,-0.0927,0.165,-0.2853,0.0927,0.165,-0.2853,-0.2427,0.0,-0.1763,-0.2427,0.165,-0.1763,-0.0927,0.165,-0.2853,-0.3,0.0,-0.0,-0.3,0.165,-0.0,-0.2427,0.165,-0.1763,-0.2427,0.0,0.1763,-0.2427,0.165,0.1763,-0.3,0.165,-0.0,-0.0927,0.0,0.2853,-0.0927,0.165,0.2853,-0.2427,0.165,0.1763,0.0927,0.0,0.2853,0.0927,0.165,0.2853,-0.0927,0.165,0.2853,0.2427,0.0,0.1763,0.2427,0.165,0.1763,0.0927,0.165,0.2853,0.3,0.0,-0.0,0.3,0.165,-0.0,0.2427,0.165,0.1763,0.2427,0.165,-0.1763,0.2342,0.1895,-0.1702,0.2895,0.1895,-0.0,0.0927,0.165,-0.2853,0.0895,0.1895,-0.2753,0.2342,0.1895,-0.1702,-0.0927,0.165,-0.2853,-0.0895,0.1895,-0.2753,0.0895,0.1895,-0.2753,-0.2427,0.165,-0.1763,-0.2342,0.1895,-0.1702,-0.0895,0.1895,-0.2753,-0.2427,0.165,-0.1763,-0.3,0.165,-0.0,-0.2895,0.1895,-0.0,-0.2427,0.165,0.1763,-0.2342,0.1895,0.1702,-0.2895,0.1895,-0.0,-0.0927,0.165,0.2853,-0.0895,0.1895,0.2753,-0.2342,0.1895,0.1702,0.0927,0.165,0.2853,0.0895,0.1895,0.2753,-0.0895,0.1895,0.2753,0.2427,0.165,0.1763,0.2342,0.1895,0.1702,0.0895,0.1895,0.2753,0.2427,0.165,0.1763,0.3,0.165,-0.0,0.2895,0.1895,-0.0,0.2342,0.1895,-0.1702,0.2144,0.2,-0.1558,0.265,0.2,-0.0,0.0895,0.1895,-0.2753,0.0819,0.2,-0.252,0.2144,0.2,-0.1558,-0.0895,0.1895,-0.2753,-0.0819,0.2,-0.252,0.0819,0.2,-0.252,-0.2342,0.1895,-0.1702,-0.2144,0.2,-0.1558,-0.0819,0.2,-0.252,-0.2895,0.1895,-0.0,-0.265,0.2,-0.0,-0.2144,0.2,-0.1558,-0.2342,0.1895,0.1702,-0.2144,0.2,0.1558,-0.265,0.2,-0.0,-0.0895,0.1895,0.2753,-0.0819,0.2,0.252,-0.2144,0.2,0.1558,0.0895,0.1895,0.2753,0.0819,0.2,0.252,-0.0819,0.2,0.252,0.2342,0.1895,0.1702,0.2144,0.2,0.1558,0.0819,0.2,0.252,0.2895,0.1895,-0.0,0.265,0.2,-0.0,0.2144,0.2,0.1558,0.2144,0.2,0.1558,0.265,0.2,-0.0,0.2144,0.2,-0.1558,0.0819,0.2,-0.252,-0.0819,0.2,-0.252,-0.2144,0.2,-0.1558,0.0819,0.2,0.252,0.2144,0.2,0.1558,-0.0819,0.2,0.252,0.2144,0.2,0.1558,0.2144,0.2,-0.1558,-0.0819,0.2,0.252,0.0819,0.2,-0.252,-0.2144,0.2,-0.1558,-0.2144,0.2,0.1558,-0.2144,0.2,-0.1558,-0.265,0.2,-0.0,-0.2144,0.2,0.1558,-0.2144,0.2,0.1558,-0.0819,0.2,0.252,0.0819,0.2,-0.252],"n":[0.868,-0.0,-0.497,0.994,0.038,-0.098,0.994,-0.0,0.108,0.41,-0.0,-0.912,0.758,0.055,-0.65,0.868,-0.0,-0.497,-0.205,-0.0,-0.979,0.231,0.055,-0.971,0.41,-0.0,-0.912,-0.741,-0.0,-0.671,-0.384,0.055,-0.922,-0.205,-0.0,-0.979,-0.994,-0.0,-0.108,-0.857,0.069,-0.511,-0.741,-0.0,-0.671,-0.868,-0.0,0.497,-0.994,0.038,0.098,-0.994,-0.0,-0.108,-0.41,-0.0,0.912,-0.758,0.055,0.65,-0.868,-0.0,0.497,0.205,-0.0,0.979,-0.231,0.055,0.971,-0.41,-0.0,0.912,0.741,-0.0,0.671,0.384,0.055,0.922,0.205,-0.0,0.979,0.994,-0.0,0.108,0.857,0.069,0.511,0.741,-0.0,0.671,0.758,0.055,-0.65,0.752,0.659,0.018,0.994,0.038,-0.098,0.231,0.055,-0.971,0.556,0.701,-0.447,0.758,0.055,-0.65,-0.384,0.055,-0.922,0.187,0.701,-0.688,0.231,0.055,-0.971,-0.857,0.069,-0.511,-0.253,0.701,-0.667,-0.384,0.055,-0.922,-0.857,0.069,-0.511,-0.752,0.659,-0.018,-0.513,0.757,-0.404,-0.758,0.055,0.65,-0.752,0.659,-0.018,-0.994,0.038,0.098,-0.231,0.055,0.971,-0.556,0.701,0.447,-0.758,0.055,0.65,0.384,0.055,0.922,-0.187,0.701,0.688,-0.231,0.055,0.971,0.857,0.069,0.511,0.253,0.701,0.667,0.384,0.055,0.922,0.857,0.069,0.511,0.752,0.659,0.018,0.513,0.757,0.404,0.556,0.701,-0.447,0.18,0.983,-0.021,0.752,0.659,0.018,0.187,0.701,-0.688,0.019,1.0,-0.017,0.556,0.701,-0.447,-0.253,0.701,-0.667,0.004,1.0,-0.018,0.187,0.701,-0.688,-0.513,0.757,-0.404,-0.075,0.983,-0.165,-0.253,0.701,-0.667,-0.752,0.659,-0.018,-0.033,0.999,-0.018,-0.513,0.757,-0.404,-0.556,0.701,0.447,-0.18,0.983,0.021,-0.752,0.659,-0.018,-0.187,0.701,0.688,-0.019,1.0,0.017,-0.556,0.701,0.447,0.253,0.701,0.667,-0.004,1.0,0.018,-0.187,0.701,0.688,0.513,0.757,0.404,0.075,0.983,0.165,0.253,0.701,0.667,0.752,0.659,0.018,0.033,0.999,0.018,0.513,0.757,0.404,-0.004,1.0,0.018,0.019,1.0,-0.017,0.004,1.0,-0.018,0.868,-0.0,-0.497,0.758,0.055,-0.65,0.994,0.038,-0.098,0.41,-0.0,-0.912,0.231,0.055,-0.971,0.758,0.055,-0.65,-0.205,-0.0,-0.979,-0.384,0.055,-0.922,0.231,0.055,-0.971,-0.741,-0.0,-0.671,-0.857,0.069,-0.511,-0.384,0.055,-0.922,-0.994,-0.0,-0.108,-0.994,0.038,0.098,-0.857,0.069,-0.511,-0.868,-0.0,0.497,-0.758,0.055,0.65,-0.994,0.038,0.098,-0.41,-0.0,0.912,-0.231,0.055,0.971,-0.758,0.055,0.65,0.205,-0.0,0.979,0.384,0.055,0.922,-0.231,0.055,0.971,0.741,-0.0,0.671,0.857,0.069,0.511,0.384,0.055,0.922,0.994,-0.0,0.108,0.994,0.038,-0.098,0.857,0.069,0.511,0.758,0.055,-0.65,0.556,0.701,-0.447,0.752,0.659,0.018,0.231,0.055,-0.971,0.187,0.701,-0.688,0.556,0.701,-0.447,-0.384,0.055,-0.922,-0.253,0.701,-0.667,0.187,0.701,-0.688,-0.857,0.069,-0.511,-0.513,0.757,-0.404,-0.253,0.701,-0.667,-0.857,0.069,-0.511,-0.994,0.038,0.098,-0.752,0.659,-0.018,-0.758,0.055,0.65,-0.556,0.701,0.447,-0.752,0.659,-0.018,-0.231,0.055,0.971,-0.187,0.701,0.688,-0.556,0.701,0.447,0.384,0.055,0.922,0.253,0.701,0.667,-0.187,0.701,0.688,0.857,0.069,0.511,0.513,0.757,0.404,0.253,0.701,0.667,0.857,0.069,0.511,0.994,0.038,-0.098,0.752,0.659,0.018,0.556,0.701,-0.447,0.019,1.0,-0.017,0.18,0.983,-0.021,0.187,0.701,-0.688,0.004,1.0,-0.018,0.019,1.0,-0.017,-0.253,0.701,-0.667,-0.075,0.983,-0.165,0.004,1.0,-0.018,-0.513,0.757,-0.404,-0.033,0.999,-0.018,-0.075,0.983,-0.165,-0.752,0.659,-0.018,-0.18,0.983,0.021,-0.033,0.999,-0.018,-0.556,0.701,0.447,-0.019,1.0,0.017,-0.18,0.983,0.021,-0.187,0.701,0.688,-0.004,1.0,0.018,-0.019,1.0,0.017,0.253,0.701,0.667,0.075,0.983,0.165,-0.004,1.0,0.018,0.513,0.757,0.404,0.033,0.999,0.018,0.075,0.983,0.165,0.752,0.659,0.018,0.18,0.983,-0.021,0.033,0.999,0.018,0.033,0.999,0.018,0.18,0.983,-0.021,0.019,1.0,-0.017,0.004,1.0,-0.018,-0.075,0.983,-0.165,-0.033,0.999,-0.018,0.075,0.983,0.165,0.033,0.999,0.018,-0.004,1.0,0.018,0.033,0.999,0.018,0.019,1.0,-0.017,-0.004,1.0,0.018,0.004,1.0,-0.018,-0.033,0.999,-0.018,-0.019,1.0,0.017,-0.033,0.999,-0.018,-0.18,0.983,0.021,-0.019,1.0,0.017,-0.019,1.0,0.017,-0.004,1.0,0.018,0.004,1.0,-0.018]};
+function studGeo(k){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(STUD.p.map(v=>v*k)),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(STUD.n),3)); return g; }
+function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
+  m.onBeforeCompile=s=>{ Object.assign(s.uniforms,BU);
+    s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;')
+      .replace('#include <begin_vertex>',`#include <begin_vertex>
+      #ifdef USE_INSTANCING
+      vWP=(modelMatrix*instanceMatrix*vec4(transformed,1.0)).xyz;
+      #else
+      vWP=(modelMatrix*vec4(transformed,1.0)).xyz;
+      #endif
+      vON=normal;`);
+    s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;uniform float uTime;uniform float uGlow;uniform vec3 uWin;uniform vec3 uWat;uniform sampler2D uBrick;uniform sampler2D uOcean;uniform sampler2D uShore;uniform vec2 uMapSize;')
+      .replace('#include <color_fragment>',`#include <color_fragment>
+      #ifdef USE_COLOR
+      if(abs(vON.y)<0.5 && vWP.y>-0.01){
+        float uu=abs(vON.x)>0.5?vWP.z:vWP.x; vec3 bt=texture2D(uBrick,vec2(uu/2.88,vWP.y/3.456)).rgb;
+        { float rw=floor(vWP.y/1.728+0.001); vec2 cid=vec2(floor((uu+mod(rw,2.0)*1.44)/2.88),rw+(abs(vON.x)>0.5?37.0:0.0));
+          float h1=fract(sin(dot(cid,vec2(41.3,289.1)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
+          float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.92+0.42*h2)*(0.84+0.3*h1),dtl); }
+        float fw=max(fwidth(uu),fwidth(vWP.y)), fade=clamp(0.11/(fw+0.001),0.0,1.0);
+        diffuseColor.rgb*=mix(1.0,mix(0.45,1.0,bt.b),fade);
+        vec2 nm=(bt.rg*2.0-1.0)*fade; vec3 tu=abs(vON.x)>0.5?vec3(0.,0.,1.):vec3(1.,0.,0.);
+        wN=normalize(vON+(tu*nm.x+vec3(0.,1.,0.)*nm.y)*1.3);
+      } else if(vON.y>0.5){
+        if(distance(vColor.rgb,uWat)<0.03){ isWat=1.0;
+          float dp=texture2D(uShore,vWP.xz/uMapSize).r;
+          vec3 o1=texture2D(uOcean,vWP.xz/64.0+uTime*vec2(.010,.006)).rgb, o2=texture2D(uOcean,vWP.zx/29.0-uTime*vec2(.008,.012)).rgb;
+          vec2 wa=o1.rg*2.0-1.0, wb=o2.rg*2.0-1.0; float amp=mix(.75,2.5,smoothstep(0.0,.8,dp))*mix(.12,1.0,dtl);
+          vec2 w2=(wa+vec2(wb.y,wb.x)*.75)*amp; wN=normalize(vec3(w2.x,1.0,w2.y));
+          vec3 wc=mix(vec3(.045,.30,.40),diffuseColor.rgb*vec3(.5,.74,1.02),smoothstep(0.0,.7,dp));
+          wc*=1.0+0.26*w2.x+0.1*w2.y;
+          float band=smoothstep(.1,.0,dp)*(0.5+0.5*sin(dp*90.0-uTime*1.5+o1.b*7.0+o2.r*3.0));
+          float crest=smoothstep(.55,.98,o1.b*1.5+o2.b*.7)*smoothstep(.3,.8,dp)*.4*dtl;
+          diffuseColor.rgb=mix(wc,vec3(.93,.98,1.),clamp(band*.42*dtl+crest+smoothstep(.03,.0,dp)*.45*mix(.5,1.0,dtl),0.0,1.0));
+        } else { vec2 cid=floor(vWP.xz/2.88); float h1=fract(sin(dot(cid,vec2(12.9898,78.233)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
+          float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.97+0.16*h2)*(0.95+0.1*h1),dtl); }
+      }
+      #endif`)
+      .replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+      #ifdef USE_COLOR
+      normal=normalize((viewMatrix*vec4(wN,0.0)).xyz);
+      #endif`)
+      .replace('#include <roughnessmap_fragment>',`#include <roughnessmap_fragment>
+      if(isWat>0.5) roughnessFactor=mix(0.4,0.15,dtl);`)
+      .replace('#include <metalnessmap_fragment>',`#include <metalnessmap_fragment>
+      if(isWat>0.5) metalnessFactor=0.22;`)
+      .replace('void main() {','void main() {\n  vec3 wN=vON; float isWat=0.0; float pxw=fwidth(vWP.x)+fwidth(vWP.y)+fwidth(vWP.z); float dtl=clamp(1.5/(pxw+0.001),0.0,1.0);')
+      .replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      #ifdef USE_COLOR
+      if(uGlow>0.01 && abs(vON.y)<0.5 && distance(vColor.rgb,uWin)<0.02){ float hh=fract(sin(dot(floor(vWP.xz*.45)+floor(vWP.y*.5),vec2(27.1,61.7)))*43758.5453);
+        totalEmissiveRadiance+=vec3(1.0,.72,.3)*uGlow*mix(1.6,hh>0.3?3.2:0.0,dtl); }
+      #endif`); };
+  return m; }
+const m4=new THREE.Matrix4(),col=new THREE.Color();
+const boxGeo=new THREE.BoxGeometry(1,1,1),boxMat=seamMat({roughness:.3}),studMat=new THREE.MeshStandardMaterial({roughness:.26});
+const sg=studGeo(1.44), sgM=studGeo(1);
+const studMeshes=[]; const CHK=90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
+for(const arr of bucket(boxes,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
+  const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length);
+  arr.forEach((b,i)=>{ m4.makeScale(b[3],b[4],b[5]); m4.setPosition(b[0]+b[3]/2,b[1]+b[4]/2,b[2]+b[5]/2); im.setMatrixAt(i,m4); im.setColorAt(i,col.setHex(b[6])); });
+  im.castShadow=im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); }
+for(const arr of bucket(studs,s=>s[0],s=>s[2]).values()){
+  const im=new THREE.InstancedMesh(sg,studMat,arr.length);
+  arr.forEach((s,i)=>{ m4.makeTranslation(s[0],s[1],s[2]); im.setMatrixAt(i,m4); im.setColorAt(i,col.setHex(s[3])); });
+  im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); studMeshes.push(im); }
+const table=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000),new THREE.MeshStandardMaterial({color:0xf4ecdc,roughness:.9}));
+table.rotation.x=-Math.PI/2; table.position.y=-3; table.receiveShadow=true; scene.add(table);
+
+
+// ---------- movers
+const mats={}; const mat=c=>mats[c]||(mats[c]=new THREE.MeshStandardMaterial({color:c,roughness:.4}));
+const unit=new THREE.BoxGeometry(1,1,1);
+function part(g,x,y,z,w,h,d,c,st){ const m=new THREE.Mesh(unit,mat(c)); m.scale.set(w,h,d); m.position.set(x+w/2,y+h/2,z+d/2); g.add(m);
+  if(st) for(let i=0;i<Math.floor(w);i++)for(let j=0;j<Math.floor(d);j++){ const s=new THREE.Mesh(sgM,mat(c)); s.position.set(x+i+.5,y+h,z+j+.5); g.add(s); } return m; }
+const wg=new THREE.CylinderGeometry(.42,.42,.3,12);
+function wheel(g,x,z){ const m=new THREE.Mesh(wg,mat(C.black)); m.rotation.x=Math.PI/2; m.position.set(x,.42,z); g.add(m); }
+const MV=new THREE.Group(); MV.scale.setScalar(1.44); scene.add(MV);
+function vehicle(len,c,bus){ const g=new THREE.Group();
+  part(g,0,.35,0,len,.7,1.6,c);
+  if(bus){ part(g,.1,1.05,.05,len-.2,.7,1.5,C.navy); part(g,0,1.75,0,len,.35,1.6,c,true); part(g,0,.75,-.03,len,.18,.03,C.white); part(g,0,.75,1.6,len,.18,.03,C.white); }
+  else { part(g,len*.25,1.05,.1,len*.5,.6,1.4,C.navy); part(g,len*.25,1.65,.1,len*.5,.2,1.4,c,true); }
+  for(const wx of [.9,len-.9]){ wheel(g,wx,.05); wheel(g,wx,1.55); }
+  MV.add(g); return g; }
+const bus=vehicle(6,C.blue,true),car1=vehicle(3,C.red),car2=vehicle(3,C.yellow),car3=vehicle(3,C.white),car4=vehicle(3,C.teal),car5=vehicle(3,C.orange),car6=vehicle(3,C.purple),bus2=vehicle(6,C.teal,true);
+
+const ship=new THREE.Group();
+part(ship,0,0,0,6,.9,2.4,C.white); part(ship,6,0,.5,1,.9,1.4,C.white); part(ship,0,.9,0,6,.15,2.4,C.red);
+part(ship,1,1.05,.4,3,1.1,1.6,C.blue,true); part(ship,4.6,1.05,1.1,.2,2.4,.2,C.dgray); part(ship,4.8,2.8,1.15,1.1,.6,.08,C.yellow);
+MV.add(ship);
+const wake=[]; for(let i=0;i<10;i++){ const m=new THREE.Mesh(unit,mat(0xffffff)); MV.add(m); wake.push(m); }
+const train=new THREE.Group();
+for(let k=0;k<3;k++){ const o=k*6.3; part(train,o,.5,0,6,1.5,1.9,C.white); part(train,o,.5,-.02,6,.35,1.94,C.blue); part(train,o+.4,1.25,-.03,5.2,.5,1.96,C.navy); part(train,o,2.0,0,6,.3,1.9,C.lgray,true);
+  for(const wx of [1,5]){ wheel(train,o+wx,.1); wheel(train,o+wx,1.8); } }
+part(train,18.3,.5,.2,.9,1.1,1.5,C.blue); part(train,-.9,.5,.2,.9,1.1,1.5,C.blue);
+MV.add(train); const train2=train.clone(); MV.add(train2); const train3=train.clone(); MV.add(train3);
+
+// ---------- player: a toy explorer built from rounded blocks
+const player=new THREE.Group(), body=new THREE.Group(); player.add(body);
+const pmat={}; const pm=(c,r=.38)=>pmat[c+'_'+r]||(pmat[c+'_'+r]=new THREE.MeshStandardMaterial({color:c,roughness:r}));
+function rb(g,x,y,z,w,h,d,c,r=.08,ro){ const m=new THREE.Mesh(new RoundedBoxGeometry(w,h,d,3,Math.min(r,w/2-.001,h/2-.001,d/2-.001)),pm(c,ro)); m.position.set(x,y,z); g.add(m); return m; }
+const SKIN=0xffd58a,JACKET=0xff6b4a,PANTS=0x2d3350,PACK=0x19b5a5,CAPC=0x2f6bff,SHOE=0xffffff;
+const legL=new THREE.Group(),legR=new THREE.Group(),armL=new THREE.Group(),armR=new THREE.Group();
+for(const [L,sx] of [[legL,-1],[legR,1]]){ rb(L,0,-.3,0,.34,.62,.38,PANTS,.07); rb(L,0,-.58,.05,.38,.2,.5,SHOE,.08); rb(L,0,-.67,.05,.4,.06,.52,0x3a4050,.02); L.position.set(sx*.2,.72,0); }
+for(const [A,sx] of [[armL,-1],[armR,1]]){ rb(A,0,-.26,0,.24,.56,.28,JACKET,.09); rb(A,0,-.6,0,.22,.2,.24,SKIN,.09); A.position.set(sx*.54,1.36,0); }
+rb(body,0,1.06,0,.82,.74,.46,JACKET,.12); rb(body,0,.96,.235,.5,.12,.02,0xffffff,.01); rb(body,0,.74,0,.84,.12,.48,0xffd23f,.04);        // jacket, stripe, belt
+rb(body,0,1.36,.12,.5,.18,.3,0xfff4e0,.06);                                                                                               // scarf
+rb(body,0,1.08,-.33,.62,.66,.24,PACK,.1); rb(body,0,.94,-.47,.4,.26,.06,0xffd23f,.03); rb(body,-.26,1.2,.0,.1,.6,.5,0x128f83,.03); rb(body,.26,1.2,0,.1,.6,.5,0x128f83,.03);   // backpack, pocket, straps
+rb(body,0,1.78,0,.66,.6,.62,SKIN,.16);                                                                                                    // head
+rb(body,-.15,1.82,.315,.09,.13,.02,0x23262b,.01,.2); rb(body,.15,1.82,.315,.09,.13,.02,0x23262b,.01,.2);                                  // eyes
+rb(body,-.24,1.68,.312,.12,.07,.02,0xff9a8b,.01); rb(body,.24,1.68,.312,.12,.07,.02,0xff9a8b,.01); rb(body,0,1.66,.315,.16,.04,.02,0xc9553d,.01);   // cheeks, smile
+rb(body,0,2.1,-.02,.72,.24,.7,CAPC,.1); rb(body,0,2.02,.4,.6,.07,.3,CAPC,.03); rb(body,0,2.24,-.02,.14,.08,.14,0xffffff,.04);             // cap, brim, button
+body.add(legL,legR,armL,armR);
+const blob=new THREE.Mesh(new THREE.CircleGeometry(.62,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false}));
+blob.rotation.x=-Math.PI/2; scene.add(blob); scene.add(player); player.scale.setScalar(1.12);
+const P={x:SPOS[0],z:SPOS[1],y:G*S+.5,vy:0,on:true,face:Math.PI,walk:0};
+
+// ---------- places (t: where to stand, l: label anchor)
+const lbBox=document.getElementById('labels');
+POI.forEach(p=>{ const e=document.createElement('div'); e.className='lb'; e.textContent=p.n; e.style.display='none'; lbBox.appendChild(e); p.e=e; p.v=false; });
+const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
+{ const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
+document.getElementById('tot').textContent=POI.length;
+POI.forEach((p,i)=>{ p.q=QUIZ[i]; });
+let cur=null,visited=0,modal=null;
+const toast=document.getElementById('toast'); let toastT=0;
+function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),2600); }
+function renderList(){ const done=c=>POI.filter(p=>p.c===c&&p.v).length+'/'+POI.filter(p=>p.c===c).length; document.getElementById('ul').innerHTML=['태안군','서산시','당진시','아산시','천안시','홍성군','예산군','보령시','청양군','공주시','계룡시','서천군','부여군','논산시','금산군'].map(c=>`<h3>${c} ${done(c)}</h3>`+POI.filter(p=>p.c===c).map(p=>`<li class="${p.v?'v':''}"><em>${p.v?'✓':''}</em>${p.n}</li>`).join('')).join(''); }
+document.getElementById('count').onclick=()=>{ renderList(); document.getElementById('list').style.display='flex'; };
+document.getElementById('lc').onclick=()=>{ document.getElementById('list').style.display='none'; };
+
+// ---------- minimap
+const mm=document.getElementById('mm'),mc=mm.getContext('2d'); const MS=mm.width/MAPW;
+function drawMap(){ mc.clearRect(0,0,mm.width,mm.height);
+  mc.fillStyle='#8ecbf0'; for(const [x,z] of SEAT) mc.fillRect(x*MS,z*MS,TW*MS,TH*MS); mc.fillStyle='#dfe6d6'; for(const [x,z] of EXTRA) mc.fillRect(x*MS,z*MS,TW*MS,TH*MS);
+  TILES.forEach(([x,z],i)=>{ mc.fillStyle=['#bfe3c0','#d5ebc4','#cfe8d6','#c3e2b4'][(x/TW+z/TH)%4]; mc.fillRect(x*MS,z*MS,TW*MS,TH*MS); if(WS(x,z)){ mc.fillStyle='#8ecbf0'; mc.fillRect(x*MS,z*MS,25*MS,TH*MS); } if(NS(x,z)){ mc.fillStyle='#8ecbf0'; mc.fillRect(x*MS,0,TW*MS,20*MS); } });
+  mc.fillStyle='#8ecbf0'; for(const l of LAKES) mc.fillRect(l[0]*MS,l[1]*MS,l[2]*MS,l[3]*MS);
+  mc.fillStyle='#fff'; for(const r of ROADS) mc.fillRect(r[0]*MS,r[1]*MS,Math.max(3,r[2]*MS),Math.max(3,r[3]*MS));
+  mc.strokeStyle='#f29900'; mc.lineWidth=3; for(const [x,z] of TILES) mc.strokeRect(x*MS,z*MS,TW*MS,TH*MS);
+  for(const p of POI){ mc.beginPath(); mc.arc(p.m[0]*MS,p.m[1]*MS,6,0,7); mc.fillStyle=p.v?'#1a73e8':'#fff'; mc.fill(); mc.lineWidth=2.5; mc.strokeStyle=p.v?'#1a73e8':'#5f6368'; mc.stroke(); }
+  mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
+
+// ---------- controls
+const OVER=2380;
+const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
+const key={}; let jumpQ=false;
+addEventListener('keydown',e=>{ if(modal){ if(e.code==='Escape') closeQ(); else if(e.code==='Enter'&&!document.getElementById('qz').classList.contains('quiz')) document.getElementById('qg').click(); return; } if((e.code==='KeyE'||e.code==='Enter')&&cur){ openQ(cur); return; } if(e.code==='Space'&&!key.Space) jumpQ=true; key[e.code]=true; if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); }); addEventListener('keyup',e=>key[e.code]=false);
+const joy=document.getElementById('joy'),knob=joy.firstElementChild; let jx=0,jy=0,jid=null;
+function jmove(e){ const r=joy.getBoundingClientRect(); let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2); const m=Math.hypot(dx,dy),mx=r.width/2-14;
+  if(m>mx){ dx*=mx/m; dy*=mx/m; } knob.style.transform=`translate(${dx}px,${dy}px)`; jx=dx/mx; jy=-dy/mx; }
+joy.addEventListener('pointerdown',e=>{ jid=e.pointerId; joy.setPointerCapture(jid); jmove(e); e.stopPropagation(); });
+joy.addEventListener('pointermove',e=>{ if(e.pointerId===jid) jmove(e); });
+const jend=e=>{ if(e.pointerId===jid){ jid=null; jx=jy=0; knob.style.transform=''; } };
+joy.addEventListener('pointerup',jend); joy.addEventListener('pointercancel',jend);
+document.getElementById('jump').addEventListener('pointerdown',e=>{ jumpQ=true; e.preventDefault(); e.stopPropagation(); });
+const pts=new Map(); let pinch=0; const cv=renderer.domElement;
+cv.addEventListener('pointerdown',e=>{ pts.set(e.pointerId,[e.clientX,e.clientY]); try{cv.setPointerCapture(e.pointerId);}catch(_){} pinch=0; });
+cv.addEventListener('pointermove',e=>{ const p=pts.get(e.pointerId); if(!p) return;
+  if(pts.size===1){ cam.yaw-=(e.clientX-p[0])*.006; cam.pitch=Math.min(1.4,Math.max(.22,cam.pitch+(e.clientY-p[1])*.004)); }
+  p[0]=e.clientX; p[1]=e.clientY;
+  if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } });
+const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; cv.addEventListener('pointerup',pend); cv.addEventListener('pointercancel',pend);
+function zoom(f){ cam.want=Math.min(2900,Math.max(7,cam.want*f)); }
+cv.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
+document.getElementById('zi').onclick=()=>zoom(.72); document.getElementById('zo').onclick=()=>zoom(1.4);
+document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=OVER; cam.yaw=0; cam.pitch=.95; } };
+document.getElementById('home').onclick=()=>{ P.x=SPOS[0]; P.z=SPOS[1]; P.y=G*S+.5; P.vy=0; say('출발 지점으로 돌아왔어요'); };
+document.getElementById('go').onclick=()=>{ document.getElementById('intro').style.display='none'; started=true; cam.want=17; cam.pitch=.8; };
+
+// ---------- sky traffic: block clouds drifting east and aeroplanes crossing the map
+const CLN=46, CLP=[[0,0,0,9,2,5],[1.5,1.7,.8,5,1.6,3.4],[4.6,-1.1,1.4,6,1.3,3.2],[-3.2,.3,1,4.6,1.4,3]];
+const cloudIM=new THREE.InstancedMesh(unit,new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95,transparent:true,opacity:.94}),CLN*CLP.length); cloudIM.frustumCulled=false; scene.add(cloudIM);
+const clouds=[]; for(let i=0;i<CLN;i++) clouds.push({x:rnd2()*MW,y:62+rnd2()*30,z:rnd2()*MH,s:1.2+rnd2()*1.8,v:2.5+rnd2()*4});
+const planes=[]; for(let i=0;i<6;i++){ const g=new THREE.Group(), c=[C.blue,C.red,C.teal,C.orange,C.purple,C.navy][i];
+  part(g,-4.5,0,-.75,9,1.5,1.5,C.white); part(g,4.5,.15,-.55,1.1,1.1,1.1,C.lblue); part(g,-1.2,.35,-5.5,2.4,.25,11,C.white); part(g,-.9,-.35,-3.4,1.6,.7,.8,c); part(g,-.9,-.35,2.6,1.6,.7,.8,c);
+  part(g,-4.5,1.3,-.18,1.6,1.9,.36,c); part(g,-4.5,.7,-2.2,1.3,.2,4.4,C.white); part(g,-4.4,.75,-.78,8.6,.22,1.56,c);
+  g.scale.setScalar(1.7); scene.add(g); const a=rnd2()*Math.PI*2; planes.push({g,x:rnd2()*MW,z:rnd2()*MH,y:105+i*9,a,v:26+rnd2()*14}); }
+function moveSky(dt){
+  for(let i=0;i<CLN;i++){ const c=clouds[i]; c.x+=c.v*dt; if(c.x>MW+80) c.x=-80;
+    for(let k=0;k<CLP.length;k++){ const p=CLP[k]; m4.makeScale(p[3]*c.s,p[4]*c.s,p[5]*c.s); m4.setPosition(c.x+p[0]*c.s,c.y+p[1]*c.s,c.z+p[2]*c.s); cloudIM.setMatrixAt(i*CLP.length+k,m4); } }
+  cloudIM.instanceMatrix.needsUpdate=true;
+  for(const p of planes){ p.x+=Math.cos(p.a)*p.v*dt; p.z+=Math.sin(p.a)*p.v*dt;
+    if(p.x<-200||p.x>MW+200||p.z<-200||p.z>MH+200){ p.a=rnd2()*Math.PI*2; const far=Math.max(MW,MH)*.75; p.x=MW/2-Math.cos(p.a)*far; p.z=MH/2-Math.sin(p.a)*far+(rnd2()-.5)*MH*.6; }
+    p.g.position.set(p.x,p.y,p.z); p.g.rotation.y=-p.a; }
+}
+// ---------- traffic: every vehicle and train runs on its own clock, brakes when the explorer (or another vehicle) is just ahead, and is solid
+const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, length
+  {o:bus,ax:'x',dir:1,base:310,span:492,sp:3.4,off:0,fix:254.25,len:6},{o:car2,ax:'x',dir:1,base:310,span:494,sp:3.2,off:240,fix:254.25,len:3},
+  {o:car1,ax:'x',dir:-1,base:808,span:494,sp:3.0,off:0,fix:253.75,len:3},{o:car3,ax:'x',dir:-1,base:808,span:494,sp:2.6,off:250,fix:253.75,len:3},
+  {o:car4,ax:'z',dir:-1,base:668,span:640,sp:2.4,off:0,fix:445.2,len:3},{o:car5,ax:'z',dir:-1,base:514,span:486,sp:2.8,off:120,fix:672.2,len:3},
+  {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
+const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
+for(const m of LANES.concat(TRAINS)){ m.t=0; m.k=1; m.box=[0,0,0,0]; }
+const pingU=tt=>{ const tp=(tt*.045)%2, te=tp<1?tp:2-tp; return te*te*(3-2*te); };
+const inBox=(b,x,z,mg)=>x>b[0]-mg&&x<b[1]+mg&&z>b[2]-mg&&z<b[3]+mg;
+function moveTraffic(dt){
+  const px=P.x/S,pz=P.z/S,low=P.y<(G+3.2)*S;
+  for(const m of LANES){ const u=(m.t*m.sp+m.off)%m.span, c=m.dir>0?m.base+u:m.base-u, b=m.box;
+    if(m.ax==='x'){ m.o.position.set(c,G+.3,m.fix); if(m.dir>0){ b[0]=c;b[1]=c+m.len;b[2]=m.fix;b[3]=m.fix+1.6; } else { b[0]=c-m.len;b[1]=c;b[2]=m.fix-1.6;b[3]=m.fix; } }
+    else { m.o.position.set(m.fix,G+.3,c); b[0]=m.fix;b[1]=m.fix+1.6;b[2]=c-m.len;b[3]=c; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const reach=4.5;
+    if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach; }
+  for(const m of TRAINS){ const u=pingU(m.t), z0=m.f(u), b=m.box; m.o.position.set(m.fix,G+.2,z0); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=z0-19.8;b[3]=z0+.9;
+    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; }
+  for(const m of LANES.concat(TRAINS)){ let stop=low&&inBox(m.ahead,px,pz,.7);
+    if(!stop&&m.sp) for(const o of LANES){ if(o===m||o.ax!==m.ax||o.fix!==m.fix) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
+      if(inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0)){ stop=true; break; } }
+    m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k; }
+}
+function moverHit(x,z,y){ if(y>(G+3.2)*S) return false; const ux=x/S,uz=z/S,mg=PR/S; for(const m of LANES) if(inBox(m.box,ux,uz,mg)) return true; for(const m of TRAINS) if(inBox(m.box,ux,uz,mg)) return true; return false; }
+// ---------- movement with box collision, gravity and jump
+function tryMove(nx,nz){
+  if(nx<.5||nz<.5||nx>MW-.5||nz>MH-.5) return false;
+  let y=P.y;
+  const g=ground(nx,nz,P.y+(P.on?STEP:.02));
+  if(g[1]||g[0]<.5) return false;           // open water or off the map
+  if(P.on&&g[0]>y) y=g[0];                  // small step up
+  if(hits(nx,y,nz)) return false;
+  if(moverHit(nx,nz,y)&&!moverHit(P.x,P.z,P.y)) return false;   // vehicles are solid, but never trap someone already touching one
+  P.x=nx; P.z=nz; P.y=y; return true;
+}
+function physics(dt,dx,dz){
+  if(dx||dz){ const sp=10.5*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(jumpQ&&P.on){ P.vy=17; P.on=false; } jumpQ=false;
+  P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
+  const ny=P.y+P.vy*dt;
+  if(P.vy<=0){ const g=ground(P.x,P.z,P.y+.02)[0]; if(ny<=g){ P.y=g; P.vy=0; P.on=true; } else { P.y=ny; P.on=false; } }
+  else if(hits(P.x,ny,P.z)){ P.vy=0; } else P.y=ny;
+}
+
+// ---------- loop
+train.rotation.y=train2.rotation.y=train3.rotation.y=Math.PI/2; car4.rotation.y=car5.rotation.y=Math.PI/2; car1.rotation.y=car3.rotation.y=Math.PI;
+// ---------- time of day and weather, with the picture finish of 폭주 구구단: GLSL sky dome, bloom, colour grade, sky reflections
+const SKY_FRAG=`// Sky dome (learning edition graphics upgrade). Same uniforms as the original dome, so updSky() drives it unchanged.
+// Horizon-to-zenith gradient with a warm band around the sun at dusk, a sun disc or a moon, twinkling stars at night,
+// and layered fbm clouds lit from the sun's side, thickening with the weather.
+uniform vec3 uTop; uniform vec3 uHor; uniform vec3 uSun; uniform vec3 uSunCol; uniform vec3 uDark;
+uniform float uNight; uniform float uCloud; uniform float uTime; uniform float uDim; uniform float uLin;
+varying vec3 vDir;
+
+float hash(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.02 + vec2(11.3, 7.7); a *= 0.5; } return v; }
+
+void main() {
+  vec3 d = normalize(vDir);
+  float h = clamp(d.y, 0.0, 1.0);
+  vec3 sunDir = normalize(uSun);
+  float sd = max(dot(d, sunDir), 0.0);
+  float dusk = clamp(1.0 - abs(uNight - 0.35) / 0.3, 0.0, 1.0);          // 1 at sunset, 0 at noon and at night
+
+  vec3 col = mix(uHor, uTop, pow(h, 0.5));
+  // dusk: a pink middle band and a warm glow along the horizon on the sun's side
+  float az = max(dot(normalize(d.xz + 1e-4), normalize(sunDir.xz + 1e-4)), 0.0);
+  col = mix(col, mix(col, vec3(0.86, 0.42, 0.55), 0.35), dusk * smoothstep(0.02, 0.18, h) * (1.0 - smoothstep(0.18, 0.5, h)));
+  col += uSunCol * dusk * pow(az, 3.0) * exp(-h * 9.0) * 0.55;
+
+  // sun (by day) or moon (at night), with a soft halo
+  float disc = smoothstep(0.99955, 0.99975, sd);
+  col += uSunCol * (pow(sd, 32.0) * 0.28 + pow(sd, 6.0) * 0.1);
+  col += uSunCol * disc * mix(2.4, 1.3, uNight);
+
+  // stars
+  if (uNight > 0.5 && d.y > 0.02) {
+    vec2 sp = d.xz / (d.y + 0.35) * 80.0; float s = hash(floor(sp)); vec2 sf = fract(sp) - 0.5;
+    float star = step(0.962, s) * smoothstep(0.22, 0.02, length(sf));
+    col += vec3(0.9, 0.95, 1.0) * star * smoothstep(0.5, 1.0, uNight) * (0.5 + 0.5 * sin(uTime * 2.3 + s * 40.0)) * smoothstep(0.02, 0.25, d.y) * (1.0 - uCloud);
+  }
+
+  // clouds: two layers drifting at different speeds, lit on the side facing the sun, darker at the base
+  if (d.y > 0.0) {
+    vec2 cp = d.xz / (d.y + 0.12);
+    float n1 = fbm(cp * 1.1 + vec2(uTime * 0.010, uTime * 0.003));
+    float n2 = fbm(cp * 2.6 + vec2(uTime * 0.018, -uTime * 0.004) + 5.0);
+    float n = n1 * 0.7 + n2 * 0.3;
+    float cover = 0.62 - uCloud * 0.42;
+    float c = smoothstep(cover, cover + 0.22, n) * smoothstep(0.0, 0.16, d.y);
+    float lit = smoothstep(0.0, 0.25, fbm(cp * 1.1 + sunDir.xz * 0.15 + vec2(uTime * 0.010, uTime * 0.003)) - n1 + 0.12);
+    vec3 base = mix(uHor, vec3(1.0), 0.6 - 0.5 * uNight) * (1.0 - 0.4 * uCloud);
+    vec3 cc = mix(base * 0.72, base + uSunCol * (0.25 + 0.6 * dusk), lit);
+    cc += uSunCol * pow(sd, 5.0) * 0.3;
+    col = mix(col, cc, c * (0.6 + 0.35 * uCloud));
+  }
+  col = mix(uDark, col, uDim);
+  if (uLin > 0.5) col = pow(max(col, vec3(0.0)), vec3(2.2));   // baking the reflection map: light, not display colours
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+const GRADE_FRAG=`// Final look (learning edition graphics upgrade), before ACES tone mapping in OutputPass:
+// chromatic aberration and radial blur at the edges when the car is very fast (nitro), a cool cast in the shadows at night
+// and a warm one at dusk, a light vignette, a green or red flash on right and wrong answers, and fine grain.
+// In the rain, drops gather on the lens, bend the picture behind them and dry away again (graphics upgrade 2).
+uniform sampler2D tDiffuse;
+uniform float uTime, uSpeed, uFlash, uNight, uDusk, uRain, uAspect, uRainY;
+uniform vec3 uFlashColor;
+varying vec2 vUv;
+float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+// one layer of drops: a grid of cells, some holding a drop that swells, slips a little and fades; returns the bend and a rim highlight
+vec3 drops(vec2 uv, float scale, float t, float amount) {
+  vec2 g = vec2(uv.x * uAspect, uv.y) * scale;
+  vec2 id = floor(g), f = fract(g) - 0.5;
+  float r = h(id + scale);
+  if (r > amount) return vec3(0.0);
+  float life = fract(t * (0.12 + 0.1 * h(id + 2.7)) + r * 9.0);
+  vec2 p = vec2(h(id + 4.1) - 0.5, h(id + 8.3) - 0.5) * 0.5 - vec2(0.0, life * life * 0.25);
+  float rad = (0.16 + 0.14 * h(id + 1.9)) * smoothstep(0.0, 0.08, life) * (1.0 - smoothstep(0.7, 1.0, life));
+  vec2 d = (f - p) * vec2(1.0, 0.85);
+  float m = smoothstep(rad, rad * 0.75, length(d));
+  return vec3(d * m / max(rad, 1e-3), m * smoothstep(0.0, rad, length(d - vec2(-0.05, 0.05))));
+}
+void main() {
+  vec2 uv = vUv;
+  vec3 da = vec3(0.0), db = vec3(0.0);
+  if (uRain > 0.01) {
+    da = drops(vUv, 7.0, uTime, 0.3 * uRain); db = drops(vUv + 0.37, 13.0, uTime * 1.3, 0.34 * uRain);
+    float wsc = smoothstep(uRainY - 0.015, uRainY + 0.015, vUv.y);   // in the driver's seat the drops are on the windscreen, not on the dash
+    da *= wsc; db *= wsc;
+    uv -= (da.xy * 0.022 + db.xy * 0.012) * (1.0 - 0.6 * uSpeed);
+  }
+  vec2 c = uv - 0.5;
+  float r = length(c);
+  float ca = uSpeed * 0.004 * r;
+  vec3 col = vec3(texture2D(tDiffuse, uv - c * ca).r, texture2D(tDiffuse, uv).g, texture2D(tDiffuse, uv + c * ca).b);
+  if (uSpeed > 0.01) {
+    vec3 blur = vec3(0.0);
+    for (int i = 0; i < 6; i++) blur += texture2D(tDiffuse, uv - c * (float(i) / 6.0) * 0.04 * uSpeed).rgb;
+    col = mix(col, blur / 6.0, smoothstep(0.3, 0.72, r) * uSpeed);
+  }
+  col += (da.z + db.z) * 0.03 * (1.0 + uNight);                       // the drops catch a little light at their rims
+  float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
+  vec3 night = mix(col * vec3(0.86, 0.98, 1.16), col * vec3(1.06, 1.0, 0.92), smoothstep(0.05, 0.6, l));
+  vec3 dusk = mix(col * vec3(0.95, 0.96, 1.06), col * vec3(1.08, 1.0, 0.9), smoothstep(0.05, 0.6, l));
+  col = mix(col, night, uNight * 0.8);
+  col = mix(col, dusk, uDusk * 0.7);
+  col = mix(vec3(l), col, 1.0 + 0.12 * uNight);                       // neon a little more saturated at night
+  col *= 1.0 - smoothstep(0.5, 0.98, r) * (0.28 + 0.2 * uNight);
+  col += uFlashColor * uFlash * (0.12 + r * 0.8);
+  col += (h(vUv * 911.0 + fract(uTime) * 37.0) - 0.5) * 0.012;
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+const TOD=[['낮','☀️',{top:[.30,.58,.92],hor:[.80,.90,.98],sc:[1,.95,.82],sd:[-.35,.75,.55],sun:0xfff0d8,si:2.7,hi:1.05,hc:0xffffff,ex:1.1,night:0,bs:.10,bt:1.7}],
+           ['노을','🌇',{top:[.28,.30,.56],hor:[.98,.62,.42],sc:[1,.55,.25],sd:[-.85,.10,.5],sun:0xff8e4d,si:2.1,hi:.7,hc:0xffc7a0,ex:1.05,night:.35,bs:.28,bt:1.15}],
+           ['밤','🌙',{top:[.015,.03,.09],hor:[.06,.09,.2],sc:[.75,.82,1],sd:[.45,.55,-.7],sun:0x8ea6ff,si:.55,hi:.28,hc:0x6276b8,ex:.98,night:1,bs:.5,bt:.85}]];
+const WX=[['맑음','🌤️',{mix:0,grey:[.6,.64,.68],dim:1,fog:null,cloud:.15}],
+          ['비','🌧️',{mix:.65,grey:[.54,.58,.62],dim:.5,fog:[.75,2.2,520],cloud:.92}],
+          ['눈','❄️',{mix:.55,grey:[.87,.9,.93],dim:.68,fog:[.7,2.0,430],cloud:.8}],
+          ['안개','🌫️',{mix:.75,grey:[.81,.84,.86],dim:.6,fog:[.35,1.2,150],cloud:.65}]];
+let todI=0,wxI=0;
+const envC={top:[.30,.58,.92],hor:[.80,.90,.98],sc:[1,.95,.82],sd:[-.35,.75,.55],sun:new THREE.Color(0xfff0d8),hc:new THREE.Color(0xffffff),si:2.7,hi:1.05,ex:1.1,night:0,fn:4200,ff:11000,cloud:.15,rain:0,bs:.1,bt:1.7};
+const tmpC=new THREE.Color();
+const btnT=document.getElementById('tod'),btnW=document.getElementById('wx');
+function envLabel(){ btnT.textContent=TOD[todI][1]; btnT.title=TOD[todI][0]; btnW.textContent=WX[wxI][1]; btnW.title=WX[wxI][0]; }
+btnT.onclick=()=>{ todI=(todI+1)%TOD.length; envLabel(); envDirty=1.6; say('시간: '+TOD[todI][0]); };
+btnW.onclick=()=>{ wxI=(wxI+1)%WX.length; envLabel(); envDirty=1.6; say('날씨: '+WX[wxI][0]); };
+envLabel();
+// sky dome
+const rawC=a=>new THREE.Color().setRGB(a[0],a[1],a[2]);
+const skyU={uTop:{value:rawC(envC.top)},uHor:{value:rawC(envC.hor)},uSun:{value:new THREE.Vector3(-.35,.75,.55)},uSunCol:{value:rawC(envC.sc)},uDark:{value:new THREE.Color(0,0,0)},uNight:{value:0},uCloud:{value:.15},uTime:{value:0},uDim:{value:1},uLin:{value:0}};
+const skyDome=new THREE.Mesh(new THREE.SphereGeometry(1,32,16),new THREE.ShaderMaterial({uniforms:skyU,side:THREE.BackSide,depthWrite:false,fog:false,
+  vertexShader:'varying vec3 vDir;\nvoid main(){ vDir=position; vec4 p=projectionMatrix*viewMatrix*vec4(position*900.0+cameraPosition,1.0); gl_Position=p.xyww; }',fragmentShader:SKY_FRAG}));
+skyDome.frustumCulled=false; skyDome.renderOrder=-10; scene.add(skyDome);
+// post-processing: scene -> bloom -> grade -> output (tone mapping). Devices without half-float buffers draw directly.
+let post=null;
+try{ if(renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffer_float')){
+  const rt=new THREE.WebGLRenderTarget(2,2,{type:THREE.HalfFloatType,samples:4});
+  const composer=new EffectComposer(renderer,rt); composer.addPass(new RenderPass(scene,camera));
+  const bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.1,.4,1.7);
+  const bsz=bloom.setSize.bind(bloom); bloom.setSize=(w,h)=>{ const k=Math.min(1,1920/Math.max(1,w)); bsz(Math.round(w*k),Math.round(h*k)); };
+  const hp=bloom.materialHighPassFilter,hpFrom='vec4 texel = texture2D( tDiffuse, vUv );';
+  if(hp.fragmentShader.indexOf(hpFrom)>=0){ hp.fragmentShader=hp.fragmentShader.replace(hpFrom,hpFrom+'\n\t\t\tif ( any( isnan( texel ) ) || any( isinf( texel ) ) ) texel = vec4( 0.0 );'); hp.needsUpdate=true; }
+  composer.addPass(bloom);
+  const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uTime:{value:0},uSpeed:{value:0},uFlash:{value:0},uFlashColor:{value:new THREE.Color(.2,.9,.55)},uNight:{value:0},uDusk:{value:0},uRain:{value:0},uAspect:{value:1},uRainY:{value:0}},
+    vertexShader:'varying vec2 vUv;\nvoid main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',fragmentShader:GRADE_FRAG});
+  composer.addPass(grade); composer.addPass(new OutputPass());
+  post={composer,bloom,grade:grade.uniforms,rp:composer.passes[0]}; skyU.uLin.value=1;
+} }catch(e){ post=null; skyU.uLin.value=0; }
+// automatic quality: resolution first (100% -> 83% -> 67% -> 53% -> 43%), bloom off at the lowest two steps
+const QL=[1.5,1.25,1.0,.8,.65]; let qLv=0,qAcc=0,qN=0,qHold=0;
+function applyQ(){ const pr=Math.min(window.devicePixelRatio||1,QL[qLv]); renderer.setPixelRatio(pr); const w=innerWidth,h=innerHeight; renderer.setSize(w,h);
+  if(post){ post.composer.setPixelRatio(pr); post.composer.setSize(w,h); post.grade.uAspect.value=w/Math.max(1,h); post.bloom.enabled=qLv<3; } }
+applyQ(); addEventListener('resize',applyQ);
+function autoQ(raw){ qAcc+=raw; qN++; if(qN<45) return; const avg=qAcc/qN; qAcc=0; qN=0; if(!started||document.hidden) return;
+  if(avg>1/26&&qLv<QL.length-1){ qLv++; qHold=8; applyQ(); } else if(avg<1/52&&qLv>0){ if(--qHold<=0){ qLv--; qHold=12; applyQ(); } } }
+// sky reflections on the plastic: the dome baked into a blurred cube map whenever time or weather changes
+let envDirty=.2, envRT=null; const pmrem=new THREE.PMREMGenerator(renderer), envScene=new THREE.Scene(); envScene.add(new THREE.Mesh(skyDome.geometry,skyDome.material));
+function bakeEnv(){ try{ const lin=skyU.uLin.value; skyU.uLin.value=1; const rt=pmrem.fromScene(envScene,0,.1,1000); skyU.uLin.value=lin; scene.environment=rt.texture; scene.environmentIntensity=.5; if(envRT) envRT.dispose(); envRT=rt; }catch(e){} }
+const lantern=new THREE.PointLight(0xffd9a0,0,60,1.3); scene.add(lantern);
+// rain streaks and snow flakes live in a box that follows the camera target
+const NP=2400, wxG=new THREE.Group(); scene.add(wxG);
+const rainPos=new Float32Array(NP*6), snowPos=new Float32Array(NP*3), seedP=new Float32Array(NP*4);
+for(let i=0;i<NP;i++){ seedP[i*4]=rnd()*2-1; seedP[i*4+1]=rnd(); seedP[i*4+2]=rnd()*2-1; seedP[i*4+3]=rnd(); }
+const rainGeo=new THREE.BufferGeometry(); rainGeo.setAttribute('position',new THREE.BufferAttribute(rainPos,3));
+const rain=new THREE.LineSegments(rainGeo,new THREE.LineBasicMaterial({color:0xcfe4ff,transparent:true,opacity:.55,fog:false,depthWrite:false})); rain.frustumCulled=false; rain.visible=false; wxG.add(rain);
+const snowGeo=new THREE.BufferGeometry(); snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
+const snow=new THREE.Points(snowGeo,new THREE.PointsMaterial({color:0xffffff,size:5,sizeAttenuation:false,transparent:true,opacity:.92,fog:false,depthWrite:false})); snow.frustumCulled=false; snow.visible=false; wxG.add(snow);
+const lerpA=(a,b,k)=>{ for(let i=0;i<3;i++) a[i]+=(b[i]-a[i])*k; };
+function updateEnv(dt){
+  const e=TOD[todI][2], w=WX[wxI][2], k=Math.min(1,dt*2.2), nd=e.night>.8?.16:1, g=[w.grey[0]*nd,w.grey[1]*nd,w.grey[2]*nd];
+  const top=e.top.map((v,i)=>v+(g[i]*.8-v)*w.mix), hor=e.hor.map((v,i)=>v+(g[i]-v)*w.mix);
+  lerpA(envC.top,top,k); lerpA(envC.hor,hor,k); lerpA(envC.sc,e.sc,k); lerpA(envC.sd,e.sd,k);
+  envC.sun.lerp(tmpC.setHex(e.sun),k); envC.hc.lerp(tmpC.setHex(e.hc),k);
+  envC.si+=(e.si*w.dim-envC.si)*k; envC.hi+=(e.hi*(.6+.4*w.dim)-envC.hi)*k; envC.ex+=(e.ex-envC.ex)*k; envC.night+=(e.night-envC.night)*k;
+  envC.cloud+=(w.cloud-envC.cloud)*k; envC.rain+=((wxI===1?1:0)-envC.rain)*k; envC.bs+=(e.bs-envC.bs)*k; envC.bt+=(e.bt-envC.bt)*k;
+  const fn=w.fog?cam.dist*w.fog[0]:4200, ff=w.fog?cam.dist*w.fog[1]+w.fog[2]:11000; envC.fn+=(fn-envC.fn)*k; envC.ff+=(ff-envC.ff)*k;
+  skyU.uTop.value.setRGB(envC.top[0],envC.top[1],envC.top[2]); skyU.uHor.value.setRGB(envC.hor[0],envC.hor[1],envC.hor[2]); skyU.uSunCol.value.setRGB(envC.sc[0],envC.sc[1],envC.sc[2]);
+  skyU.uSun.value.set(envC.sd[0],envC.sd[1],envC.sd[2]); skyU.uNight.value=envC.night; skyU.uCloud.value=envC.cloud; skyU.uTime.value=t;
+  scene.fog.color.setRGB(envC.hor[0],envC.hor[1],envC.hor[2],THREE.SRGBColorSpace); scene.background.copy(scene.fog.color); scene.fog.near=envC.fn; scene.fog.far=envC.ff;
+  sun.color.copy(envC.sun); sun.intensity=envC.si; hemi.color.copy(envC.hc); hemi.intensity=envC.hi; renderer.toneMappingExposure=envC.ex;
+  const nk=Math.min(1,Math.max(0,(envC.night-.5)/.5)), dk=Math.min(1,Math.max(0,1-Math.abs(envC.night-.35)/.3));
+  BU.uTime.value=t; BU.uGlow.value=Math.min(1,Math.max(0,(envC.night-.18)/.22));
+  if(post){ const u=post.grade; u.uTime.value=t; u.uNight.value=nk; u.uDusk.value=dk; u.uRain.value=envC.rain*(cam.dist<120?.5:0); post.bloom.strength=envC.bs; post.bloom.threshold=envC.bt; }
+  if(envDirty>0){ envDirty-=dt; if(envDirty<=0) bakeEnv(); }
+  lantern.intensity=nk*34; lantern.position.set(P.x,P.y+5,P.z);
+  const isRain=wxI===1,isSnow=wxI===2; rain.visible=isRain; snow.visible=isSnow;
+  if(isRain||isSnow){ const sc=Math.max(1,cam.dist/22), H=30; wxG.position.set(cam.tx,cam.ty,cam.tz); wxG.scale.setScalar(sc);
+    if(isRain){ for(let i=0;i<NP;i++){ const x=seedP[i*4]*26, z=seedP[i*4+2]*26, y=H-((seedP[i*4+1]*H*1.3+t*(58+seedP[i*4+3]*26))%(H*1.3))-6, j=i*6;
+        rainPos[j]=x; rainPos[j+1]=y; rainPos[j+2]=z; rainPos[j+3]=x+.5; rainPos[j+4]=y+2.3; rainPos[j+5]=z; } rainGeo.attributes.position.needsUpdate=true; }
+    else { for(let i=0;i<NP;i++){ const y=H-((seedP[i*4+1]*H*1.3+t*(5+seedP[i*4+3]*4))%(H*1.3))-6, j=i*3;
+        snowPos[j]=seedP[i*4]*26+Math.sin(t*.9+i)*1.6; snowPos[j+1]=y; snowPos[j+2]=seedP[i*4+2]*26+Math.cos(t*.7+i*1.7)*1.6; } snowGeo.attributes.position.needsUpdate=true; } }
+}
+let studsOn=true; const clock=new THREE.Clock(); const v3=new THREE.Vector3(); let t=0,frame=0;
+function tick(){
+  const rawDt=clock.getDelta(), dt=Math.min(.05,rawDt); t+=dt; frame++; autoQ(rawDt);
+  const sx=274+((t*1.6)%18); ship.position.set(sx,.8+Math.sin(t*5)*.04,280.2);
+  wake.forEach((w,i)=>{ const ph=(i*.37+t*1.6)%1,side=i%2?1:-1,back=1+(i>>1)*1.1+ph; w.position.set(sx-back,.87,281.4+side*(.9+back*.28)); const s=Math.max(.2,(1-ph*.6)*(1.1-back*.09)); w.scale.set(s,.1,s*.8); });
+  moveTraffic(dt); moveSky(dt);
+  // input
+  let ix=jx+(key.KeyD||key.ArrowRight?1:0)-(key.KeyA||key.ArrowLeft?1:0), iy=jy+(key.KeyW||key.ArrowUp?1:0)-(key.KeyS||key.ArrowDown?1:0);
+  if(modal){ ix=iy=0; jumpQ=false; }
+  const im=Math.hypot(ix,iy); let moving=false,dx=0,dz=0;
+  if(started&&im>.12){ const k=Math.min(1,im)/im; ix*=k; iy*=k; const sn=Math.sin(cam.yaw),cs=Math.cos(cam.yaw); dx=cs*ix-sn*iy; dz=-sn*ix-cs*iy;
+    let df=Math.atan2(dx,dz)-P.face; df=Math.atan2(Math.sin(df),Math.cos(df)); P.face+=df*Math.min(1,dt*12); moving=true; }
+  if(started){ physics(dt/2,dx,dz); physics(dt/2,dx,dz); } else jumpQ=false;
+  P.walk+=moving?dt*11:0; const sw=!P.on?.9:(moving?Math.sin(P.walk)*.7:0);
+  legL.rotation.x=sw; legR.rotation.x=-sw; armL.rotation.x=P.on?-sw:-2.4; armR.rotation.x=P.on?sw:-2.4;
+  player.position.set(P.x,P.y,P.z); body.rotation.y=P.face; body.position.y=(moving&&P.on)?Math.abs(Math.sin(P.walk))*.08:0;
+  const sh=ground(P.x,P.z,P.y+.05)[0]; blob.position.set(P.x,sh+.03,P.z); blob.scale.setScalar(1.2*Math.max(.45,1-(P.y-sh)*.25));
+  // camera
+  cam.dist+=(cam.want-cam.dist)*Math.min(1,dt*3.5);
+  const far=Math.min(1,Math.max(0,(cam.dist-130)/200));
+  const gx=P.x+(MW/2-P.x)*far, gy=P.y+1.9+(2-P.y-1.9)*far, gz=P.z+(MH/2+10-P.z)*far;
+  cam.tx+=(gx-cam.tx)*Math.min(1,dt*8); cam.ty+=(gy-cam.ty)*Math.min(1,dt*5); cam.tz+=(gz-cam.tz)*Math.min(1,dt*8);
+  const cp=Math.cos(cam.pitch);
+  camera.position.set(cam.tx+Math.sin(cam.yaw)*cp*cam.dist,cam.ty+Math.sin(cam.pitch)*cam.dist,cam.tz+Math.cos(cam.yaw)*cp*cam.dist);
+  camera.lookAt(cam.tx,cam.ty,cam.tz);
+  { const nr=Math.max(.3,cam.dist*.05), fr=Math.max(4000,cam.dist*7); if(Math.abs(camera.near-nr)>nr*.04||Math.abs(camera.far-fr)>fr*.04){ camera.near=nr; camera.far=fr; camera.updateProjectionMatrix(); } }
+  updateEnv(dt);
+  if(post) post.composer.render(dt); else renderer.render(scene,camera);
+  if(frame===2) renderer.shadowMap.autoUpdate=false;
+  // places
+  let near=null,nd=1e9; const wide=cam.dist>230, sv=cam.dist<170;
+  if(sv!==studsOn){ studsOn=sv; for(const m of studMeshes) m.visible=sv; }
+  for(const c of CL){ if(!wide){ if(c.on){ c.e.style.display='none'; c.on=false; } continue; } v3.set(c.x,22,c.z).project(camera);
+    const show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; c.on=show; c.e.style.display=show?'':'none';
+    if(show) c.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; }
+  const lim=cam.dist+80;
+  for(const p of POI){ if(started){ const rr=p.r*1.7+5, dxp=P.x-p.t[0],dzp=P.z-p.t[1],dxl=P.x-p.l[0],dzl=P.z-p.l[2]; if((Math.abs(dxp)<rr&&Math.abs(dzp)<rr)||(Math.abs(dxl)<rr&&Math.abs(dzl)<rr)){ const d=Math.min(Math.hypot(dxp,dzp),Math.hypot(dxl,dzl)); if(d<rr&&d<nd){ near=p; nd=d; } } }
+    let show=false; if(!wide&&Math.abs(p.l[0]-cam.tx)<lim&&Math.abs(p.l[2]-cam.tz)<lim){ v3.set(p.l[0],p.l[1],p.l[2]); const cd=v3.distanceTo(camera.position); v3.project(camera);
+      show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.15&&Math.abs(v3.y)<1.15&&cd<lim; }
+    if(show){ p.on=true; p.e.style.display=''; p.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; } else if(p.on!==false){ p.on=false; p.e.style.display='none'; } }
+  if(near!==cur){ cur=near; const ab=document.getElementById('act');
+    if(near){ document.getElementById('an').textContent=near.n; document.getElementById('as').textContent=near.v?'도장 받은 곳 · 다시 보기':'살펴보기'; ab.classList.toggle('done',!!near.v); ab.classList.add('on'); }
+    else ab.classList.remove('on'); }
+  if(frame%6===0) drawMap();
+  requestAnimationFrame(tick);
+}
+// ---------- place sheet: a picture of the block model, the description and a quiz; a right answer earns the stamp
+const shotCam=new THREE.PerspectiveCamera(40,16/9,1,5000);
+function shot(p){ const L=p.l; let dx=p.t[0]-L[0],dz=p.t[1]-L[2],n=Math.hypot(dx,dz); if(n<.5){ dx=.6; dz=.8; n=1; } dx/=n; dz/=n;
+  const h=Math.max(6,L[1]), D=Math.max(30,h*1.7+p.r*1.1), W=renderer.domElement.width, H=renderer.domElement.height;
+  const cw=Math.min(W,H*16/9), ch=cw*9/16;
+  shotCam.aspect=W/H; shotCam.fov=Math.min(120,2*Math.atan(Math.tan(20*Math.PI/180)*H/ch)*180/Math.PI); shotCam.near=Math.max(.5,D*.04); shotCam.far=5000;
+  shotCam.position.set(L[0]+dx*D*.82-dz*D*.38,h*.45+D*.5,L[2]+dz*D*.82+dx*D*.38); shotCam.lookAt(L[0],h*.38,L[2]); shotCam.updateProjectionMatrix(); shotCam.updateMatrixWorld();
+  const pv=player.visible; player.visible=false;
+  try{ if(post){ post.rp.camera=shotCam; post.composer.render(0); post.rp.camera=camera; } else renderer.render(scene,shotCam);
+    const c=document.getElementById('qc'); c.getContext('2d').drawImage(renderer.domElement,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height); }catch(e){ if(post) post.rp.camera=camera; }
+  player.visible=pv; }
+function stampIt(p){ p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
+  if(cur===p){ document.getElementById('as').textContent='도장 받은 곳 · 다시 보기'; document.getElementById('act').classList.add('done'); } }
+function openQ(p){ if(modal||!p) return; modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
+  shot(p);
+  const $=id=>document.getElementById(id); $('qr').textContent=p.c; $('qh').textContent=p.n; $('qd').textContent=p.d; $('qs').style.display=p.v?'inline':'none';
+  $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'설명을 읽고 알맞은 답을 골라 보세요.';
+  $('qt').textContent=p.q[0]; const opts=p.q.slice(1).map((t,i)=>({t,ok:i===0})); for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
+  const box=$('qo'); box.textContent='';
+  opts.forEach((o,i)=>{ const b=document.createElement('button'); const n=document.createElement('i'); n.textContent=i+1; b.appendChild(n); b.appendChild(document.createTextNode(o.t));
+    if(p.v){ b.disabled=true; if(o.ok) b.classList.add('ok'); }
+    b.onclick=()=>{ if(p.v) return;
+      if(o.ok){ b.classList.add('ok'); for(const x of box.children) x.disabled=true; stampIt(p); $('stamp').classList.add('on'); qm.className='ok'; qm.textContent='정답이에요! 탐방 도장을 받았어요.'; $('qs').style.display='inline'; $('qn').style.display='block'; setTimeout(()=>$('qn').scrollIntoView({block:'nearest',behavior:'smooth'}),350);
+        if(visited===POI.length) say('충청남도 완주! 도장을 모두 모았어요'); }
+      else { b.classList.add('no'); b.disabled=true; qm.className='no'; qm.textContent='아쉬워요. 설명을 다시 읽고 골라 보세요.'; } };
+    box.appendChild(b); });
+  $('qg').textContent=p.v?'다음 · 퀴즈 다시 보기':'다음 · 퀴즈 풀기'; $('qz').classList.remove('quiz'); $('qz').classList.add('on'); $('qz').firstElementChild.scrollTop=0; document.getElementById('act').classList.remove('on'); }
+function closeQ(){ if(!modal) return; modal=null; document.getElementById('qz').classList.remove('on'); if(cur) document.getElementById('act').classList.add('on'); }
+document.getElementById('act').addEventListener('click',()=>openQ(cur));
+document.getElementById('qg').onclick=()=>{ document.getElementById('qz').classList.add('quiz'); setTimeout(()=>document.getElementById('qq').scrollIntoView({block:'nearest',behavior:'smooth'}),30); };
+document.getElementById('qx').onclick=closeQ; document.getElementById('qn').onclick=closeQ;
+document.getElementById('qz').addEventListener('pointerdown',e=>{ if(e.target.id==='qz') closeQ(); });
+window.__dbg={openQ,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}}; tick();
+</script></body></html>
