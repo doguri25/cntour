@@ -1,0 +1,2 @@
+// scenes that have a picture drawn in Canva (small previews, enlarged); the rest use the built-in drawings
+export const ART=["beach", "birds", "bridge", "buddha", "cherry", "church", "cow", "field", "forest", "fortress", "garden", "hall", "hanok", "island", "jar", "lake", "market", "monument", "mountain", "museum", "observatory", "pagoda", "port", "river", "spa", "station", "statue", "temple", "thatch", "tomb", "tower"];

@@ -80,7 +80,7 @@ button{font-family:inherit;color:inherit}
 #qpic{position:relative;border-radius:28px 28px 0 0;overflow:hidden;background:#dfeaf6;aspect-ratio:16/9}
 #qpic canvas{position:static;display:block;width:100%;height:100%}
 #qi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-#qv{position:absolute;inset:0}#qv svg{display:block;width:100%;height:100%}
+#qv{position:absolute;inset:0}#qv svg{display:block;width:100%;height:100%}#qv img{display:block;width:100%;height:100%;object-fit:cover}
 #qpic.blk #qv,#qpic.blk #qi{display:none!important}#qpic.blk #qsrc{display:none!important}
 #qpic.ph #qi{display:block}
 #qsrc{position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.6);border-radius:999px;padding:4px 10px;text-decoration:none;display:none;max-width:calc(100% - 130px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1471,8 +1471,8 @@ POI.forEach(p=>{ const e=document.createElement('div'); e.className='lb'; e.text
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
 { const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
 document.getElementById('tot').textContent=POI.length;
-let illust=null, extraP=null;
-const extra=()=>extraP||(extraP=Promise.all([import('./quiz.js'),import('./photo.js'),import('./illust.js')]).then(([a,b,c])=>{ POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; throw e; }));
+let illust=null, kindOf=null, ART=new Set(), extraP=null;
+const extra=()=>extraP||(extraP=Promise.all([import('./quiz.js'),import('./photo.js'),import('./illust.js'),import('./ill/list.js').catch(()=>({ART:[]}))]).then(([a,b,c,d])=>{ kindOf=c.kindOf; ART=new Set(d.ART); POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; throw e; }));
 let cur=null,visited=0,modal=null;
 const toast=document.getElementById('toast'); let toastT=0;
 function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),2600); }
@@ -1853,7 +1853,7 @@ async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null;
 function picLabel(){ const pic=document.getElementById('qpic'), blk=pic.classList.contains('blk'), ph=pic.classList.contains('ph');
   document.getElementById('qe').textContent=blk?'블록으로 쌓은 모습':'삽화'; document.getElementById('qe').style.display=(!blk&&ph)?'none':''; document.getElementById('qsw').textContent=blk?(ph?'사진 보기':'삽화 보기'):'블록 모습 보기'; }
 function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.getElementById('qi'); pic.classList.remove('ph','blk'); img.removeAttribute('src');
-  document.getElementById('qv').innerHTML=illust(p); picLabel();
+  { const [k,a]=kindOf(p), key=k==='item'?a:k, v=document.getElementById('qv'); if(ART.has(key)){ v.textContent=''; const im=new Image(); im.alt=''; im.onerror=()=>{ v.innerHTML=illust(p); }; im.src='./ill/'+key+'.webp'; v.appendChild(im); } else v.innerHTML=illust(p); } picLabel();
   photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph'); picLabel(); };
     img.onerror=()=>{ pic.classList.remove('ph'); p.ph=null; picLabel(); }; img.src=ph.src;
     const a=document.getElementById('qsrc'); a.textContent='사진 · '+ph.by; a.href=ph.href; }); }
