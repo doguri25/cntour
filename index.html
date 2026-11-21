@@ -139,9 +139,6 @@ button{font-family:inherit;color:inherit}
 </style>
 <link rel="modulepreload" href="./three.module.js">
 <link rel="modulepreload" href="./three.core.js">
-<link rel="modulepreload" href="./quiz.js">
-<link rel="modulepreload" href="./photo.js">
-<link rel="modulepreload" href="./illust.js">
 <link rel="modulepreload" href="./addons/geometries/RoundedBoxGeometry.js">
 <link rel="modulepreload" href="./addons/postprocessing/EffectComposer.js">
 <link rel="modulepreload" href="./addons/postprocessing/MaskPass.js">
@@ -191,9 +188,6 @@ button{font-family:inherit;color:inherit}
 <div id="err"></div>
 <script>window.addEventListener('error',e=>{const d=document.getElementById('err');d.style.display='block';d.textContent='화면을 그리는 중 문제가 생겼어요: '+(e.message||'');});</script>
 <script type="module">
-import {QUIZ} from './quiz.js';
-import {PHOTO} from './photo.js';
-import {illust} from './illust.js';
 import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -203,7 +197,8 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+const LITE=matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<600;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,LITE?1.25:1.5));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
 document.body.prepend(renderer.domElement);
@@ -216,7 +211,7 @@ addEventListener('resize',resize); resize();
 const hemi=new THREE.HemisphereLight(0xffffff,0xe6d8b8,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff0d8,2.7);
 sun.position.set(800,634,806); sun.target.position.set(972,0,495);
-sun.castShadow=true; {const ms=Math.min(4096,renderer.capabilities.maxTextureSize); sun.shadow.mapSize.set(ms,ms);}
+sun.castShadow=true; {const ms=Math.min(LITE?2048:4096,renderer.capabilities.maxTextureSize); sun.shadow.mapSize.set(ms,ms);}
 const sc=sun.shadow.camera; sc.left=-1090;sc.right=1090;sc.top=750;sc.bottom=-750;sc.near=20;sc.far=2300;
 sun.shadow.bias=-0.0008; sun.shadow.normalBias=0.6;
 scene.add(sun,sun.target);
@@ -1352,7 +1347,7 @@ function hits(x,y,z){ let h=false; around(x,z,b=>{ if(b[1]<y+PH&&b[1]+b[4]>y+.02
 const flatTex=new THREE.DataTexture(new Uint8Array([128,128,255,255]),1,1); flatTex.needsUpdate=true;
 const BU={uTime:{value:0},uGlow:{value:0},uWin:{value:new THREE.Color(C.navy)},uWat:{value:new THREE.Color(C.water)},uBrick:{value:flatTex},uOcean:{value:flatTex},uShore:{value:SHORE},uMapSize:{value:new THREE.Vector2(MW,MH)}};
 { const tl=new THREE.TextureLoader(); const ld=(f,k)=>tl.load(f,tx=>{ tx.wrapS=tx.wrapT=THREE.RepeatWrapping; tx.colorSpace=THREE.NoColorSpace; tx.anisotropy=4; BU[k].value=tx; });
-  ld('./brick.png','uBrick'); ld('./ocean.png','uOcean'); }
+  ld('./brick.webp','uBrick'); ld('./ocean.webp','uOcean'); }
 const STUD={"p":[0.2427,0.0,-0.1763,0.3,0.165,-0.0,0.3,0.0,-0.0,0.0927,0.0,-0.2853,0.2427,0.165,-0.1763,0.2427,0.0,-0.1763,-0.0927,0.0,-0.2853,0.0927,0.165,-0.2853,0.0927,0.0,-0.2853,-0.2427,0.0,-0.1763,-0.0927,0.165,-0.2853,-0.0927,0.0,-0.2853,-0.3,0.0,-0.0,-0.2427,0.165,-0.1763,-0.2427,0.0,-0.1763,-0.2427,0.0,0.1763,-0.3,0.165,-0.0,-0.3,0.0,-0.0,-0.0927,0.0,0.2853,-0.2427,0.165,0.1763,-0.2427,0.0,0.1763,0.0927,0.0,0.2853,-0.0927,0.165,0.2853,-0.0927,0.0,0.2853,0.2427,0.0,0.1763,0.0927,0.165,0.2853,0.0927,0.0,0.2853,0.3,0.0,-0.0,0.2427,0.165,0.1763,0.2427,0.0,0.1763,0.2427,0.165,-0.1763,0.2895,0.1895,-0.0,0.3,0.165,-0.0,0.0927,0.165,-0.2853,0.2342,0.1895,-0.1702,0.2427,0.165,-0.1763,-0.0927,0.165,-0.2853,0.0895,0.1895,-0.2753,0.0927,0.165,-0.2853,-0.2427,0.165,-0.1763,-0.0895,0.1895,-0.2753,-0.0927,0.165,-0.2853,-0.2427,0.165,-0.1763,-0.2895,0.1895,-0.0,-0.2342,0.1895,-0.1702,-0.2427,0.165,0.1763,-0.2895,0.1895,-0.0,-0.3,0.165,-0.0,-0.0927,0.165,0.2853,-0.2342,0.1895,0.1702,-0.2427,0.165,0.1763,0.0927,0.165,0.2853,-0.0895,0.1895,0.2753,-0.0927,0.165,0.2853,0.2427,0.165,0.1763,0.0895,0.1895,0.2753,0.0927,0.165,0.2853,0.2427,0.165,0.1763,0.2895,0.1895,-0.0,0.2342,0.1895,0.1702,0.2342,0.1895,-0.1702,0.265,0.2,-0.0,0.2895,0.1895,-0.0,0.0895,0.1895,-0.2753,0.2144,0.2,-0.1558,0.2342,0.1895,-0.1702,-0.0895,0.1895,-0.2753,0.0819,0.2,-0.252,0.0895,0.1895,-0.2753,-0.2342,0.1895,-0.1702,-0.0819,0.2,-0.252,-0.0895,0.1895,-0.2753,-0.2895,0.1895,-0.0,-0.2144,0.2,-0.1558,-0.2342,0.1895,-0.1702,-0.2342,0.1895,0.1702,-0.265,0.2,-0.0,-0.2895,0.1895,-0.0,-0.0895,0.1895,0.2753,-0.2144,0.2,0.1558,-0.2342,0.1895,0.1702,0.0895,0.1895,0.2753,-0.0819,0.2,0.252,-0.0895,0.1895,0.2753,0.2342,0.1895,0.1702,0.0819,0.2,0.252,0.0895,0.1895,0.2753,0.2895,0.1895,-0.0,0.2144,0.2,0.1558,0.2342,0.1895,0.1702,-0.0819,0.2,0.252,0.2144,0.2,-0.1558,0.0819,0.2,-0.252,0.2427,0.0,-0.1763,0.2427,0.165,-0.1763,0.3,0.165,-0.0,0.0927,0.0,-0.2853,0.0927,0.165,-0.2853,0.2427,0.165,-0.1763,-0.0927,0.0,-0.2853,-0.0927,0.165,-0.2853,0.0927,0.165,-0.2853,-0.2427,0.0,-0.1763,-0.2427,0.165,-0.1763,-0.0927,0.165,-0.2853,-0.3,0.0,-0.0,-0.3,0.165,-0.0,-0.2427,0.165,-0.1763,-0.2427,0.0,0.1763,-0.2427,0.165,0.1763,-0.3,0.165,-0.0,-0.0927,0.0,0.2853,-0.0927,0.165,0.2853,-0.2427,0.165,0.1763,0.0927,0.0,0.2853,0.0927,0.165,0.2853,-0.0927,0.165,0.2853,0.2427,0.0,0.1763,0.2427,0.165,0.1763,0.0927,0.165,0.2853,0.3,0.0,-0.0,0.3,0.165,-0.0,0.2427,0.165,0.1763,0.2427,0.165,-0.1763,0.2342,0.1895,-0.1702,0.2895,0.1895,-0.0,0.0927,0.165,-0.2853,0.0895,0.1895,-0.2753,0.2342,0.1895,-0.1702,-0.0927,0.165,-0.2853,-0.0895,0.1895,-0.2753,0.0895,0.1895,-0.2753,-0.2427,0.165,-0.1763,-0.2342,0.1895,-0.1702,-0.0895,0.1895,-0.2753,-0.2427,0.165,-0.1763,-0.3,0.165,-0.0,-0.2895,0.1895,-0.0,-0.2427,0.165,0.1763,-0.2342,0.1895,0.1702,-0.2895,0.1895,-0.0,-0.0927,0.165,0.2853,-0.0895,0.1895,0.2753,-0.2342,0.1895,0.1702,0.0927,0.165,0.2853,0.0895,0.1895,0.2753,-0.0895,0.1895,0.2753,0.2427,0.165,0.1763,0.2342,0.1895,0.1702,0.0895,0.1895,0.2753,0.2427,0.165,0.1763,0.3,0.165,-0.0,0.2895,0.1895,-0.0,0.2342,0.1895,-0.1702,0.2144,0.2,-0.1558,0.265,0.2,-0.0,0.0895,0.1895,-0.2753,0.0819,0.2,-0.252,0.2144,0.2,-0.1558,-0.0895,0.1895,-0.2753,-0.0819,0.2,-0.252,0.0819,0.2,-0.252,-0.2342,0.1895,-0.1702,-0.2144,0.2,-0.1558,-0.0819,0.2,-0.252,-0.2895,0.1895,-0.0,-0.265,0.2,-0.0,-0.2144,0.2,-0.1558,-0.2342,0.1895,0.1702,-0.2144,0.2,0.1558,-0.265,0.2,-0.0,-0.0895,0.1895,0.2753,-0.0819,0.2,0.252,-0.2144,0.2,0.1558,0.0895,0.1895,0.2753,0.0819,0.2,0.252,-0.0819,0.2,0.252,0.2342,0.1895,0.1702,0.2144,0.2,0.1558,0.0819,0.2,0.252,0.2895,0.1895,-0.0,0.265,0.2,-0.0,0.2144,0.2,0.1558,0.2144,0.2,0.1558,0.265,0.2,-0.0,0.2144,0.2,-0.1558,0.0819,0.2,-0.252,-0.0819,0.2,-0.252,-0.2144,0.2,-0.1558,0.0819,0.2,0.252,0.2144,0.2,0.1558,-0.0819,0.2,0.252,0.2144,0.2,0.1558,0.2144,0.2,-0.1558,-0.0819,0.2,0.252,0.0819,0.2,-0.252,-0.2144,0.2,-0.1558,-0.2144,0.2,0.1558,-0.2144,0.2,-0.1558,-0.265,0.2,-0.0,-0.2144,0.2,0.1558,-0.2144,0.2,0.1558,-0.0819,0.2,0.252,0.0819,0.2,-0.252],"n":[0.868,-0.0,-0.497,0.994,0.038,-0.098,0.994,-0.0,0.108,0.41,-0.0,-0.912,0.758,0.055,-0.65,0.868,-0.0,-0.497,-0.205,-0.0,-0.979,0.231,0.055,-0.971,0.41,-0.0,-0.912,-0.741,-0.0,-0.671,-0.384,0.055,-0.922,-0.205,-0.0,-0.979,-0.994,-0.0,-0.108,-0.857,0.069,-0.511,-0.741,-0.0,-0.671,-0.868,-0.0,0.497,-0.994,0.038,0.098,-0.994,-0.0,-0.108,-0.41,-0.0,0.912,-0.758,0.055,0.65,-0.868,-0.0,0.497,0.205,-0.0,0.979,-0.231,0.055,0.971,-0.41,-0.0,0.912,0.741,-0.0,0.671,0.384,0.055,0.922,0.205,-0.0,0.979,0.994,-0.0,0.108,0.857,0.069,0.511,0.741,-0.0,0.671,0.758,0.055,-0.65,0.752,0.659,0.018,0.994,0.038,-0.098,0.231,0.055,-0.971,0.556,0.701,-0.447,0.758,0.055,-0.65,-0.384,0.055,-0.922,0.187,0.701,-0.688,0.231,0.055,-0.971,-0.857,0.069,-0.511,-0.253,0.701,-0.667,-0.384,0.055,-0.922,-0.857,0.069,-0.511,-0.752,0.659,-0.018,-0.513,0.757,-0.404,-0.758,0.055,0.65,-0.752,0.659,-0.018,-0.994,0.038,0.098,-0.231,0.055,0.971,-0.556,0.701,0.447,-0.758,0.055,0.65,0.384,0.055,0.922,-0.187,0.701,0.688,-0.231,0.055,0.971,0.857,0.069,0.511,0.253,0.701,0.667,0.384,0.055,0.922,0.857,0.069,0.511,0.752,0.659,0.018,0.513,0.757,0.404,0.556,0.701,-0.447,0.18,0.983,-0.021,0.752,0.659,0.018,0.187,0.701,-0.688,0.019,1.0,-0.017,0.556,0.701,-0.447,-0.253,0.701,-0.667,0.004,1.0,-0.018,0.187,0.701,-0.688,-0.513,0.757,-0.404,-0.075,0.983,-0.165,-0.253,0.701,-0.667,-0.752,0.659,-0.018,-0.033,0.999,-0.018,-0.513,0.757,-0.404,-0.556,0.701,0.447,-0.18,0.983,0.021,-0.752,0.659,-0.018,-0.187,0.701,0.688,-0.019,1.0,0.017,-0.556,0.701,0.447,0.253,0.701,0.667,-0.004,1.0,0.018,-0.187,0.701,0.688,0.513,0.757,0.404,0.075,0.983,0.165,0.253,0.701,0.667,0.752,0.659,0.018,0.033,0.999,0.018,0.513,0.757,0.404,-0.004,1.0,0.018,0.019,1.0,-0.017,0.004,1.0,-0.018,0.868,-0.0,-0.497,0.758,0.055,-0.65,0.994,0.038,-0.098,0.41,-0.0,-0.912,0.231,0.055,-0.971,0.758,0.055,-0.65,-0.205,-0.0,-0.979,-0.384,0.055,-0.922,0.231,0.055,-0.971,-0.741,-0.0,-0.671,-0.857,0.069,-0.511,-0.384,0.055,-0.922,-0.994,-0.0,-0.108,-0.994,0.038,0.098,-0.857,0.069,-0.511,-0.868,-0.0,0.497,-0.758,0.055,0.65,-0.994,0.038,0.098,-0.41,-0.0,0.912,-0.231,0.055,0.971,-0.758,0.055,0.65,0.205,-0.0,0.979,0.384,0.055,0.922,-0.231,0.055,0.971,0.741,-0.0,0.671,0.857,0.069,0.511,0.384,0.055,0.922,0.994,-0.0,0.108,0.994,0.038,-0.098,0.857,0.069,0.511,0.758,0.055,-0.65,0.556,0.701,-0.447,0.752,0.659,0.018,0.231,0.055,-0.971,0.187,0.701,-0.688,0.556,0.701,-0.447,-0.384,0.055,-0.922,-0.253,0.701,-0.667,0.187,0.701,-0.688,-0.857,0.069,-0.511,-0.513,0.757,-0.404,-0.253,0.701,-0.667,-0.857,0.069,-0.511,-0.994,0.038,0.098,-0.752,0.659,-0.018,-0.758,0.055,0.65,-0.556,0.701,0.447,-0.752,0.659,-0.018,-0.231,0.055,0.971,-0.187,0.701,0.688,-0.556,0.701,0.447,0.384,0.055,0.922,0.253,0.701,0.667,-0.187,0.701,0.688,0.857,0.069,0.511,0.513,0.757,0.404,0.253,0.701,0.667,0.857,0.069,0.511,0.994,0.038,-0.098,0.752,0.659,0.018,0.556,0.701,-0.447,0.019,1.0,-0.017,0.18,0.983,-0.021,0.187,0.701,-0.688,0.004,1.0,-0.018,0.019,1.0,-0.017,-0.253,0.701,-0.667,-0.075,0.983,-0.165,0.004,1.0,-0.018,-0.513,0.757,-0.404,-0.033,0.999,-0.018,-0.075,0.983,-0.165,-0.752,0.659,-0.018,-0.18,0.983,0.021,-0.033,0.999,-0.018,-0.556,0.701,0.447,-0.019,1.0,0.017,-0.18,0.983,0.021,-0.187,0.701,0.688,-0.004,1.0,0.018,-0.019,1.0,0.017,0.253,0.701,0.667,0.075,0.983,0.165,-0.004,1.0,0.018,0.513,0.757,0.404,0.033,0.999,0.018,0.075,0.983,0.165,0.752,0.659,0.018,0.18,0.983,-0.021,0.033,0.999,0.018,0.033,0.999,0.018,0.18,0.983,-0.021,0.019,1.0,-0.017,0.004,1.0,-0.018,-0.075,0.983,-0.165,-0.033,0.999,-0.018,0.075,0.983,0.165,0.033,0.999,0.018,-0.004,1.0,0.018,0.033,0.999,0.018,0.019,1.0,-0.017,-0.004,1.0,0.018,0.004,1.0,-0.018,-0.033,0.999,-0.018,-0.019,1.0,0.017,-0.033,0.999,-0.018,-0.18,0.983,0.021,-0.019,1.0,0.017,-0.019,1.0,0.017,-0.004,1.0,0.018,0.004,1.0,-0.018]};
 function studGeo(k){ const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(STUD.p.map(v=>v*k)),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(STUD.n),3)); return g; }
 function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
@@ -1476,7 +1471,8 @@ POI.forEach(p=>{ const e=document.createElement('div'); e.className='lb'; e.text
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
 { const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
 document.getElementById('tot').textContent=POI.length;
-POI.forEach((p,i)=>{ p.q=QUIZ[i]; p.w=PHOTO[i]; });
+let illust=null, extraP=null;
+const extra=()=>extraP||(extraP=Promise.all([import('./quiz.js'),import('./photo.js'),import('./illust.js')]).then(([a,b,c])=>{ POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; throw e; }));
 let cur=null,visited=0,modal=null;
 const toast=document.getElementById('toast'); let toastT=0;
 function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),2600); }
@@ -1721,7 +1717,7 @@ skyDome.frustumCulled=false; skyDome.renderOrder=-10; scene.add(skyDome);
 // post-processing: scene -> bloom -> grade -> output (tone mapping). Devices without half-float buffers draw directly.
 let post=null;
 try{ if(renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffer_float')){
-  const rt=new THREE.WebGLRenderTarget(2,2,{type:THREE.HalfFloatType,samples:4});
+  const rt=new THREE.WebGLRenderTarget(2,2,{type:THREE.HalfFloatType,samples:LITE?2:4});
   const composer=new EffectComposer(renderer,rt); composer.addPass(new RenderPass(scene,camera));
   const bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.1,.4,1.7);
   const bsz=bloom.setSize.bind(bloom); bloom.setSize=(w,h)=>{ const k=Math.min(1,1920/Math.max(1,w)); bsz(Math.round(w*k),Math.round(h*k)); };
@@ -1734,7 +1730,7 @@ try{ if(renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffe
   post={composer,bloom,grade:grade.uniforms,rp:composer.passes[0]}; skyU.uLin.value=1;
 } }catch(e){ post=null; skyU.uLin.value=0; }
 // automatic quality: resolution first (100% -> 83% -> 67% -> 53% -> 43%), bloom off at the lowest two steps
-const QL=[1.5,1.25,1.0,.8,.65]; let qLv=0,qAcc=0,qN=0,qHold=0;
+const QL=[1.5,1.25,1.0,.8,.65]; let qLv=LITE?1:0,qAcc=0,qN=0,qHold=0;
 function applyQ(){ const pr=Math.min(window.devicePixelRatio||1,QL[qLv]); renderer.setPixelRatio(pr); const w=innerWidth,h=innerHeight; renderer.setSize(w,h);
   if(post){ post.composer.setPixelRatio(pr); post.composer.setSize(w,h); post.grade.uAspect.value=w/Math.max(1,h); post.bloom.enabled=qLv<3; } }
 applyQ(); addEventListener('resize',applyQ);
@@ -1864,7 +1860,7 @@ function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.g
 document.getElementById('qsw').onclick=()=>{ document.getElementById('qpic').classList.toggle('blk'); picLabel(); };
 function stampIt(p){ p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
   if(cur===p){ document.getElementById('as').textContent='도장 받은 곳 · 다시 보기'; document.getElementById('act').classList.add('done'); } }
-function openQ(p){ if(modal||!p) return; modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
+function openQ(p){ if(modal||!p) return; if(!illust){ extra().then(()=>{ if(!modal&&cur===p) openQ(p); },()=>say('잠시 뒤에 다시 눌러 주세요')); return; } modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
   shot(p); showPhoto(p);
   const $=id=>document.getElementById(id); $('qr').textContent=p.c; $('qh').textContent=p.n; $('qd').textContent=p.d; $('qs').style.display=p.v?'inline':'none';
   $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'설명을 읽고 알맞은 답을 골라 보세요.';
@@ -1887,5 +1883,5 @@ window.__dbg={openQ,closeQ,get cur(){return cur},get visited(){return visited},L
 // start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
 updateEnv(0); bakeEnv(); envDirty=0;
 (async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
-  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; }); })();
+  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; setTimeout(extra,1200); }); })();
 </script></body></html>
