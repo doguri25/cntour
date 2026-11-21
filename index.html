@@ -1837,17 +1837,22 @@ const okImg=u=>{ let d=u; try{ d=decodeURIComponent(u); }catch(e){} return /\.(j
 const jget=async u=>{ const c=new AbortController(), tm=setTimeout(()=>c.abort(),6000); try{ return (await (await fetch(u,{signal:c.signal})).json()).query||{}; } finally{ clearTimeout(tm); } };
 const wkRef=t=>({by:'위키백과 「'+t+'」',href:'https://ko.wikipedia.org/wiki/'+encodeURIComponent(t.replace(/ /g,'_'))});
 async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null;
-  const key=p.n.split('·')[0].trim(), flat=x=>x.replace(/[\s·()]/g,'');
+  if(p.w&&/^(https?:\/\/|\.?\/)/.test(p.w)) return p.ph={src:p.w,by:p.n,href:p.w};
+  const key=p.n.split('·')[0].trim(), reg=p.c.replace(/[시군]$/,''), flat=x=>x.replace(/[\s·()]/g,'');
   try{
     if(p.w){ const c=p.w.split('/'), q=await jget(WK+'&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=960&titles='+encodeURIComponent(c.join('|')));
       const fin=t=>{ for(const k of ['normalized','redirects']) for(const x of q[k]||[]) if(x.from===t) t=x.to; return t; };
       for(const t of c){ const f=fin(t), pg=(q.pages||[]).find(x=>x.title===f&&x.thumbnail&&okImg(x.thumbnail.source)); if(pg) return p.ph={src:pg.thumbnail.source,...wkRef(pg.title)}; } }
-    { const q=await jget(WK+'&generator=search&gsrlimit=5&gsrsearch='+encodeURIComponent(key)+'&prop=pageimages&piprop=thumbnail&pithumbsize=960'), k=flat(key);
+    for(const term of [key, reg+' '+key]){
+      const q=await jget(WK+'&generator=search&gsrlimit=5&gsrsearch='+encodeURIComponent(term)+'&prop=pageimages&piprop=thumbnail&pithumbsize=960'), k=flat(key);
       const pg=(q.pages||[]).sort((a,b)=>a.index-b.index).find(x=>x.thumbnail&&okImg(x.thumbnail.source)&&(flat(x.title).includes(k)||(flat(x.title).length>=3&&k.includes(flat(x.title)))));
-      if(pg) return p.ph={src:pg.thumbnail.source,...wkRef(pg.title)}; }
-    { const q=await jget(CM+'&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch='+encodeURIComponent('"'+key+'"')+'&prop=imageinfo&iiprop=url&iiurlwidth=960');
+      if(pg) return p.ph={src:pg.thumbnail.source,...wkRef(pg.title)};
+    }
+    for(const term of [key, reg+' '+key]){
+      const q=await jget(CM+'&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch='+encodeURIComponent(term)+'&prop=imageinfo&iiprop=url&iiurlwidth=960');
       const pg=(q.pages||[]).sort((a,b)=>a.index-b.index).find(x=>x.imageinfo&&x.imageinfo[0]&&x.imageinfo[0].thumburl&&okImg(x.imageinfo[0].thumburl));
-      if(pg) return p.ph={src:pg.imageinfo[0].thumburl,by:'위키미디어 공용',href:pg.imageinfo[0].descriptionurl||'https://commons.wikimedia.org/wiki/'+encodeURIComponent(pg.title)}; }
+      if(pg) return p.ph={src:pg.imageinfo[0].thumburl,by:'위키미디어 공용',href:pg.imageinfo[0].descriptionurl||'https://commons.wikimedia.org/wiki/'+encodeURIComponent(pg.title)};
+    }
   }catch(e){ p.ph=undefined; return null; }
   return p.ph; }
 function picLabel(){ const pic=document.getElementById('qpic'), blk=pic.classList.contains('blk'), ph=pic.classList.contains('ph');
