@@ -78,6 +78,12 @@ button{font-family:inherit;color:inherit}
 #qx{position:absolute;right:12px;top:12px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(20,30,60,.25);font-size:20px;line-height:1;color:#3b4352;z-index:2;cursor:pointer}
 #qpic{position:relative;border-radius:28px 28px 0 0;overflow:hidden;background:#dfeaf6;aspect-ratio:16/9}
 #qpic canvas{position:static;display:block;width:100%;height:100%}
+#qi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+#qpic.ph #qi{display:block}#qpic.ph #qe{display:none}
+#qsrc{position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.6);border-radius:999px;padding:4px 10px;text-decoration:none;display:none;max-width:calc(100% - 130px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#qpic.ph #qsrc{display:block}
+#qsw{position:absolute;right:12px;bottom:10px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--p);font-size:11.5px;font-weight:900;padding:5px 11px;box-shadow:0 2px 6px rgba(20,30,60,.25);display:none;cursor:pointer}
+#qpic.has #qsw{display:block}
 #qpic em{position:absolute;left:12px;bottom:10px;font-style:normal;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.55);border-radius:999px;padding:4px 10px}
 #qb{padding:16px 20px 20px}
 #qb .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
@@ -143,7 +149,7 @@ button{font-family:inherit;color:inherit}
 <div id="joy"><i></i></div>
 <button id="act"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></i><span><small id="as">살펴보기</small><b id="an"></b></span></button>
 <div id="qz"><div class="sheet"><button id="qx" aria-label="닫기">×</button>
-  <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><em>블록으로 쌓은 모습</em></div><div id="stamp">탐방<br>도장</div>
+  <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><img id="qi" alt=""><em id="qe">블록으로 쌓은 모습</em><a id="qsrc" target="_blank" rel="noopener"></a><button id="qsw"></button></div><div id="stamp">탐방<br>도장</div>
   <div id="qb"><div class="top"><span id="qr"></span><span id="qs">✓ 도장 받은 곳</span></div><h2 id="qh"></h2><p id="qd"></p>
     <button class="btn" id="qg">다음 · 퀴즈 풀기</button>
     <div id="qq"><small>탐방 퀴즈</small><p id="qt"></p><p id="qm"></p><div id="qo"></div><button class="btn" id="qn">계속 탐방하기</button></div></div>
@@ -166,6 +172,7 @@ button{font-family:inherit;color:inherit}
 <script>window.addEventListener('error',e=>{const d=document.getElementById('err');d.style.display='block';d.textContent='화면을 그리는 중 문제가 생겼어요: '+(e.message||'');});</script>
 <script type="module">
 import {QUIZ} from './quiz.js';
+import {PHOTO} from './photo.js';
 import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -1448,7 +1455,7 @@ POI.forEach(p=>{ const e=document.createElement('div'); e.className='lb'; e.text
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
 { const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
 document.getElementById('tot').textContent=POI.length;
-POI.forEach((p,i)=>{ p.q=QUIZ[i]; });
+POI.forEach((p,i)=>{ p.q=QUIZ[i]; p.w=PHOTO[i]; });
 let cur=null,visited=0,modal=null;
 const toast=document.getElementById('toast'); let toastT=0;
 function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),2600); }
@@ -1806,10 +1813,21 @@ function shot(p){ const L=p.l; let dx=p.t[0]-L[0],dz=p.t[1]-L[2],n=Math.hypot(dx
   try{ if(post){ post.rp.camera=shotCam; post.composer.render(0); post.rp.camera=camera; } else renderer.render(scene,shotCam);
     const c=document.getElementById('qc'); c.getContext('2d').drawImage(renderer.domElement,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height); }catch(e){ if(post) post.rp.camera=camera; }
   player.visible=pv; }
+// a real photo from Korean Wikipedia where the article has a free one; the block picture stays when there is none or the request is blocked
+async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null; if(!p.w) return null;
+  try{ const c=p.w.split('/'); const r=await fetch('https://ko.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=800&titles='+encodeURIComponent(c.join('|')));
+    const q=(await r.json()).query||{}; const fin=t=>{ for(const k of ['normalized','redirects']) for(const x of q[k]||[]) if(x.from===t) t=x.to; return t; };
+    for(const t of c){ const f=fin(t), pg=(q.pages||[]).find(x=>x.title===f&&x.thumbnail&&!/\.svg/i.test(x.thumbnail.source)); if(pg){ p.ph={src:pg.thumbnail.source,title:pg.title}; break; } } }catch(e){ p.ph=undefined; return null; }
+  return p.ph; }
+function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.getElementById('qi'), sw=document.getElementById('qsw'); pic.classList.remove('ph','has'); img.removeAttribute('src');
+  photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph','has'); sw.textContent='블록 모습 보기'; };
+    img.onerror=()=>{ pic.classList.remove('ph','has'); }; img.referrerPolicy='no-referrer'; img.src=ph.src;
+    const a=document.getElementById('qsrc'); a.textContent='사진 · 위키백과 「'+ph.title+'」'; a.href='https://ko.wikipedia.org/wiki/'+encodeURIComponent(ph.title.replace(/ /g,'_')); }); }
+document.getElementById('qsw').onclick=()=>{ const pic=document.getElementById('qpic'); const on=pic.classList.toggle('ph'); document.getElementById('qsw').textContent=on?'블록 모습 보기':'사진 보기'; };
 function stampIt(p){ p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
   if(cur===p){ document.getElementById('as').textContent='도장 받은 곳 · 다시 보기'; document.getElementById('act').classList.add('done'); } }
 function openQ(p){ if(modal||!p) return; modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
-  shot(p);
+  shot(p); showPhoto(p);
   const $=id=>document.getElementById(id); $('qr').textContent=p.c; $('qh').textContent=p.n; $('qd').textContent=p.d; $('qs').style.display=p.v?'inline':'none';
   $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'설명을 읽고 알맞은 답을 골라 보세요.';
   $('qt').textContent=p.q[0]; const opts=p.q.slice(1).map((t,i)=>({t,ok:i===0})); for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
