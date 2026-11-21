@@ -3,7 +3,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>충청남도 블록 탐방</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{--p:#1a73e8;--p2:#4f9bff;--ink:#1f2430;--sub:#5b6472;--glass:rgba(255,255,255,.84);--line:rgba(20,30,50,.08);--sh:0 1px 2px rgba(20,30,60,.10),0 8px 24px rgba(20,30,60,.14);--r:20px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -79,11 +80,13 @@ button{font-family:inherit;color:inherit}
 #qpic{position:relative;border-radius:28px 28px 0 0;overflow:hidden;background:#dfeaf6;aspect-ratio:16/9}
 #qpic canvas{position:static;display:block;width:100%;height:100%}
 #qi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-#qpic.ph #qi{display:block}#qpic.ph #qe{display:none}
+#qv{position:absolute;inset:0}#qv svg{display:block;width:100%;height:100%}
+#qpic.blk #qv,#qpic.blk #qi{display:none!important}#qpic.blk #qsrc{display:none!important}
+#qpic.ph #qi{display:block}
 #qsrc{position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.6);border-radius:999px;padding:4px 10px;text-decoration:none;display:none;max-width:calc(100% - 130px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #qpic.ph #qsrc{display:block}
-#qsw{position:absolute;right:12px;bottom:10px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--p);font-size:11.5px;font-weight:900;padding:5px 11px;box-shadow:0 2px 6px rgba(20,30,60,.25);display:none;cursor:pointer}
-#qpic.has #qsw{display:block}
+#qsw{position:absolute;right:12px;bottom:10px;border:0;border-radius:999px;background:rgba(255,255,255,.92);color:var(--p);font-size:11.5px;font-weight:900;padding:5px 11px;box-shadow:0 2px 6px rgba(20,30,60,.25);cursor:pointer}
+
 #qpic em{position:absolute;left:12px;bottom:10px;font-style:normal;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.55);border-radius:999px;padding:4px 10px}
 #qb{padding:16px 20px 20px}
 #qb .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
@@ -122,6 +125,7 @@ button{font-family:inherit;color:inherit}
 .keys b{display:block;color:var(--ink);font-size:13px;margin-bottom:1px}
 .btn{display:block;width:100%;border:0;border-radius:999px;background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;font-size:16px;font-weight:700;padding:14px;box-shadow:0 6px 16px rgba(26,115,232,.35)}
 .btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.55;box-shadow:none}
 #list .sheet{padding:22px}
 #list h1{margin:0 0 6px;font-size:20px;font-weight:900}
 #list ul{margin:0 0 14px;padding:0;list-style:none;font-size:14px;color:#3b4352}
@@ -133,6 +137,22 @@ button{font-family:inherit;color:inherit}
 #toast.on{opacity:1}
 #err{position:fixed;inset:auto 12px 12px 12px;background:#fce8e6;color:#c5221f;border-radius:12px;padding:12px;font-size:13px;display:none;z-index:9}
 </style>
+<link rel="modulepreload" href="./three.module.js">
+<link rel="modulepreload" href="./three.core.js">
+<link rel="modulepreload" href="./quiz.js">
+<link rel="modulepreload" href="./photo.js">
+<link rel="modulepreload" href="./illust.js">
+<link rel="modulepreload" href="./addons/geometries/RoundedBoxGeometry.js">
+<link rel="modulepreload" href="./addons/postprocessing/EffectComposer.js">
+<link rel="modulepreload" href="./addons/postprocessing/MaskPass.js">
+<link rel="modulepreload" href="./addons/postprocessing/OutputPass.js">
+<link rel="modulepreload" href="./addons/postprocessing/Pass.js">
+<link rel="modulepreload" href="./addons/postprocessing/RenderPass.js">
+<link rel="modulepreload" href="./addons/postprocessing/ShaderPass.js">
+<link rel="modulepreload" href="./addons/postprocessing/UnrealBloomPass.js">
+<link rel="modulepreload" href="./addons/shaders/CopyShader.js">
+<link rel="modulepreload" href="./addons/shaders/LuminosityHighPassShader.js">
+<link rel="modulepreload" href="./addons/shaders/OutputShader.js">
 <script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
 </head><body>
 <div id="labels"></div>
@@ -149,7 +169,7 @@ button{font-family:inherit;color:inherit}
 <div id="joy"><i></i></div>
 <button id="act"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></i><span><small id="as">살펴보기</small><b id="an"></b></span></button>
 <div id="qz"><div class="sheet"><button id="qx" aria-label="닫기">×</button>
-  <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><img id="qi" alt=""><em id="qe">블록으로 쌓은 모습</em><a id="qsrc" target="_blank" rel="noopener"></a><button id="qsw"></button></div><div id="stamp">탐방<br>도장</div>
+  <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><div id="qv"></div><img id="qi" alt=""><em id="qe">삽화</em><a id="qsrc" target="_blank" rel="noopener"></a><button id="qsw"></button></div><div id="stamp">탐방<br>도장</div>
   <div id="qb"><div class="top"><span id="qr"></span><span id="qs">✓ 도장 받은 곳</span></div><h2 id="qh"></h2><p id="qd"></p>
     <button class="btn" id="qg">다음 · 퀴즈 풀기</button>
     <div id="qq"><small>탐방 퀴즈</small><p id="qt"></p><p id="qm"></p><div id="qo"></div><button class="btn" id="qn">계속 탐방하기</button></div></div>
@@ -166,13 +186,14 @@ button{font-family:inherit;color:inherit}
     <li><b>확대·축소</b>두 손가락 · 휠 · + −</li>
     <li><b>시간·날씨</b>오른쪽 ☀️ 🌤️ 버튼</li>
     <li><b>길을 잃으면</b>집 모양 버튼으로 출발 지점에</li>
-  </ul><button class="btn" id="go">탐방 시작</button></div>
+  </ul><button class="btn" id="go" disabled>블록 쌓는 중…</button></div>
 </div></div>
 <div id="err"></div>
 <script>window.addEventListener('error',e=>{const d=document.getElementById('err');d.style.display='block';d.textContent='화면을 그리는 중 문제가 생겼어요: '+(e.message||'');});</script>
 <script type="module">
 import {QUIZ} from './quiz.js';
 import {PHOTO} from './photo.js';
+import {illust} from './illust.js';
 import * as THREE from 'three';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -1813,17 +1834,34 @@ function shot(p){ const L=p.l; let dx=p.t[0]-L[0],dz=p.t[1]-L[2],n=Math.hypot(dx
   try{ if(post){ post.rp.camera=shotCam; post.composer.render(0); post.rp.camera=camera; } else renderer.render(scene,shotCam);
     const c=document.getElementById('qc'); c.getContext('2d').drawImage(renderer.domElement,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height); }catch(e){ if(post) post.rp.camera=camera; }
   player.visible=pv; }
-// a real photo from Korean Wikipedia where the article has a free one; the block picture stays when there is none or the request is blocked
-async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null; if(!p.w) return null;
-  try{ const c=p.w.split('/'); const r=await fetch('https://ko.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=800&titles='+encodeURIComponent(c.join('|')));
-    const q=(await r.json()).query||{}; const fin=t=>{ for(const k of ['normalized','redirects']) for(const x of q[k]||[]) if(x.from===t) t=x.to; return t; };
-    for(const t of c){ const f=fin(t), pg=(q.pages||[]).find(x=>x.title===f&&x.thumbnail&&!/\.svg/i.test(x.thumbnail.source)); if(pg){ p.ph={src:pg.thumbnail.source,title:pg.title}; break; } } }catch(e){ p.ph=undefined; return null; }
+// a real photo where one can be found: the Korean Wikipedia article's lead picture, then a Wikipedia search, then a Wikimedia Commons file search.
+// Nothing found, or the request blocked: the drawn illustration stays.
+const WK='https://ko.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*', CM='https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*';
+const okImg=u=>{ let d=u; try{ d=decodeURIComponent(u); }catch(e){} return /\.(jpe?g|png|webp)(\?|$)/i.test(d)&&!/map|locator|logo|icon|flag|symbol|지도|로고|위치/i.test(d); };
+const jget=async u=>{ const c=new AbortController(), tm=setTimeout(()=>c.abort(),6000); try{ return (await (await fetch(u,{signal:c.signal})).json()).query||{}; } finally{ clearTimeout(tm); } };
+const wkRef=t=>({by:'위키백과 「'+t+'」',href:'https://ko.wikipedia.org/wiki/'+encodeURIComponent(t.replace(/ /g,'_'))});
+async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null;
+  const key=p.n.split('·')[0].trim(), flat=x=>x.replace(/[\s·()]/g,'');
+  try{
+    if(p.w){ const c=p.w.split('/'), q=await jget(WK+'&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=960&titles='+encodeURIComponent(c.join('|')));
+      const fin=t=>{ for(const k of ['normalized','redirects']) for(const x of q[k]||[]) if(x.from===t) t=x.to; return t; };
+      for(const t of c){ const f=fin(t), pg=(q.pages||[]).find(x=>x.title===f&&x.thumbnail&&okImg(x.thumbnail.source)); if(pg) return p.ph={src:pg.thumbnail.source,...wkRef(pg.title)}; } }
+    { const q=await jget(WK+'&generator=search&gsrlimit=5&gsrsearch='+encodeURIComponent(key)+'&prop=pageimages&piprop=thumbnail&pithumbsize=960'), k=flat(key);
+      const pg=(q.pages||[]).sort((a,b)=>a.index-b.index).find(x=>x.thumbnail&&okImg(x.thumbnail.source)&&(flat(x.title).includes(k)||(flat(x.title).length>=3&&k.includes(flat(x.title)))));
+      if(pg) return p.ph={src:pg.thumbnail.source,...wkRef(pg.title)}; }
+    { const q=await jget(CM+'&generator=search&gsrnamespace=6&gsrlimit=6&gsrsearch='+encodeURIComponent('"'+key+'"')+'&prop=imageinfo&iiprop=url&iiurlwidth=960');
+      const pg=(q.pages||[]).sort((a,b)=>a.index-b.index).find(x=>x.imageinfo&&x.imageinfo[0]&&x.imageinfo[0].thumburl&&okImg(x.imageinfo[0].thumburl));
+      if(pg) return p.ph={src:pg.imageinfo[0].thumburl,by:'위키미디어 공용',href:pg.imageinfo[0].descriptionurl||'https://commons.wikimedia.org/wiki/'+encodeURIComponent(pg.title)}; }
+  }catch(e){ p.ph=undefined; return null; }
   return p.ph; }
-function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.getElementById('qi'), sw=document.getElementById('qsw'); pic.classList.remove('ph','has'); img.removeAttribute('src');
-  photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph','has'); sw.textContent='블록 모습 보기'; };
-    img.onerror=()=>{ pic.classList.remove('ph','has'); }; img.referrerPolicy='no-referrer'; img.src=ph.src;
-    const a=document.getElementById('qsrc'); a.textContent='사진 · 위키백과 「'+ph.title+'」'; a.href='https://ko.wikipedia.org/wiki/'+encodeURIComponent(ph.title.replace(/ /g,'_')); }); }
-document.getElementById('qsw').onclick=()=>{ const pic=document.getElementById('qpic'); const on=pic.classList.toggle('ph'); document.getElementById('qsw').textContent=on?'블록 모습 보기':'사진 보기'; };
+function picLabel(){ const pic=document.getElementById('qpic'), blk=pic.classList.contains('blk'), ph=pic.classList.contains('ph');
+  document.getElementById('qe').textContent=blk?'블록으로 쌓은 모습':'삽화'; document.getElementById('qe').style.display=(!blk&&ph)?'none':''; document.getElementById('qsw').textContent=blk?(ph?'사진 보기':'삽화 보기'):'블록 모습 보기'; }
+function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.getElementById('qi'); pic.classList.remove('ph','blk'); img.removeAttribute('src');
+  document.getElementById('qv').innerHTML=illust(p); picLabel();
+  photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph'); picLabel(); };
+    img.onerror=()=>{ pic.classList.remove('ph'); p.ph=null; picLabel(); }; img.src=ph.src;
+    const a=document.getElementById('qsrc'); a.textContent='사진 · '+ph.by; a.href=ph.href; }); }
+document.getElementById('qsw').onclick=()=>{ document.getElementById('qpic').classList.toggle('blk'); picLabel(); };
 function stampIt(p){ p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
   if(cur===p){ document.getElementById('as').textContent='도장 받은 곳 · 다시 보기'; document.getElementById('act').classList.add('done'); } }
 function openQ(p){ if(modal||!p) return; modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
@@ -1845,5 +1883,9 @@ document.getElementById('act').addEventListener('click',()=>openQ(cur));
 document.getElementById('qg').onclick=()=>{ document.getElementById('qz').classList.add('quiz'); setTimeout(()=>document.getElementById('qq').scrollIntoView({block:'nearest',behavior:'smooth'}),30); };
 document.getElementById('qx').onclick=closeQ; document.getElementById('qn').onclick=closeQ;
 document.getElementById('qz').addEventListener('pointerdown',e=>{ if(e.target.id==='qz') closeQ(); });
-window.__dbg={openQ,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}}; tick();
+window.__dbg={openQ,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
+// start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
+updateEnv(0); bakeEnv(); envDirty=0;
+(async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
+  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; }); })();
 </script></body></html>
