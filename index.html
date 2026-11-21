@@ -111,6 +111,9 @@ button{font-family:inherit;color:inherit}
 #stamp.on{display:flex;animation:stamp .5s cubic-bezier(.2,1.5,.4,1)}
 @keyframes stamp{0%{transform:rotate(-14deg) scale(2.6);opacity:0}60%{opacity:1}100%{transform:rotate(-14deg) scale(1)}}
 #qn{margin-top:12px;display:none}
+/* phones and tablets: blur behind panels is costly over a moving 3D view */
+.lite .glass{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(255,255,255,.95)}
+.lite #intro,.lite #list,.lite #qz{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(18,24,38,.5)}
 /* sheets */
 #intro,#list{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(18,24,38,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:16px;z-index:5}
 #list{display:none}
@@ -198,6 +201,7 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
 const LITE=matchMedia('(pointer:coarse)').matches||Math.min(innerWidth,innerHeight)<600;
+if(LITE) document.documentElement.classList.add('lite');
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,LITE?1.25:1.5));
 renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.12;
@@ -1482,13 +1486,17 @@ document.getElementById('lc').onclick=()=>{ document.getElementById('list').styl
 
 // ---------- minimap
 const mm=document.getElementById('mm'),mc=mm.getContext('2d'); const MS=mm.width/MAPW;
-function drawMap(){ mc.clearRect(0,0,mm.width,mm.height);
+const mb=document.createElement('canvas'); mb.width=mm.width; mb.height=mm.height; const mbc=mb.getContext('2d'); let mapDirty=true, mapLast='';
+function drawBase(){ const mc=mbc; mc.clearRect(0,0,mm.width,mm.height);
   mc.fillStyle='#8ecbf0'; for(const [x,z] of SEAT) mc.fillRect(x*MS,z*MS,TW*MS,TH*MS); mc.fillStyle='#dfe6d6'; for(const [x,z] of EXTRA) mc.fillRect(x*MS,z*MS,TW*MS,TH*MS);
   TILES.forEach(([x,z],i)=>{ mc.fillStyle=['#bfe3c0','#d5ebc4','#cfe8d6','#c3e2b4'][(x/TW+z/TH)%4]; mc.fillRect(x*MS,z*MS,TW*MS,TH*MS); if(WS(x,z)){ mc.fillStyle='#8ecbf0'; mc.fillRect(x*MS,z*MS,25*MS,TH*MS); } if(NS(x,z)){ mc.fillStyle='#8ecbf0'; mc.fillRect(x*MS,0,TW*MS,20*MS); } });
   mc.fillStyle='#8ecbf0'; for(const l of LAKES) mc.fillRect(l[0]*MS,l[1]*MS,l[2]*MS,l[3]*MS);
   mc.fillStyle='#fff'; for(const r of ROADS) mc.fillRect(r[0]*MS,r[1]*MS,Math.max(3,r[2]*MS),Math.max(3,r[3]*MS));
   mc.strokeStyle='#f29900'; mc.lineWidth=3; for(const [x,z] of TILES) mc.strokeRect(x*MS,z*MS,TW*MS,TH*MS);
   for(const p of POI){ mc.beginPath(); mc.arc(p.m[0]*MS,p.m[1]*MS,6,0,7); mc.fillStyle=p.v?'#1a73e8':'#fff'; mc.fill(); mc.lineWidth=2.5; mc.strokeStyle=p.v?'#1a73e8':'#5f6368'; mc.stroke(); }
+}
+function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!mapDirty&&key===mapLast) return; mapLast=key; if(mapDirty){ drawBase(); mapDirty=false; }
+  mc.clearRect(0,0,mm.width,mm.height); mc.drawImage(mb,0,0);
   mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
 
 // ---------- controls
@@ -1774,7 +1782,9 @@ function updateEnv(dt){
         snowPos[j]=seedP[i*4]*26+Math.sin(t*.9+i)*1.6; snowPos[j+1]=y; snowPos[j+2]=seedP[i*4+2]*26+Math.cos(t*.7+i*1.7)*1.6; } snowGeo.attributes.position.needsUpdate=true; } }
 }
 let studsOn=true; const clock=new THREE.Clock(); const v3=new THREE.Vector3(); let t=0,frame=0;
+let warmI=0; const warm=[];
 function tick(){
+  if(modal&&frame>2){ clock.getDelta(); requestAnimationFrame(tick); return; }   // the world rests while a place sheet is open, so the sheet stays smooth
   const rawDt=clock.getDelta(), dt=Math.min(.05,rawDt); t+=dt; frame++; autoQ(rawDt);
   const sx=274+((t*1.6)%18); ship.position.set(sx,.8+Math.sin(t*5)*.04,280.2);
   wake.forEach((w,i)=>{ const ph=(i*.37+t*1.6)%1,side=i%2?1:-1,back=1+(i>>1)*1.1+ph; w.position.set(sx-back,.87,281.4+side*(.9+back*.28)); const s=Math.max(.2,(1-ph*.6)*(1.1-back*.09)); w.scale.set(s,.1,s*.8); });
@@ -1805,6 +1815,8 @@ function tick(){
   // places
   let near=null,nd=1e9; const wide=cam.dist>230, sv=cam.dist<170;
   if(sv!==studsOn){ studsOn=sv; for(const m of studMeshes) m.visible=sv; }
+  if(warmI<studMeshes.length||warm.length){ for(const m of warm){ m.visible=studsOn; m.frustumCulled=true; } warm.length=0;
+    for(let k=0;k<4&&warmI<studMeshes.length;k++){ const m=studMeshes[warmI++]; if(!studsOn){ m.visible=true; m.frustumCulled=false; warm.push(m); } } }
   for(const c of CL){ if(!wide){ if(c.on){ c.e.style.display='none'; c.on=false; } continue; } v3.set(c.x,22,c.z).project(camera);
     const show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; c.on=show; c.e.style.display=show?'':'none';
     if(show) c.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; }
@@ -1829,7 +1841,7 @@ function shot(p){ const L=p.l; let dx=p.t[0]-L[0],dz=p.t[1]-L[2],n=Math.hypot(dx
   const pv=player.visible; player.visible=false;
   try{ if(post){ post.rp.camera=shotCam; post.composer.render(0); post.rp.camera=camera; } else renderer.render(scene,shotCam);
     const c=document.getElementById('qc'); c.getContext('2d').drawImage(renderer.domElement,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height); }catch(e){ if(post) post.rp.camera=camera; }
-  player.visible=pv; }
+  player.visible=pv; try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} }
 // a real photo where one can be found: the Korean Wikipedia article's lead picture, then a Wikipedia search, then a Wikimedia Commons file search.
 // Nothing found, or the request blocked: the drawn illustration stays.
 const WK='https://ko.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*', CM='https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*';
@@ -1862,11 +1874,12 @@ function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.g
   photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph'); picLabel(); };
     img.onerror=()=>{ pic.classList.remove('ph'); p.ph=null; picLabel(); }; img.src=ph.src;
     const a=document.getElementById('qsrc'); a.textContent='사진 · '+ph.by; a.href=ph.href; }); }
-document.getElementById('qsw').onclick=()=>{ document.getElementById('qpic').classList.toggle('blk'); picLabel(); };
-function stampIt(p){ p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
+let shotFor=null;
+document.getElementById('qsw').onclick=()=>{ const on=document.getElementById('qpic').classList.toggle('blk'); if(on&&modal&&shotFor!==modal){ shot(modal); shotFor=modal; } picLabel(); };
+function stampIt(p){ mapDirty=true; p.v=true; p.e.classList.add('v'); visited++; document.getElementById('n').textContent=visited; document.getElementById('ring').style.setProperty('--pg',(visited/POI.length*100).toFixed(1));
   if(cur===p){ document.getElementById('as').textContent='도장 받은 곳 · 다시 보기'; document.getElementById('act').classList.add('done'); } }
 function openQ(p){ if(modal||!p) return; if(!illust){ extra().then(()=>{ if(!modal&&cur===p) openQ(p); },()=>say('잠시 뒤에 다시 눌러 주세요')); return; } modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
-  shot(p); showPhoto(p);
+  shotFor=null; showPhoto(p);
   const $=id=>document.getElementById(id); $('qr').textContent=p.c; $('qh').textContent=p.n; $('qd').textContent=p.d; $('qs').style.display=p.v?'inline':'none';
   $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'설명을 읽고 알맞은 답을 골라 보세요.';
   $('qt').textContent=p.q[0]; const opts=p.q.slice(1).map((t,i)=>({t,ok:i===0})); for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
