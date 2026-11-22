@@ -22,6 +22,11 @@ button{font-family:inherit;color:inherit}
 #count:active{transform:scale(.97)}
 /* minimap */
 #mmw{position:fixed;left:12px;top:64px;padding:6px;border-radius:16px;pointer-events:none}
+#cmp{position:fixed;left:12px;top:170px;width:46px;height:46px;border-radius:50%;pointer-events:none;z-index:2}
+#cmp i{position:absolute;inset:0;display:block;will-change:transform}
+#cmp i:before{content:'';position:absolute;left:50%;top:5px;margin-left:-6px;border:6px solid transparent;border-bottom:13px solid #d93025;border-top:0}
+#cmp i:after{content:'';position:absolute;left:50%;bottom:5px;margin-left:-6px;border:6px solid transparent;border-top:13px solid #c3cad6;border-bottom:0}
+#cmp b{position:absolute;left:0;right:0;top:15px;text-align:center;font-size:10px;font-weight:900;color:#1f2430;font-style:normal}
 #mm{display:block;width:164px;height:84px;border-radius:11px;position:static}
 /* right rail */
 .rail{position:fixed;right:12px;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;padding:4px;gap:2px}
@@ -177,6 +182,7 @@ button{font-family:inherit;color:inherit}
 </head><body>
 <div id="labels"></div>
 <button id="count" class="chip glass"><span id="ring"></span><span><small>탐방 도장</small><b id="n">0</b> / <span id="tot">0</span></span></button>
+<div id="cmp" class="glass" aria-label="나침반"><i><b>북</b></i></div>
 <div id="mmw" class="glass"><canvas id="mm" width="1350" height="688"></canvas></div>
 <div id="zoom" class="rail glass">
   <button id="zi" aria-label="확대"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -918,7 +924,8 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
   const lineOf=(w,d)=>{ const mx=Math.max(w,d), mn=Math.min(w,d); return mx>=30&&mn<=8?(w>d?2:3):0; };
   for(let n=0;n<N;n++){ par[n]=n; const b=boxes[n], w=b[3], d=b[5], h=b[4], mx=Math.max(w,d), mn=Math.min(w,d);
     if(n<NG){ if(mx>=30) kind[n]=1; continue; }
-    if(h<=1.25&&lineOf(w,d)) kind[n]=lineOf(w,d);                                                   // long and low: road, river, rail, fence rail, bridge deck
+    if(h<=1.25&&lineOf(w,d)) kind[n]=lineOf(w,d);
+    else if((b[6]===C.road||b[6]===C.water)&&h<=.6&&mx>=7&&mn<=8&&mx>mn*1.4) kind[n]=w>d?2:3;                // a short stretch of road or stream stretches too, so that it still meets its neighbours                                                   // long and low: road, river, rail, fence rail, bridge deck
     else if(GC.has(b[6])&&b[1]+h<=G+.5&&(mx>=30||mn>=12)) kind[n]=1; }                              // a wide patch of ground or water
   // things that touch move together as one piece (thin floor markings follow the piece they lie on without joining two pieces)
   const CS=4, cells=new Map(), key=(i,j)=>i*8192+j, E=.35;
@@ -947,9 +954,13 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
   studs.forEach((st,i)=>{ const n=own[i]; if(n<0){ st[0]*=KX; st[2]*=KZ; out.push(st); } else if(!kind[n]){ const q=box.get(find(n)); st[0]+=q[4]; st[2]+=q[5]; out.push(st); } });
   for(let n=0;n<N;n++){ const b=boxes[n];
     if(!kind[n]){ const q=box.get(find(n)); b[0]+=q[4]; b[2]+=q[5]; continue; }
-    const r=kind[n]===1?[b[0]*KX,b[2]*KZ,b[3]*KX,b[5]*KZ]:rect([b[0],b[2],b[3],b[5]]); b[0]=r[0]; b[2]=r[1]; b[3]=r[2]; b[5]=r[3];
+    const r=kind[n]===1?[b[0]*KX,b[2]*KZ,b[3]*KX,b[5]*KZ]:kind[n]===2?[b[0]*KX-b[5]*(KX-1)/2,(b[2]+b[5]/2)*KZ-b[5]/2,b[3]*KX+b[5]*(KX-1),b[5]]:[(b[0]+b[3]/2)*KX-b[3]/2,b[2]*KZ-b[3]*(KZ-1)/2,b[3],b[5]*KZ+b[3]*(KZ-1)]; b[0]=r[0]; b[2]=r[1]; b[3]=r[2]; b[5]=r[3];
     if(had[n]){ const nx=Math.floor(b[3]+1e-6),nz=Math.floor(b[5]+1e-6),ox=(b[3]-nx)/2,oz=(b[5]-nz)/2; for(let i=0;i<nx;i++)for(let j=0;j<nz;j++) out.push([b[0]+ox+i+.5,b[1]+b[4],b[2]+oz+j+.5,b[6]]); } }
   studs.length=0; for(const st of out) studs.push(st);
+  { const rd=[]; for(let n=NG;n<N;n++){ const b=boxes[n]; if(b[6]===C.road&&b[4]<=.6&&kind[n]>=2) rd.push(b); }   // an end that stops just short of a crossing road is carried on to it
+    for(const a of rd){ const ew=a[3]>a[5]; for(const c of rd){ if(c===a||(c[3]>c[5])===ew) continue;
+        if(ew){ if(a[2]+a[5]/2<c[2]-1||a[2]+a[5]/2>c[2]+c[5]+1) continue; const gr=c[0]-(a[0]+a[3]); if(gr>0&&gr<9) a[3]+=gr+.5; const gl=a[0]-(c[0]+c[3]); if(gl>0&&gl<9){ a[0]-=gl+.5; a[3]+=gl+.5; } }
+        else { if(a[0]+a[3]/2<c[0]-1||a[0]+a[3]/2>c[0]+c[3]+1) continue; const gd=c[2]-(a[2]+a[5]); if(gd>0&&gd<9) a[5]+=gd+.5; const gu=a[2]-(c[2]+c[5]); if(gu>0&&gu<9){ a[2]-=gu+.5; a[5]+=gu+.5; } } } } }
   ROADS.forEach((r,i)=>ROADS[i]=rect(r)); LAKES.forEach((r,i)=>LAKES[i]=rect(r)); RAILS.forEach((r,i)=>RAILS[i]=rect(r));
   // a place follows the piece it belongs to
   const qs=[...box.values()];
@@ -957,6 +968,8 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
     for(const q of qs){ if(q[2]-q[0]<1.5&&q[3]-q[1]<1.5) continue; const dx=Math.max(q[0]-lx,0,lx-q[2]), dz=Math.max(q[1]-lz,0,lz-q[3]), d=Math.hypot(dx,dz), ar=(q[2]-q[0])*(q[3]-q[1]); if(d<bd-1e-6||(d<1e-6&&bd<1e-6&&ar<ba)){ bd=d; ba=ar; best=q; } }
     if(best&&bd<6){ p.t=[p.t[0]+best[4],p.t[1]+best[5]]; if(p.l) p.l=[p.l[0]+best[4],p.l[1],p.l[2]+best[5]]; }
     else { p.t=[p.t[0]*KX,p.t[1]*KZ]; if(p.l) p.l=[p.l[0]*KX,p.l[1],p.l[2]*KZ]; } } }
+{ const RC=new Set([C.gray,C.dgray,C.brown]); for(const r of RAILS) for(let n=NG;n<boxes.length;n++){ const b=boxes[n]; if(b[1]<G-.1||b[1]+b[4]>G+.6||!RC.has(b[6])) continue;
+    if(b[0]>r[0]-.6&&b[0]+b[3]<r[0]+r[2]+.6&&b[2]>r[1]-.6&&b[2]+b[5]<r[1]+r[3]+.6){ b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
 REMAP=false; TW=NW; TH=NH;
 for(const t of TILES.concat(SEAT,EXTRA)){ t[0]=t[0]/270*NW; t[1]=t[1]/172*NH; }
 if(!WIDE) for(const p of POI){ p.t=[fX(p.t[0]),fZ(p.t[1])]; if(p.l) p.l=[fX(p.l[0]),p.l[1],fZ(p.l[2])]; }
@@ -979,6 +992,7 @@ function inLand(x,z){ if(EXTRA.some(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]
 function free(x,z,w,d){ if(!inLand(x,z)||!inLand(x+w,z+d)) return false; for(let j=z;j<z+d;j++)for(let i=x;i<x+w;i++) if(occ[j*MAPW+i]) return false; return true; }
 function take(x,z,w,d){ for(let j=Math.max(0,z);j<Math.min(MAPH,z+d);j++)for(let i=Math.max(0,x);i<Math.min(MAPW,x+w);i++) occ[j*MAPW+i]=1; }
 mark();
+for(const r of ROADS.concat(LAKES)) take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // nothing new is built on a road or in the water
 for(const [cx,cz] of [START].concat(POI.map(p=>p.t))) take(Math.floor(cx)-2,Math.floor(cz)-2,5,5);
 
 // ---------- prefabs: each draws inside a 10x10 pad (origin = north-west corner) and returns its label height
@@ -1202,7 +1216,7 @@ const SITES=[
 ['천안시','광덕사',70,150,'temple',{},'광덕산 자락의 절이에요. 절 앞에 아주 오래된 호두나무가 서 있어요.'],
 ['천안시','천안 호두과자',146,100,'village',{c:C.brown,c2:C.rbrown},'호두를 넣어 구운 동글동글한 과자예요. 천안을 대표하는 먹거리예요.'],
 ['천안시','아라리오 조각광장',140,66,'stones',{c:C.red},'천안 시내 터미널 앞 광장에 커다란 현대 조각 작품이 놓여 있어요.'],
-['천안시','천안역',170,98,'rail',{c:C.gray,c2:C.blue},'경부선과 장항선이 갈리는 큰 역이에요.'],
+['천안시','천안역',150,112,'rail',{c:C.gray,c2:C.blue},'경부선과 장항선이 갈리는 큰 역이에요.'],
 ['천안시','홍대용과학관',246,56,'museum',{c:C.navy,dome:1},'조선의 과학자 홍대용을 기리는 과학관이에요. 별을 관찰하는 천문대가 있어요.'],
 ['천안시','이동녕 선생 생가',196,134,'hanok',{},'대한민국 임시정부를 이끈 석오 이동녕 선생이 태어난 집이에요. 목천읍에 있어요.'],
 ['천안시','성환 배',110,20,'farm',{c:C.cream,c2:C.lime,tall:1},'봄이면 하얀 배꽃이 들판을 덮어요. 성환은 배로 이름난 곳이에요.'],
@@ -1225,7 +1239,7 @@ const SITES=[
 ['부여군','세도 방울토마토',160,146,'farm',{c:C.red,c2:C.green,tall:1},'금강 가 세도 들판은 방울토마토가 많이 나는 곳이에요.'],
 ['부여군','송국리 유적',232,40,'village',{},'청동기 시대 사람들이 살던 큰 마을 터예요. 둥근 움집 자리가 많이 나왔어요.'],
 ['논산시','관촉사 은진미륵',96,100,'buddha',{},'관촉사에 서 있는 고려 시대의 아주 큰 돌부처예요. 높이가 18m쯤 되고 국보로 지정돼 있어요.'],
-['논산시','탑정호 출렁다리',160,76,'bridge',{h:9},'탑정호 위를 가로지르는 길이 600m의 출렁다리예요.'],
+['논산시','탑정호 출렁다리',160,76,'bridge',{h:9,lake:[150,92,50,40]},'탑정호 위를 가로지르는 길이 600m의 출렁다리예요.'],
 ['논산시','돈암서원',150,56,'hanok',{},'조선의 학자 김장생을 모신 서원이에요. 유네스코 세계유산 「한국의 서원」 가운데 하나예요.'],
 ['논산시','계백장군 유적지',204,84,'statue',{},'황산벌에서 끝까지 싸운 백제 장군 계백의 무덤과 군사박물관이 있는 곳이에요.'],
 ['논산시','선샤인랜드',76,40,'village',{c:C.rbrown,c2:C.roof},'옛 서울 거리를 본떠 지은 드라마 세트장과 체험장이 있는 곳이에요.'],
@@ -1248,7 +1262,7 @@ const SITES=[
 ['계룡시','계룡문',136,64,'fort',{},'계룡대로 들어가는 길목에 선 커다란 한옥 모양 문이에요.'],
 ['계룡시','향적산',56,130,'peak',{h:9},'계룡산 남쪽으로 이어진 산이에요. 꼭대기 국사봉에서 계룡시가 내려다보여요.'],
 ['계룡시','입암저수지',200,130,'pond',{},'산자락 아래 고요한 저수지예요. 둘레길을 따라 걷기 좋아요.'],
-['계룡시','계룡역',184,92,'rail',{c:C.gray,c2:C.blue},'호남선 기차가 서는 역이에요.'],
+['계룡시','계룡역',84,46,'rail',{c:C.gray,c2:C.blue},'호남선 기차가 서는 역이에요.'],
 ['계룡시','두계 팥거리',176,120,'village',{c:C.rbrown},'옛날부터 팥죽과 팥칼국수 집이 모여 있던 거리예요.'],
 ['금산군','금산인삼약초시장',142,90,'market',{c:C.red},'전국의 인삼이 모이는 큰 시장이에요. 금산은 인삼의 고장으로 이름나 있어요.'],
 ['금산군','금산인삼관',108,90,'museum',{c:C.red},'인삼이 자라는 과정과 쓰임새를 보여 주는 전시관이에요.'],
@@ -1299,7 +1313,7 @@ const SITES=[
 ['예산군','예산 국수거리',196,46,'village',{c:C.cream},'햇볕과 바람에 국수 가락을 말리는 오래된 국숫집이 모인 거리예요.'],
 ['예산군','스플라스 리솜',78,22,'pond',{jets:1},'덕산 온천물로 물놀이를 하는 큰 온천 워터파크예요.'],
 ['보령시','천북 청보리밭',62,20,'farm',{c:C.lime,c2:C.green},'봄이면 언덕 가득 초록 보리가 바람에 일렁여요. 천북면에 있어요.'],
-['보령시','청소역',142,30,'rail',{c:C.gray,c2:C.teal},'장항선에서 가장 오래된 작은 역이에요. 옛 모습이 남은 역 건물이 문화재예요.'],
+['보령시','청소역',157,36,'rail',{c:C.gray,c2:C.teal},'장항선에서 가장 오래된 작은 역이에요. 옛 모습이 남은 역 건물이 문화재예요.'],
 ['보령시','김좌진 장군 묘',118,44,'tomb',{big:1},'청산리 대첩을 이끈 김좌진 장군이 잠든 곳이에요. 청소면에 있어요.'],
 ['보령시','학성리 공룡발자국',32,24,'rock',{},'바닷가 바위에 공룡 발자국 화석이 남아 있어요. 천북면 학성리에 있어요.'],
 ['보령시','고대도',5,22,'island',{s:'W'},'대천항에서 배로 가는 작은 섬이에요. 아주 오래전 서양 선교사가 다녀간 이야기가 전해져요.'],
@@ -1344,7 +1358,7 @@ const SITES=[
 ['당진시','면천 두견주',50,136,'village',{jars:1},'면천에서 진달래 꽃잎을 넣어 빚어 온 전통술이에요.'],
 ['아산시','온양온천시장',110,96,'market',{c:C.teal},'온양온천역 앞에 있는 큰 시장이에요. 온천을 하러 온 사람들이 들러요.'],
 ['아산시','인주 자동차 공장',40,60,'factory',{},'인주면에 자동차를 만드는 큰 공장이 있어요.'],
-['아산시','천안아산역',240,110,'rail',{c:C.white,c2:C.blue},'고속열차 KTX가 서는 역이에요. 아산과 천안의 경계에 있어요.'],
+['아산시','천안아산역',254,104,'rail',{c:C.white,c2:C.blue},'고속열차 KTX가 서는 역이에요. 아산과 천안의 경계에 있어요.'],
 ['천안시','천안중앙시장',110,104,'market',{c:C.purple},'천안 옛 시가지에 있는 큰 시장이에요. 호떡과 만두 골목으로 알려져 있어요.'],
 ['천안시','성성호수공원',110,44,'pond',{},'호수 둘레로 산책길과 생태 체험장이 이어진 공원이에요.'],
 ['홍성군','용봉산 자연휴양림',150,48,'forest',{cabin:1},'용봉산 자락 숲속에 통나무집이 있는 휴양림이에요.'],
@@ -1548,26 +1562,28 @@ const SITES=[
 ['금산군','진산성지성당',60,40,'church',{},'우리나라 천주교의 첫 순교자를 기리는 성당이에요. 진산면에 있어요.']
 ];
 // ---------- expressways: elevated decks on pillars along the real routes (Seohaean, Gyeongbu and Daejeon-Tongyeong, Dangjin-Daejeon, Cheonan-Nonsan, Seocheon-Gongju), with rest areas beside them
-const HY=G+7.5, HWL=[], HWSEG=[], TAGS=[], HW0=boxes.length;
-function hwDeck(ax,a,b,f){ const W=9, lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x';
-  const P=(u,v,lu,h,lv,y,c)=>X?T(u,y,v,lu,h,lv,c):T(v,y,u,lv,h,lu,c);
-  P(lo,f-W/2,len,.5,W,HY,C.road); P(lo,f-.2,len,.35,.4,HY+.5,C.lgray); P(lo,f-W/2,len,.6,.3,HY+.5,C.lgray); P(lo,f+W/2-.3,len,.6,.3,HY+.5,C.lgray);
-  for(let i=lo+2;i<lo+len-2;i+=6){ P(i,f-2.35,2.4,.04,.2,HY+.5,C.white); P(i,f+2.15,2.4,.04,.2,HY+.5,C.white); }
-  for(let i=lo+4;i<lo+len-2;i+=14){ const px=Math.round(X?i:f), pz=Math.round(X?f:i); if(px<1||pz<1||px>=MAPW-1||pz>=MAPH-1||occ[pz*MAPW+px]) continue; P(i,f-.8,1.6,7.0,1.6,G,C.lgray); P(i-.4,f-3.6,2.4,.6,7.2,HY-.6,C.lgray); }
-  const r=X?[lo,f-W/2,len,W]:[f-W/2,lo,W,len]; HWSEG.push(r); HWL.push({ax,lo,hi:lo+len,f}); }
+const HY=G+7.5, HWL=[], HWSEG=[], TAGS=[], HW0=boxes.length; let HW1=0;
+const HWON=false;   // the expressways (and their rest areas) are switched off
+const HWS=[]; function hwDeck(ax,a,b,f){ if(!HWON) return; const W=9, lo=Math.min(a,b), len=Math.abs(b-a); HWS.push([ax,lo,len,f]); HWSEG.push(ax==='x'?[lo-W/2,f-W/2,len+W,W]:[f-W/2,lo-W/2,W,len+W]); HWL.push({ax,lo,hi:lo+len,f}); }
+function hwDraw(ax,lo,len,f,me){ const W=9, X=ax==='x', P=(u,v,lu,h,lv,y,c)=>X?T(u,y,v,lu,h,lv,c):T(v,y,u,lv,h,lu,c);
+  const open=(u,v)=>{ const x=X?u:v, z=X?v:u; return HWSEG.some((r,i)=>i!==me&&x>r[0]+.1&&x<r[0]+r[2]-.1&&z>r[1]+.1&&z<r[1]+r[3]-.1); };   // inside another deck: a junction or a bend
+  P(lo-W/2,f-W/2,len+W,.5,W,HY,C.road);
+  for(let i=lo-W/2;i<lo+len+W/2-.01;i+=3){ const m=i+1.5; if(!open(m,f)) P(i,f-.2,3,.35,.4,HY+.5,C.lgray); if(!open(m,f-W/2+.15)) P(i,f-W/2,3,.6,.3,HY+.5,C.lgray); if(!open(m,f+W/2-.15)) P(i,f+W/2-.3,3,.6,.3,HY+.5,C.lgray); }
+  for(let i=lo+2;i<lo+len-2;i+=6){ if(open(i+1.2,f-2.25)||open(i+1.2,f+2.25)) continue; P(i,f-2.35,2.4,.04,.2,HY+.5,C.white); P(i,f+2.15,2.4,.04,.2,HY+.5,C.white); }
+  for(let i=lo+4;i<lo+len-2;i+=14){ const px=Math.round(X?i:f), pz=Math.round(X?f:i); if(px<1||pz<1||px>=MAPW-1||pz>=MAPH-1||occ[pz*MAPW+px]) continue; P(i,f-.8,1.6,7.0,1.6,G,C.lgray); P(i-.4,f-3.6,2.4,.6,7.2,HY-.6,C.lgray); } }
 { const X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH);
   hwDeck('x',X(1.75),X(2.6),Z(.55)); hwDeck('z',Z(.55),Z(3.95),X(1.75));                  // Seohaean: Dangjin - Seosan - Hongseong - Boryeong - Seocheon
   hwDeck('z',Z(.05),Z(3.5),X(4.45));                                                       // Gyeongbu through Cheonan to Daejeon, then Daejeon-Tongyeong to Geumsan
   hwDeck('z',Z(.55),Z(2.25),X(2.6)); hwDeck('x',X(2.6),X(3.6),Z(2.25)); hwDeck('z',Z(1.8),Z(2.25),X(3.6));   // Dangjin - Yesan - Gongju - Daejeon
   hwDeck('x',X(3.3),X(4.45),Z(.75)); hwDeck('z',Z(.75),Z(3.6),X(3.3));                    // Cheonan - Gongju - Nonsan
   hwDeck('x',X(1.75),X(3.3),Z(3.4));                                                       // Seocheon - Buyeo - towards Gongju
-  const HW1=boxes.length;
+  HWS.forEach((q,i)=>hwDraw(q[0],q[1],q[2],q[3],i)); HW1=boxes.length;
   // whatever stood in the way above deck height is cut down (a hill gets a cutting), and the strip below is kept clear of new things
   for(const r of HWSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);
     for(let n=NG;n<HW0;n++){ const b=boxes[n]; if(b[0]<r[0]+r[2]+.5&&b[0]+b[3]>r[0]-.5&&b[2]<r[1]+r[3]+.5&&b[2]+b[5]>r[1]-.5&&b[1]+b[4]>HY-1.2){ if(b[1]<HY-1.6) b[4]=HY-1.6-b[1]; else { b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
     for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>HY-1.7&&t[0]>r[0]-.5&&t[0]<r[0]+r[2]+.5&&t[2]>r[1]-.5&&t[2]<r[1]+r[3]+.5) studs.splice(i,1); } }
   // a rest area: car park, food hall, fuel canopy, a tall sign, and a ramp up to the deck
-  const rest=(name,ax,fu,fv)=>{ let X0,Z0,spot=null;
+  const rest=(name,ax,fu,fv)=>{ if(!HWON) return; let X0,Z0,spot=null;
     search: for(const sh of [0,.06,-.06,.12,-.12,.18,-.18]){ if(ax==='z'){ X0=X(fu); Z0=Z(fv+sh); } else { X0=X(fu+sh); Z0=Z(fv); } for(let r=0;r<16;r+=3) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=ax==='z'?X0+side*(8+r*.4)-(side<0?24:0):X0+al-12, z=ax==='z'?Z0+al-9:Z0+side*(8+r*.4)-(side<0?18:0); if(free(Math.round(x)-1,Math.round(z)-1,26,20)){ spot=[Math.round(x),Math.round(z),side]; break search; } } }
     if(!spot) return; const [x,z,side]=spot; take(x-1,z-1,26,20);
     at(x,z,()=>{ T(0,G,0,24,.14,18,0xcfd3d8); for(let i=0;i<6;i++) T(2+i*2.2,G+.14,12.5,.12,.03,3.6,C.white);
@@ -1583,6 +1599,40 @@ function hwDeck(ax,a,b,f){ const W=9, lo=Math.min(a,b), len=Math.abs(b-a), X=ax=
   rest('예산휴게소','z',2.6,1.5); rest('공주휴게소','x',3.1,2.25); rest('정안알밤휴게소','z',3.3,2.12); rest('탄천휴게소','z',3.3,2.8); rest('부여백제휴게소','x',2.7,3.4);
   // Sapgyoho sea dike: a stone causeway along the bay from Dangjin towards Asan
   { const [dx,dz]=CO['당진시']; T(dx+TW-Math.round(46*KX),.8,dz+SEAN-5,Math.round(46*KX)+60,1.3,4,C.stone); T(dx+TW-Math.round(46*KX),2.1,dz+SEAN-4,Math.round(46*KX)+60,.12,2,C.road); } }
+// ---------- railways on low viaducts along the real lines: Gyeongbu, the KTX line, Janghang, Seohae and Honam, with their stations
+const RY=G+3, RLL=[], RLSEG=[];
+function rlDeck(ax,a,b,f){ const lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x', P=(u,v,lu,h,lv,y,c)=>X?T(u,y,v,lu,h,lv,c):T(v,y,u,lv,h,lu,c);
+  P(lo-1.6,f-1.6,len+3.2,.4,3.2,RY-.4,C.gray); P(lo-.72,f-.85,len+1.44,.14,.28,RY+.11,C.dgray); P(lo-.72,f+.57,len+1.44,.14,.28,RY+.11,C.dgray);
+  for(let i=lo;i<lo+len;i+=1.8) P(i,f-1.2,.6,.11,2.4,RY,C.brown);
+  for(let i=lo+3;i<lo+len-1;i+=12){ const px=Math.round(X?i:f), pz=Math.round(X?f:i); if(px<1||pz<1||px>=MAPW-1||pz>=MAPH-1||occ[pz*MAPW+px]) continue; P(i,f-.6,1.2,RY-.4-G,1.2,G,C.lgray); }
+  RLSEG.push(X?[lo-1.6,f-1.6,len+3.2,3.2]:[f-1.6,lo-1.6,3.2,len+3.2]); RLL.push({ax,lo,hi:lo+len,f}); }
+{ const X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), R0=boxes.length;
+  rlDeck('z',Z(.05),Z(1.62),X(4.62));                                                                                   // Gyeongbu: Seonghwan - Cheonan - Daejeon
+  rlDeck('z',Z(.05),Z(1.3),X(4.05)); rlDeck('x',X(4.05),X(4.62),Z(1.3));                                               // KTX line through Cheonan-Asan to Daejeon
+  rlDeck('x',X(2.9),X(4.62),Z(.7)); rlDeck('z',Z(.7),Z(1.45),X(2.9)); rlDeck('x',X(1.6),X(2.9),Z(1.45)); rlDeck('z',Z(1.45),Z(3.92),X(1.6));   // Janghang: Cheonan - Asan - Yesan - Hongseong - Boryeong - Seocheon
+  rlDeck('z',Z(.3),Z(1.45),X(2.45)); rlDeck('x',X(2.45),X(3.15),Z(.3)); rlDeck('z',Z(.06),Z(.3),X(3.15));              // Seohae: Hongseong side - Hapdeok - Inju - north
+  rlDeck('z',Z(1.62),Z(2.2),X(4.62)); rlDeck('x',X(4.03),X(4.62),Z(2.2)); rlDeck('z',Z(2.2),Z(3.05),X(4.03)); rlDeck('x',X(3.35),X(4.03),Z(3.05)); rlDeck('z',Z(3.05),Z(3.95),X(3.35));   // Honam: Daejeon - Gyeryong - Nonsan - Ganggyeong
+  for(const r of RLSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // the train's way is cut clear; the ground below stays as it was
+    for(let n=NG;n<R0;n++){ if(n>=HW0&&n<HW1) continue; const b=boxes[n]; if(b[0]<r[0]+r[2]+.3&&b[0]+b[3]>r[0]-.3&&b[2]<r[1]+r[3]+.3&&b[2]+b[5]>r[1]-.3&&b[1]+b[4]>RY-.8&&b[1]<RY+4.6){ if(b[1]<RY-1.2) b[4]=RY-1.2-b[1]; else { b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
+    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>RY-1.3&&t[1]<RY+5&&t[0]>r[0]-.3&&t[0]<r[0]+r[2]+.3&&t[2]>r[1]-.3&&t[2]<r[1]+r[3]+.3) studs.splice(i,1); } }
+  // a station: a roofed platform beside the track, stairs, and a station house on the ground with its name board
+  const station=(name,ax,fu,fv,big,tag)=>{ const x0=X(fu), z0=Z(fv), L=big?26:18, Xa=ax==='x';
+    for(const side of [1,-1]){ const px=Xa?x0-L/2:(side>0?x0+1.7:x0-1.7-3.4), pz=Xa?(side>0?z0+1.7:z0-1.7-3.4):z0-L/2, pw=Xa?L:3.4, pd=Xa?3.4:L;
+      T(px,RY-.3,pz,pw,.5,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,RY+.2,cz,.3,2.6,.3,C.white); T(cx,G,cz,.5,RY-.3-G,.5,C.lgray); }
+      T(px-.3,RY+2.8,pz-.3,pw+.6,.3,pd+.6,big?C.glass:C.blue); }
+    let spot=null; const W=big?16:11, D=7; search: for(let r=0;r<34;r+=2) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=Xa?x0-W/2+al:(side>0?x0+6+r*.5:x0-6-r*.5-W), z=Xa?(side>0?z0+6+r*.5:z0-6-r*.5-D):z0-D/2+al; if(free(Math.round(x)-1,Math.round(z)-1,W+2,D+3)){ spot=[Math.round(x),Math.round(z)]; break search; } }
+    if(spot){ const [x,z]=spot; take(x-1,z-1,W+2,D+3); at(x,z,()=>{ T(-.5,G,-.5,W+1,.14,D+2.5,C.stone); B(0,G,0,W,big?4.2:3,D-1.5,big?0xe9f1f7:C.cream,{s:false}); T(-.4,G+(big?4.2:3),-.4,W+.8,.5,D-.7,big?C.navy:0x3b6fb5);
+        for(let i=1;i<W-1;i+=2.4) T(i,G+.5,D-1.5,1.5,big?2.6:1.6,.1,C.glass); T(W/2-1,G,D-1.5,2,2,.12,C.dgray); T(W/2-3,G+(big?4.7:3.5),D-1.6,6,1.1,.25,C.white); T(W/2-2.6,G+(big?4.9:3.7),D-1.34,5.2,.7,.06,C.blue);
+        T(1,G+.14,D+.3,.4,.5,1.2,C.wood); T(W-2,G+.14,D+.3,.4,.5,1.2,C.wood); });
+      // stairs from the station house up to the platform
+      { const n=8, tx=Xa?x0:(x+W/2<x0?x0-3.4:x0+3.4), tz=Xa?(z+D/2<z0?z0-3.4:z0+3.4):z0, sx=x+W/2, sz=z+D/2; for(let k=1;k<=n;k++){ const t=k/n; T(sx+(tx-sx)*t-.9,G,sz+(tz-sz)*t-.9,1.8,(RY-.3-G)*t,1.8,C.lgray); } }
+      if(tag) TAGS.push({n:tag,x:x+W/2,y:G+(big?7:5.6),z:z+D/2}); }
+    else if(tag) TAGS.push({n:tag,x:x0,y:RY+4.2,z:z0}); };
+  station('성환역','z',4.62,.14,0,'성환역'); station('두정역','z',4.62,.42,0,'두정역'); station('천안역','z',4.62,.66,1,'천안역 승강장'); station('대전역','z',4.62,1.5,1,'대전역'); station('서대전역','z',4.62,1.8,0,'서대전역');
+  station('천안아산역','z',4.05,.62,1,'천안아산역 승강장'); station('아산역','x',3.9,.7,0,'아산역'); station('온양온천역','x',3.5,.7,0,'온양온천역'); station('신창역','x',3.15,.7,0,'신창역');
+  station('예산역','x',2.72,1.45,0,'예산역 승강장'); station('삽교역','x',2.2,1.45,0,'삽교역'); station('홍성역','z',1.6,1.62,0,'홍성역 승강장'); station('광천역','z',1.6,1.88,0,'광천역');
+  station('청소역','z',1.6,2.2,0,'청소역 승강장'); station('대천역','z',1.6,2.5,0,'대천역 승강장'); station('웅천역','z',1.6,2.85,0,'웅천역'); station('판교역','z',1.6,3.15,0,'판교역'); station('서천역','z',1.6,3.5,0,'서천역'); station('장항역','z',1.6,3.82,0,'장항역');
+  station('합덕역','z',2.45,.75,0,'합덕역'); station('인주역','x',3.08,.3,0,'인주역'); station('계룡역','x',4.32,2.2,0,'계룡역 승강장'); station('연산역','x',3.82,3.05,0,'연산역'); station('논산역','z',3.35,3.4,0,'논산역'); station('강경역','z',3.35,3.8,0,'강경역'); }
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
   const [cx,cz]=CO[reg]; let x=cx+Math.round(WIDE?lx*KX:lx),z=cz+Math.round(WIDE?lz*KZ:lz),h,t;
   if(kind==='island'){
@@ -1595,6 +1645,12 @@ for(const [reg,name,lx,lz,kind,o,desc] of SITES){
     t=o.s==='W'?[cx+31.5,z+4]:[x+4,cz+29]; take(Math.floor(t[0])-2,Math.floor(t[1])-2,5,5);
     POI.push({n:name,c:reg,t,r:5.5,l:[x+4,7.5,z+4],d:desc}); continue;
   }
+  if(o.lake){   // a footbridge hung across the whole lake, like the one on Yedangho
+    const X0=cx+o.lake[0]*KX, Z0=cz+o.lake[1]*KZ, W=o.lake[2]*KX, D=o.lake[3]*KZ, zc=Math.round(Z0+D/2), xa=Math.floor(X0-4), len=Math.ceil(W+8), th=o.h||9;
+    at(xa,zc,()=>{ T(0,G+1.5,-1,len,.3,2,C.white); T(0,G+1.8,-1,len,.5,.15,C.orange); T(0,G+1.8,.85,len,.5,.15,C.orange);
+      for(const tx of [len*.28,len*.72]){ T(tx-.5,G,-1.6,1,th,.6,C.white); T(tx-.5,G,1,1,th,.6,C.white); T(tx-.5,G+th-.6,-1.6,1,.6,3.2,C.white); for(let k=1;k<=6;k++){ const dy=(th-2.2)*(1-k/6.6); for(const sg of [-1,1]){ T(tx+sg*k*(len*.035)-.1,G+1.8,-1.05,.2,dy,.2,C.white); T(tx+sg*k*(len*.035)-.1,G+1.8,.85,.2,dy,.2,C.white); } } }
+      T(-2,G,-1,2.2,1.5,2,C.stone); T(-3.4,G,-1,1.4,.8,2,C.stone); T(len-.2,G,-1,2.2,1.5,2,C.stone); T(len+2,G,-1,1.4,.8,2,C.stone); });
+    take(xa-6,zc-3,6,7); POI.push({n:name,c:reg,t:[xa-5,zc+.2],r:6.5,l:[xa+len/2,G+th+2,zc],d:desc}); continue; }
   if(o.sea){   // Seohae Bridge: it leaves the shore and crosses the sea to the north edge of the map (towards Pyeongtaek)
     const z0=cz+1, z1=cz+SEAN+7, len=z1-z0, th=o.h||11;
     at(x,0,()=>{ T(0,3.0,z0,4,.45,len,C.lgray); T(.3,3.45,z0,.25,.5,len,C.white); T(3.45,3.45,z0,.25,.5,len,C.white); T(1.9,3.45,z0,.2,.05,len,C.yellow);
@@ -1640,7 +1696,7 @@ mkTown('대전광역시',EXTRA[0][0]+TW,EXTRA[0][1]+TH/2,TW*.88,TH*.46);
 // 0 in the middle of a large town, 1 at its edge and beyond (ordinary trees thin out towards the middle)
 const cityD=(x,z)=>{ let m=1; for(const [cx,cz,rx,rz,pop] of TOWNS){ if(pop<30) continue; m=Math.min(m,Math.hypot((x-cx)/rx,(z-cz)/rz)); } return m; };
 // hanok houses in Buyeo and Gongju
-for(const [x0,z0,x1,z1,nh] of [[fX(630),fZ(556),fX(720),fZ(626),12],[fX(860),fZ(394),fX(950),fZ(454),12]]){
+for(const [x0,z0,x1,z1,nh] of [[fX(630),fZ(556),fX(720),fZ(626),12],[fX(860),fZ(394),fX(950),fZ(454),12]].map(r=>r.map(Math.round))){   // whole numbers: the free-land grid is indexed by them
   for(let n=0,k=0;n<nh*400&&k<nh;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
     hanok(x,z,6+2*Math.floor(rnd()*2),4,2.2); T(x-.6,G,z+4.6,7,.8,.4,C.stone); if(rnd()<.5) pine(x+7.2,G,z+2); } }
 // ---------- what each city and county is known for, spread over its land (most of it lands on the new ground east and south of the old tile)
@@ -1956,6 +2012,7 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
 // ---------- controls
 const OVER=2900*WF;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
+const cmpEl=document.querySelector('#cmp i'); let cmpYaw=null;
 const key={}; let jumpQ=false, runHeld=false, running=false, stam=1, stamShown=-1;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
 addEventListener('keydown',e=>{ const fb=document.activeElement; if((e.code==='Enter'||e.code==='Space')&&fb&&fb.tagName==='BUTTON'&&!fb.closest('#qz,#list,#intro')){ e.preventDefault(); fb.blur(); }
@@ -2007,15 +2064,13 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:car1,ax:'x',dir:-1,base:808,span:494,sp:3.0,off:0,fix:253.75,len:3},{o:car3,ax:'x',dir:-1,base:808,span:494,sp:2.6,off:250,fix:253.75,len:3},
   {o:car4,ax:'z',dir:-1,base:668,span:640,sp:2.4,off:0,fix:445.2,len:3},{o:car5,ax:'z',dir:-1,base:514,span:486,sp:2.8,off:120,fix:672.2,len:3},
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
-const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
-{ const o5=train.clone(); MV.add(o5); TRAINS.push({o:o5,fix:406.35,f:u=>364+(1-u)*240});   // a second train follows the first down the Boryeong - Seocheon line
-  let added=0; for(const r of RAILS0.slice().sort((a,b)=>b[3]-a[3])){ if(added>=1) break; if(r[2]>3||r[3]<110||TRAINS.some(m=>Math.abs(m.fix-r[0])<4)) continue;
-    const o=train.clone(); MV.add(o); const z0=r[1]+21, ln=r[3]-23, rev=added%2; TRAINS.push({o,fix:r[0]+.35,f:u=>z0+(rev?1-u:u)*ln}); added++; } }
+// six trains shuttle along the longest runs of the new lines (map units; a train is 1.9 wide and its track runs down the middle of the deck)
+const TRAINS=[]; { const mk=(o,ax,f,a,b)=>{ o.rotation.y=ax==='x'?0:Math.PI/2; TRAINS.push({o,ax,fix:f-.95,y:RY+.2,f:ax==='x'?u=>a+2+u*(b-a-23):u=>a+21+u*(b-a-23)}); }, X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), cl=()=>{ const o=train.clone(); MV.add(o); return o; };
+  mk(train,'z',X(4.62),Z(.05),Z(2.2)); mk(train2,'z',X(4.05),Z(.05),Z(1.3)); mk(train3,'z',X(1.6),Z(1.45),Z(3.92)); mk(cl(),'x',Z(.7),X(2.9),X(4.62)); mk(cl(),'x',Z(1.45),X(1.6),X(2.9)); mk(cl(),'z',X(2.45),Z(.3),Z(1.45)); }
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
 const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
   else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=WIDE?across(ROADS0,'z',m.fix,m.base-(m.span+m.len)/2):fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
-for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=WIDE?across(RAILS0,'z',m.fix,(z0+z1)/2):fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
 // ---------- traffic: 200 vehicles in all. A car keeps pace with a running explorer, expressway traffic is 1.2 times as fast, a train 1.3 times.
 const RUNSP=(BIG?12:10.4)*1.9/S, CARS=200;   // running speed in map units a second
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy,C.lgray];
@@ -2053,11 +2108,12 @@ function moveTraffic(dt){
     if(!m.st) m.st=m.ax==='x'?(m.dir>0?[m.base,m.base+m.len+reach,m.fix,m.fix+1.6]:[m.base-m.len-reach,m.base,m.fix-1.6,m.fix]):[m.fix,m.fix+1.6,m.base-m.len-reach,m.base];   // where it reappears after the end of its lane
     if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach;
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
-  for(const m of TRAINS){ const u=pingU(m.t), z0=m.f(u), b=m.box, oz=b[2]; m.o.position.set(m.fix,G+.2,z0); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=z0-19.8;b[3]=z0+.9;
-    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; m.dx=0; m.dz=(z0-19.8-oz)*S; if(Math.abs(m.dz)>7) m.dz=0; }
+  for(const m of TRAINS){ const u=pingU(m.t), c=m.f(u), b=m.box, xw=m.ax==='x', o0=xw?b[0]:b[2];
+    if(xw){ m.o.position.set(c,m.y,m.fix); b[0]=c-.9;b[1]=c+19.8;b[2]=m.fix;b[3]=m.fix+1.9; } else { m.o.position.set(m.fix,m.y,c); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=c-19.8;b[3]=c+.9; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
   for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
-    if(!stop) for(const o of ALLMV){ if(o===m||!m.y!==!o.y) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
+    if(!stop&&!m.f) for(const o of ALLMV){ if(o===m||(m.y||0)!==(o.y||0)) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
       // same lane: keep a gap; crossing roads and level crossings: wait for whatever is in the way; end of lane: wait until the start is free
       if((m.sp&&o.ax===m.ax&&o.fix===m.fix?inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0):hitB(m.ahead,ob)&&!hitB(m.box,ob))||(m.sp&&m.u>m.span-2.5&&hitB(m.st,ob))){ stop=true; break; } }
     m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k*(m.ts||1); }
@@ -2088,7 +2144,7 @@ function physics(dt,dx,dz){
 }
 
 // ---------- loop
-train.rotation.y=train2.rotation.y=train3.rotation.y=Math.PI/2; car4.rotation.y=car5.rotation.y=Math.PI/2; car1.rotation.y=car3.rotation.y=Math.PI;
+for(const m of TRAINS) m.o.rotation.y=m.ax==='x'?0:Math.PI/2; car4.rotation.y=car5.rotation.y=Math.PI/2; car1.rotation.y=car3.rotation.y=Math.PI;
 // ---------- time of day and weather, with the picture finish of 폭주 구구단: GLSL sky dome, bloom, colour grade, sky reflections
 const SKY_FRAG=`// Sky dome (learning edition graphics upgrade). Same uniforms as the original dome, so updSky() drives it unchanged.
 // Horizon-to-zenith gradient with a warm band around the sun at dusk, a sun disc or a moon, twinkling stars at night,
@@ -2311,6 +2367,7 @@ function tick(){
   player.position.set(P.x,P.y,P.z); body.rotation.y=P.face; body.position.y=(moving&&P.on)?Math.abs(Math.sin(P.walk))*.08:0;
   const sh=ground(P.x,P.z,P.y+.05)[0]; blob.position.set(P.x,sh+.03,P.z); blob.scale.setScalar(1.2*Math.max(.45,1-(P.y-sh)*.25));
   // camera
+  if(cam.yaw!==cmpYaw){ cmpYaw=cam.yaw; cmpEl.style.transform=`rotate(${cam.yaw.toFixed(3)}rad)`; }
   cam.dist+=(cam.want-cam.dist)*Math.min(1,dt*3.5);
   const gx=P.x, gy=P.y+1.9, gz=P.z;   // the view stays on the explorer however far it is zoomed out
   cam.tx+=(gx-cam.tx)*Math.min(1,dt*8); cam.ty+=(gy-cam.ty)*Math.min(1,dt*5); cam.tz+=(gz-cam.tz)*Math.min(1,dt*8);
