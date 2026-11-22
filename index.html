@@ -46,6 +46,7 @@ button{font-family:inherit;color:inherit}
 .lb:after{content:"";position:absolute;left:50%;bottom:-4px;margin-left:-4px;width:8px;height:8px;background:inherit;transform:rotate(45deg);border-radius:1px}
 .lb.v{background:var(--p);color:#fff}.lb.v:before{content:"✓";background:none;width:auto;height:auto;font-size:11px;line-height:1}
 .mepin{position:absolute;left:0;top:0;pointer-events:none;background:#d93025;color:#fff;font-size:13px;font-weight:900;border-radius:50% 50% 50% 0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2px solid #fff;z-index:2;will-change:transform}
+.lb.tag{pointer-events:none;background:rgba(26,115,232,.92);color:#fff}.lb.tag:before{display:none}
 .lb.big{font-size:14px;padding:7px 14px;background:rgba(31,36,48,.9);color:#fff;font-weight:900;letter-spacing:.02em}.lb.big:before{display:none}
 /* place card */
 #card{position:fixed;left:50%;top:170px;transform:translate(-50%,-520%);width:min(430px,calc(100% - 24px));border-radius:var(--r);padding:14px 18px 15px 20px;transition:transform .32s cubic-bezier(.2,.9,.25,1.05);pointer-events:none;overflow:hidden}
@@ -68,6 +69,9 @@ button{font-family:inherit;color:inherit}
 #jump{position:fixed;right:22px;bottom:calc(38px + env(safe-area-inset-bottom,0px));width:78px;height:78px;border-radius:50%;touch-action:none;cursor:pointer;
   border:3px solid transparent;background:linear-gradient(#ffffff,#f1f6ff) padding-box,linear-gradient(135deg,#4f9bff,#19c3b1) border-box;color:var(--p);font-size:11px;font-weight:900;letter-spacing:.06em;
   box-shadow:0 10px 26px rgba(26,115,232,.32),inset 0 -4px 8px rgba(26,115,232,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:transform .08s}
+#run{position:fixed;right:112px;bottom:calc(44px + env(safe-area-inset-bottom,0px));width:62px;height:62px;border-radius:50%;touch-action:none;cursor:pointer;border:4px solid transparent;background:linear-gradient(#fff,#fff) padding-box,conic-gradient(#34a853 var(--g,100%),#dfe5ee 0) border-box;color:#188038;font-size:11px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--sh);z-index:3;font-family:inherit}
+#run svg{width:22px;height:22px;stroke:#188038;stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:-1px}
+#run.on{background:linear-gradient(#e6f4ea,#e6f4ea) padding-box,conic-gradient(#34a853 var(--g,100%),#dfe5ee 0) border-box}#run.low{color:#9aa5b1}#run.low svg{stroke:#9aa5b1}
 #jump svg{width:28px;height:28px;stroke:var(--p);stroke-width:2.8;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:-2px}
 #jump:active{transform:scale(.93);background:linear-gradient(135deg,#4f9bff,#19c3b1) padding-box,linear-gradient(135deg,#4f9bff,#19c3b1) border-box;color:#fff}
 #jump:active svg{stroke:#fff}
@@ -182,6 +186,7 @@ button{font-family:inherit;color:inherit}
 </div>
 <div id="sky" class="rail glass"><button id="tod" aria-label="시간 바꾸기"></button><button id="wx" aria-label="날씨 바꾸기"></button></div>
 <button id="jump" aria-label="점프"><svg viewBox="0 0 24 24"><path d="M6 12l6-6 6 6M6 18l6-6 6 6"/></svg>점프</button>
+<button id="run" aria-label="달리기"><svg viewBox="0 0 24 24"><path d="M5 5l7 7-7 7M12 5l7 7-7 7"/></svg>달리기</button>
 <div id="joy"><i></i></div>
 <button id="act"><i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></i><span><small id="as">살펴보기</small><b id="an"></b></span></button>
 <div id="qz"><div class="sheet"><button id="qx" aria-label="닫기">×</button>
@@ -197,7 +202,8 @@ button{font-family:inherit;color:inherit}
   <div class="hero"><small>CHUNGNAM BLOCK TOUR</small><h1>충청남도 블록 탐방</h1><p>블록으로 쌓은 충청남도 열다섯 시·군을 걸어서 둘러보세요. 이름표가 붙은 곳에 다가가 살펴보기를 누르면 설명이 나오고, 다음을 누르면 퀴즈가 나와요. 퀴즈를 맞히면 도장이 찍혀요.</p></div>
   <div class="body"><ul class="keys">
     <li><b>걷기</b>조이스틱 · 방향키 · WASD</li>
-    <li><b>점프</b>오른쪽 아래 버튼 · 스페이스바</li>
+    <li><b>점프</b>오른쪽 아래 버튼 · 스페이스바 (공중에서 한 번 더)</li>
+    <li><b>달리기</b>달리기 버튼을 누른 채 · Shift (잠깐만)</li>
     <li><b>살펴보기</b>아래 파란 버튼 · E 키</li>
     <li><b>둘러보기</b>화면을 끌어서 돌리기</li>
     <li><b>확대·축소</b>두 손가락 · 휠 · + −</li>
@@ -923,7 +929,14 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
       if(!flat){ if(!a) cells.set(k,a=[]); a.push(n); } } }
   const box=new Map(); for(let n=0;n<N;n++){ if(kind[n]) continue; const r=find(n), b=boxes[n]; let q=box.get(r); if(!q) box.set(r,q=[1e9,1e9,-1e9,-1e9]); q[0]=Math.min(q[0],b[0]); q[1]=Math.min(q[1],b[2]); q[2]=Math.max(q[2],b[0]+b[3]); q[3]=Math.max(q[3],b[2]+b[5]); }
   for(const q of box.values()){ q[4]=(q[0]+q[2])/2*(KX-1); q[5]=(q[1]+q[3])/2*(KZ-1); }
-  const rect=r=>{ const l=lineOf(r[2],r[3]); if(l===2){ const e=r[3]*(KX-1)/2; return [r[0]*KX-e,(r[1]+r[3]/2)*KZ-r[3]/2,r[2]*KX+2*e,r[3]]; } if(l===3){ const e=r[2]*(KZ-1)/2; return [(r[0]+r[2]/2)*KX-r[2]/2,r[1]*KZ-e,r[2],r[3]*KZ+2*e]; } return [r[0]*KX,r[1]*KZ,r[2]*KX,r[3]*KZ]; };
+  { const W0=[], W1=[]; for(let n=NG;n<N;n++){ const b=boxes[n]; if(!kind[n]||(b[6]!==C.water&&b[6]!==C.road)) continue; W0.push([b[0],b[2],b[3],b[5]]); W1.push(kind[n]===1?[b[0]*KX,b[2]*KZ,b[3]*KX,b[5]*KZ]:rectOf([b[0],b[2],b[3],b[5]])); }
+    const hit=(q,dx,dz,w)=>q[0]+dx<w[0]+w[2]-.2&&q[2]+dx>w[0]+.2&&q[1]+dz<w[1]+w[3]-.2&&q[3]+dz>w[1]+.2;
+    const share=(q,w)=>Math.max(0,Math.min(q[2],w[0]+w[2])-Math.max(q[0],w[0]))*Math.max(0,Math.min(q[3],w[1]+w[3])-Math.max(q[1],w[1]))/Math.max(.01,(q[2]-q[0])*(q[3]-q[1]));
+    for(const q of box.values()){ if(W0.some(w=>share(q,w)>.3)) continue;   // boats, piers and bridges stay with their water; something that only touched the bank is a land thing
+      for(let it=0;it<4;it++){ const w=W1.find(w=>hit(q,q[4],q[5],w)); if(!w) break; const x0=q[0]+q[4],x1=q[2]+q[4],z0=q[1]+q[5],z1=q[3]+q[5];
+        const opts=[[w[0]-x1-1,0],[w[0]+w[2]-x0+1,0],[0,w[1]-z1-1],[0,w[1]+w[3]-z0+1]].sort((a,b)=>Math.abs(a[0])+Math.abs(a[1])-Math.abs(b[0])-Math.abs(b[1]));
+        const opt=opts.find(o=>!W1.some(v=>hit(q,q[4]+o[0],q[5]+o[1],v)))||opts[0]; q[4]+=opt[0]; q[5]+=opt[1]; } } }   // the nearest side that is clear of water and roads
+  const rect=r=>rectOf(r); function rectOf(r){ const l=lineOf(r[2],r[3]); if(l===2){ const e=r[3]*(KX-1)/2; return [r[0]*KX-e,(r[1]+r[3]/2)*KZ-r[3]/2,r[2]*KX+2*e,r[3]]; } if(l===3){ const e=r[2]*(KZ-1)/2; return [(r[0]+r[2]/2)*KX-r[2]/2,r[1]*KZ-e,r[2],r[3]*KZ+2*e]; } return [r[0]*KX,r[1]*KZ,r[2]*KX,r[3]*KZ]; }
   // each stud belongs to the block whose top it sits on (found by position: block numbers shift when a region removes blocks)
   const own=new Int32Array(studs.length).fill(-1), sg=new Map(), had=new Uint8Array(N);
   for(let n=0;n<N;n++){ const b=boxes[n]; for(let i=Math.floor(b[0]/CS);i<=Math.floor((b[0]+b[3])/CS);i++) for(let j=Math.floor(b[2]/CS);j<=Math.floor((b[2]+b[5])/CS);j++){ if(b[3]>60||b[5]>60) continue; const k=key(i,j); let a=sg.get(k); if(!a) sg.set(k,a=[]); a.push(n); } }
@@ -1103,9 +1116,9 @@ const SITES=[
 ['당진시','장고항',84,30,'market',{c:C.blue},'봄이면 실치 잡이 배가 드나드는 포구예요. 실치는 이 무렵에만 맛볼 수 있어요.'],
 ['당진시','난지섬',50,5,'island',{s:'N',f:'beach'},'당진 앞바다에 있는 섬이에요. 모래 고운 해수욕장이 있어요.'],
 ['당진시','당진 해나루쌀',160,146,'farm',{c:C.rice,c2:0xc4b63c},'너른 들에서 나는 당진 쌀이에요. 가을이면 들판이 온통 황금빛이에요.'],
-['당진시','삽교호 놀이동산',222,128,'wheel',{},'삽교호 방조제 옆 놀이동산이에요. 커다란 대관람차가 멀리서도 보여요.'],
-['당진시','삽교호 함상공원',222,146,'ship',{},'바다를 지키던 군함을 물가에 세워 두고 안을 둘러보게 만든 공원이에요.'],
-['당진시','서해대교',224,34,'bridge',{h:11},'당진과 평택 사이 바다를 건너는 긴 다리예요. 높은 주탑 두 개가 다리를 붙들고 있어요.'],
+['당진시','삽교호 놀이동산',246,36,'wheel',{},'삽교호 방조제 옆 놀이동산이에요. 커다란 대관람차가 멀리서도 보여요.'],
+['당진시','삽교호 함상공원',216,30,'ship',{},'바다를 지키던 군함을 물가에 세워 두고 안을 둘러보게 만든 공원이에요.'],
+['당진시','서해대교',150,0,'bridge',{h:11,sea:1},'당진과 평택 사이 바다를 건너는 긴 다리예요. 높은 주탑 두 개가 다리를 붙들고 있어요.'],
 ['당진시','솔뫼성지',196,150,'hanok',{},'우리나라 첫 천주교 사제 김대건 신부가 태어난 마을이에요. 소나무 숲이 둘러싸고 있어요.'],
 ['당진시','신리성지',172,128,'church',{c:C.white},'너른 들판 한가운데 있는 천주교 성지예요. 조선 시대에 큰 교우 마을이 있던 곳이에요.'],
 ['당진시','합덕성당',196,128,'church',{twin:1},'언덕 위에 붉은 벽돌로 지은 오래된 성당이에요. 종탑 두 개가 나란히 서 있어요.'],
@@ -1424,7 +1437,7 @@ const SITES=[
 ['서산시','도비산',84,124,'peak',{h:8},'부석사를 품고 있는 산이에요. 꼭대기에서 천수만이 내려다보여요.'],
 ['서산시','해미향교',146,136,'shrine',{},'조선 시대에 해미 고을 학생들을 가르치던 학교예요. 해미읍성 가까이에 있어요.'],
 ['당진시','심훈기념관',70,60,'museum',{},'소설 상록수를 쓴 심훈의 삶과 작품을 보여 주는 기념관이에요. 필경사 옆에 있어요.'],
-['당진시','삽교호 바다공원',190,96,'flower',{},'삽교호 방조제 옆 바닷가에 꾸민 공원이에요. 조형물과 꽃밭 사이를 산책해요.'],
+['당진시','삽교호 바다공원',232,30,'flower',{},'삽교호 방조제 옆 바닷가에 꾸민 공원이에요. 조형물과 꽃밭 사이를 산책해요.'],
 ['당진시','당진 아미산',130,120,'peak',{h:8},'당진에서 가장 높은 산이에요. 면천면에 있어요.'],
 ['당진시','석문방조제',60,24,'beach',{},'바다를 막아 길게 쌓은 둑이에요. 둑 위로 곧게 뻗은 길이 10km쯤 돼요.'],
 ['당진시','안섬포구',170,40,'market',{},'송악읍에 있는 작은 포구예요. 풍어를 비는 당제가 전해 와요.'],
@@ -1534,6 +1547,42 @@ const SITES=[
 ['금산군','추부 추어탕 마을',150,30,'market',{},'미꾸라지를 갈아 끓인 추어탕 집이 모여 있는 마을이에요. 추부면에 있어요.'],
 ['금산군','진산성지성당',60,40,'church',{},'우리나라 천주교의 첫 순교자를 기리는 성당이에요. 진산면에 있어요.']
 ];
+// ---------- expressways: elevated decks on pillars along the real routes (Seohaean, Gyeongbu and Daejeon-Tongyeong, Dangjin-Daejeon, Cheonan-Nonsan, Seocheon-Gongju), with rest areas beside them
+const HY=G+7.5, HWL=[], HWSEG=[], TAGS=[], HW0=boxes.length;
+function hwDeck(ax,a,b,f){ const W=9, lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x';
+  const P=(u,v,lu,h,lv,y,c)=>X?T(u,y,v,lu,h,lv,c):T(v,y,u,lv,h,lu,c);
+  P(lo,f-W/2,len,.5,W,HY,C.road); P(lo,f-.2,len,.35,.4,HY+.5,C.lgray); P(lo,f-W/2,len,.6,.3,HY+.5,C.lgray); P(lo,f+W/2-.3,len,.6,.3,HY+.5,C.lgray);
+  for(let i=lo+2;i<lo+len-2;i+=6){ P(i,f-2.35,2.4,.04,.2,HY+.5,C.white); P(i,f+2.15,2.4,.04,.2,HY+.5,C.white); }
+  for(let i=lo+4;i<lo+len-2;i+=14){ const px=Math.round(X?i:f), pz=Math.round(X?f:i); if(px<1||pz<1||px>=MAPW-1||pz>=MAPH-1||occ[pz*MAPW+px]) continue; P(i,f-.8,1.6,7.0,1.6,G,C.lgray); P(i-.4,f-3.6,2.4,.6,7.2,HY-.6,C.lgray); }
+  const r=X?[lo,f-W/2,len,W]:[f-W/2,lo,W,len]; HWSEG.push(r); HWL.push({ax,lo,hi:lo+len,f}); }
+{ const X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH);
+  hwDeck('x',X(1.75),X(2.6),Z(.55)); hwDeck('z',Z(.55),Z(3.95),X(1.75));                  // Seohaean: Dangjin - Seosan - Hongseong - Boryeong - Seocheon
+  hwDeck('z',Z(.05),Z(3.5),X(4.45));                                                       // Gyeongbu through Cheonan to Daejeon, then Daejeon-Tongyeong to Geumsan
+  hwDeck('z',Z(.55),Z(2.25),X(2.6)); hwDeck('x',X(2.6),X(3.6),Z(2.25)); hwDeck('z',Z(1.8),Z(2.25),X(3.6));   // Dangjin - Yesan - Gongju - Daejeon
+  hwDeck('x',X(3.3),X(4.45),Z(.75)); hwDeck('z',Z(.75),Z(3.6),X(3.3));                    // Cheonan - Gongju - Nonsan
+  hwDeck('x',X(1.75),X(3.3),Z(3.4));                                                       // Seocheon - Buyeo - towards Gongju
+  const HW1=boxes.length;
+  // whatever stood in the way above deck height is cut down (a hill gets a cutting), and the strip below is kept clear of new things
+  for(const r of HWSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);
+    for(let n=NG;n<HW0;n++){ const b=boxes[n]; if(b[0]<r[0]+r[2]+.5&&b[0]+b[3]>r[0]-.5&&b[2]<r[1]+r[3]+.5&&b[2]+b[5]>r[1]-.5&&b[1]+b[4]>HY-1.2){ if(b[1]<HY-1.6) b[4]=HY-1.6-b[1]; else { b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
+    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>HY-1.7&&t[0]>r[0]-.5&&t[0]<r[0]+r[2]+.5&&t[2]>r[1]-.5&&t[2]<r[1]+r[3]+.5) studs.splice(i,1); } }
+  // a rest area: car park, food hall, fuel canopy, a tall sign, and a ramp up to the deck
+  const rest=(name,ax,fu,fv)=>{ let X0,Z0,spot=null;
+    search: for(const sh of [0,.06,-.06,.12,-.12,.18,-.18]){ if(ax==='z'){ X0=X(fu); Z0=Z(fv+sh); } else { X0=X(fu+sh); Z0=Z(fv); } for(let r=0;r<16;r+=3) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=ax==='z'?X0+side*(8+r*.4)-(side<0?24:0):X0+al-12, z=ax==='z'?Z0+al-9:Z0+side*(8+r*.4)-(side<0?18:0); if(free(Math.round(x)-1,Math.round(z)-1,26,20)){ spot=[Math.round(x),Math.round(z),side]; break search; } } }
+    if(!spot) return; const [x,z,side]=spot; take(x-1,z-1,26,20);
+    at(x,z,()=>{ T(0,G,0,24,.14,18,0xcfd3d8); for(let i=0;i<6;i++) T(2+i*2.2,G+.14,12.5,.12,.03,3.6,C.white);
+      B(2,G,1.5,13,3,5.5,C.cream,{s:false}); T(1.6,G+3,1.1,13.8,.5,6.3,C.red); T(3,G+.3,7,2.2,2,.1,C.glass); T(6.4,G+.3,7,2.2,2,.1,C.glass); T(9.8,G+.3,7,2.2,2,.1,C.glass); T(4.5,G+3.5,6.6,8,1.1,.25,C.white); T(5,G+3.7,6.86,7,.7,.06,C.blue);
+      for(const [px,pz] of [[17,2],[22,2],[17,6],[22,6]]) T(px,G,pz,.4,2.8,.4,C.white); T(16.4,G+2.8,1.4,6.6,.5,5.6,C.orange); T(18.4,G+.14,3.2,.8,1.3,.5,C.red); T(20.6,G+.14,3.2,.8,1.3,.5,C.yellow);
+      [[2.4,13,C.red],[4.6,13,C.white],[9,13,C.blue],[11.2,13,C.yellow]].forEach(([cx,cz,c])=>{ T(cx,G+.14,cz,1.5,.7,2.8,c); T(cx+.15,G+.84,cz+.6,1.2,.6,1.5,C.glass); });
+      T(21,G,10,.5,7,.5,C.dgray); T(19.3,G+5.4,10.1,4,1.6,.3,C.blue); T(19.6,G+5.8,10.42,3.4,.8,.05,C.white); tree(.5,14.5,1,true); tree(20.5,14.5,0,true); });
+    // the ramp climbs in steps from the car park towards the deck
+    { const n=10; for(let k=0;k<n;k++){ const hgt=(HY-G)*(k+1)/n, t=(k+.5)/n; if(ax==='z'){ const xa=side>0?x:x+24, xb=X0+side*4.5, px=xa+(xb-xa)*t; T(Math.min(px,px+(xb-xa)/n)-.1,G,Z0-1.5,Math.abs(xb-xa)/n+.2,hgt,3,k===n-1?C.road:C.lgray); } else { const za=side>0?z:z+18, zb=Z0+side*4.5, pz=za+(zb-za)*t; T(X0-1.5,G,Math.min(pz,pz+(zb-za)/n)-.1,3,hgt,Math.abs(zb-za)/n+.2,k===n-1?C.road:C.lgray); } } }
+    TAGS.push({n:name,x:x+12,y:G+8.6,z:z+4}); };
+  rest('행담도휴게소','x',2.3,.55); rest('서산휴게소','z',1.75,.85); rest('홍성휴게소','z',1.75,1.5); rest('대천휴게소','z',1.75,2.5); rest('서천휴게소','z',1.75,3.65);
+  rest('망향휴게소','z',4.45,.3); rest('천안삼거리휴게소','z',4.45,.9); rest('인삼랜드휴게소','z',4.45,3.3);
+  rest('예산휴게소','z',2.6,1.5); rest('공주휴게소','x',3.1,2.25); rest('정안알밤휴게소','z',3.3,2.12); rest('탄천휴게소','z',3.3,2.8); rest('부여백제휴게소','x',2.7,3.4);
+  // Sapgyoho sea dike: a stone causeway along the bay from Dangjin towards Asan
+  { const [dx,dz]=CO['당진시']; T(dx+TW-Math.round(46*KX),.8,dz+SEAN-5,Math.round(46*KX)+60,1.3,4,C.stone); T(dx+TW-Math.round(46*KX),2.1,dz+SEAN-4,Math.round(46*KX)+60,.12,2,C.road); } }
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
   const [cx,cz]=CO[reg]; let x=cx+Math.round(WIDE?lx*KX:lx),z=cz+Math.round(WIDE?lz*KZ:lz),h,t;
   if(kind==='island'){
@@ -1546,8 +1595,21 @@ for(const [reg,name,lx,lz,kind,o,desc] of SITES){
     t=o.s==='W'?[cx+31.5,z+4]:[x+4,cz+29]; take(Math.floor(t[0])-2,Math.floor(t[1])-2,5,5);
     POI.push({n:name,c:reg,t,r:5.5,l:[x+4,7.5,z+4],d:desc}); continue;
   }
+  if(o.sea){   // Seohae Bridge: it leaves the shore and crosses the sea to the north edge of the map (towards Pyeongtaek)
+    const z0=cz+1, z1=cz+SEAN+7, len=z1-z0, th=o.h||11;
+    at(x,0,()=>{ T(0,3.0,z0,4,.45,len,C.lgray); T(.3,3.45,z0,.25,.5,len,C.white); T(3.45,3.45,z0,.25,.5,len,C.white); T(1.9,3.45,z0,.2,.05,len,C.yellow);
+      for(let i=z0+3;i<z1-8;i+=7) T(1.2,0,i,1.6,3,1.2,C.stone);
+      for(const tz of [z0+len*.3,z0+len*.62]){ T(-.5,0,tz,1,3+th,1,C.white); T(3.5,0,tz,1,3+th,1,C.white); T(-.5,2+th,tz,5,.8,1,C.white);
+        for(let k=1;k<=5;k++){ const dy=th*(1-k/5.5); for(const sg of [-1,1]){ T(-.2,3.45,tz+sg*k*1.9,.2,dy,.2,C.white); T(4,3.45,tz+sg*k*1.9,.2,dy,.2,C.white); } } }
+      T(0,G,z1-7,4,2.1,1.4,C.stone); T(0,G,z1-5.6,4,1.5,1.6,C.stone); T(0,G,z1-4,4,.9,1.6,C.stone); T(0,G,z1-2.4,4,.4,2.4,C.road); });
+    take(x-2,Math.floor(z1-8),9,12); POI.push({n:name,c:reg,t:[x+2,z1+2],r:6.5,l:[x+2,4+th,z0+len*.46],d:desc}); continue; }
   const S=PSIZE[kind]||10; let ok=false;
-  search: for(let r=0;r<150;r+=2) for(let dz=-r;dz<=r;dz+=2) for(let dx=-r;dx<=r;dx+=2){ if(Math.max(Math.abs(dx),Math.abs(dz))!==r) continue;
+  if(kind==='beach'&&(WS(cx,cz)||NS(cx,cz))){   // a beach, mudflat or sea dike lies on the shore: slide it along the nearer coast until it fits
+    const west=WS(cx,cz)&&(!NS(cx,cz)||lx-27<=lz-22);
+    for(let r=0;r<(west?TH:TW)&&!ok;r+=2) for(const sg of r?[1,-1]:[1]){ const px=west?cx+Math.ceil(SEAW)+4:Math.round(x+sg*r), pz=west?Math.round(z+sg*r):cz+Math.ceil(SEAN)+6;
+      if(px<cx+2||pz<cz+2||px+S>cx+TW-2||pz+S+4>cz+TH-2) continue; if(free(px-1,pz-1,S+2,S+5)){ x=px; z=pz; ok=true; break; } }
+    if(ok){ if(west) T(cx+SEAW-7,0,z,x-(cx+SEAW-7)+.5,1.08,S,o.mud?0xb9a583:C.sand); else T(x,0,cz+SEAN-7,S,1.08,z-(cz+SEAN-7)+.5,o.mud?0xb9a583:C.sand); } }
+  if(!ok) search: for(let r=0;r<150;r+=2) for(let dz=-r;dz<=r;dz+=2) for(let dx=-r;dx<=r;dx+=2){ if(Math.max(Math.abs(dx),Math.abs(dz))!==r) continue;
     const px=Math.round(x+dx),pz=Math.round(z+dz); if(px<cx+2||pz<cz+2||px+S>cx+TW-2||pz+S+4>cz+TH-2) continue;
     if(free(px-1,pz-1,S+2,S+5)){ x=px; z=pz; ok=true; break search; } }
   if(!ok) continue;
@@ -1559,20 +1621,28 @@ function apt2(x,z,h,c){ B(x,G,z,4,h,4,pick([C.white,C.cream,0xeef1f4])); T(x+1.3
   for(const wx of [.35,2.95]){ T(x+wx,G+.6,z+4,.7,h-1.2,.08,C.navy); T(x+wx,G+.6,z-.08,.7,h-1.2,.08,C.navy); } T(x-.08,G+.6,z+1.4,.08,h-1.2,1.2,C.navy); T(x+4,G+.6,z+1.4,.08,h-1.2,1.2,C.navy);
   B(x+1,G+h,z+1,2,.8,2,c); }
 function tower(x,z,h){ const c=pick([C.glass,0x7fb8e6,0x9ad7d0,0xb8c7e6]); B(x,G,z,5,h,5,c,{s:false}); for(let y=1.2;y<h;y+=2.4) T(x-.06,G+y,z-.06,5.12,.25,5.12,C.white); B(x-.2,G+h,z-.2,5.4,.5,5.4,C.white,{s:false}); B(x+1.5,G+h+.5,z+1.5,2,1.2,2,C.lgray); }
-const CITY=[[810,0,1080,172,130,16],[1080,0,1350,172,180,26],[810,172,1080,344,150,24],[1080,172,1350,344,230,46]].map(c=>[fX(c[0]),fZ(c[1]),fX(c[2]),fZ(c[3]),Math.round(c[4]*1.3),Math.round(c[5]*1.2)]);   // x0,z0,x1,z1, apartments, towers
-for(const [x0,z0,x1,z1,na,nt] of CITY){
-  for(let n=0,k=0;n<nt*400&&k<nt;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,7,7)) continue; take(x-1,z-1,7,7); k++; tower(x,z,1.2*(6+Math.floor(rnd()*10))); }
-  for(let n=0,k=0;n<na*300&&k<na;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
-    apt2(x,z,1.2*(8+Math.floor(rnd()*9)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow,C.purple,C.red])); }
-}
-// smaller cities: a few apartment blocks in Seosan and Dangjin, and hanok houses in Buyeo and Gongju
-for(const [x0,z0,x1,z1,na] of [[fX(366),56,fX(446),116,12],[fX(632),44,fX(712),104,12]]){
-  for(let n=0,k=0;n<na*400&&k<na;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
-    apt2(x,z,1.2*(6+Math.floor(rnd()*6)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow])); } }
+// ---------- towns sized by the real number of residents (ten thousands; Chungnam cities and counties: end of 2025, Daejeon: June 2026)
+// Flats rise towards the middle and thin out towards the edge, shops gather in the middle, houses ring the town.
+const POP={'천안시':70.5,'아산시':40.0,'당진시':18.5,'서산시':18.0,'논산시':11.5,'홍성군':10.5,'공주시':10.4,'보령시':9.8,'예산군':8.4,'태안군':6.2,'부여군':6.1,'금산군':5.3,'서천군':5.0,'계룡시':4.6,'청양군':3.1,'대전광역시':144.2};
+function shop(x,z){ const w=4,d=3,h=1.5+.6*Math.floor(rnd()*3); B(x,G,z,w,h,d,pick([C.white,C.cream,0xf0e6d8,0xe8eef2]),{s:false}); T(x-.15,G+h,z-.15,w+.3,.3,d+.3,C.lgray);
+  T(x-.1,G+1.25,z+d,w+.2,.22,.9,pick([C.red,C.blue,C.orange,C.teal,C.yellow,C.purple])); T(x+.3,G+h-.55,z+d,w-.6,.42,.08,C.white); T(x+.5,G,z+d,.8,1.1,.06,C.brown); T(x+1.8,G+.3,z+d,1.7,.8,.06,C.glass); }
+const TOWNS=[];
+function mkTown(name,cx,cz,rx,rz){ const pop=POP[name], maxF=Math.min(18,Math.round(4+Math.sqrt(pop)*1.5)); TOWNS.push([cx,cz,rx,rz,pop]);
+  const put=(n,w,d,lo,hi,pw,fn)=>{ for(let t=0,k=0;t<n*260&&k<n;t++){ const u=lo+(hi-lo)*Math.pow(rnd(),pw), a=rnd()*6.2832, x=Math.round(cx+Math.cos(a)*u*rx-w/2), z=Math.round(cz+Math.sin(a)*u*rz-d/2); if(!free(x-1,z-1,w+2,d+3)) continue; take(x-1,z-1,w+2,d+3); k++; fn(x,z,(u-lo)/(hi-lo||1),u); } };
+  if(pop>30) put(Math.round(pop*.14),5,5,0,.3,1,(x,z,v)=>tower(x,z,1.2*Math.round(maxF*(1-v*.45))));                                   // office towers only in the largest centres
+  put(Math.round(pop*1.25+2),4,4,0,.82,1.35,(x,z,v,u)=>apt2(x,z,1.2*Math.max(3,Math.round(3+(maxF-3)*Math.pow(1-u/.82,1.25)*(.8+.2*rnd()))),pick([C.orange,C.teal,C.blue,C.pink,C.yellow,C.purple,C.red])));
+  put(Math.round(pop*.7+5),4,4,0,.6,1.1,(x,z)=>shop(x,z));
+  put(Math.round(pop*.9+8),3,3,.4,1,1,(x,z)=>house(x,z,3,3,1.2*(1+Math.floor(rnd()*2)),pick(pal),pick([C.red,C.blue,C.roof,C.orange,C.dgreen]))); }
+for(const name of Object.keys(CO)){ const ps=POI.filter(p=>p.c===name), [tx,tz]=CO[name]; let cx=tx+TW/2, cz=tz+TH/2;
+  if(ps.length){ cx=ps.reduce((a,p)=>a+p.t[0],0)/ps.length; cz=ps.reduce((a,p)=>a+p.t[1],0)/ps.length; cx=Math.min(tx+TW*.7,Math.max(tx+TW*.3,cx)); cz=Math.min(tz+TH*.68,Math.max(tz+TH*.32,cz)); }
+  const R=Math.min(TH*.47,26+Math.sqrt(POP[name])*13); mkTown(name,cx,cz,Math.min(TW*.47,R*1.25),R); }
+mkTown('대전광역시',EXTRA[0][0]+TW,EXTRA[0][1]+TH/2,TW*.88,TH*.46);
+// 0 in the middle of a large town, 1 at its edge and beyond (ordinary trees thin out towards the middle)
+const cityD=(x,z)=>{ let m=1; for(const [cx,cz,rx,rz,pop] of TOWNS){ if(pop<30) continue; m=Math.min(m,Math.hypot((x-cx)/rx,(z-cz)/rz)); } return m; };
+// hanok houses in Buyeo and Gongju
 for(const [x0,z0,x1,z1,nh] of [[fX(630),fZ(556),fX(720),fZ(626),12],[fX(860),fZ(394),fX(950),fZ(454),12]]){
   for(let n=0,k=0;n<nh*400&&k<nh;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
     hanok(x,z,6+2*Math.floor(rnd()*2),4,2.2); T(x-.6,G,z+4.6,7,.8,.4,C.stone); if(rnd()<.5) pine(x+7.2,G,z+2); } }
-const inCity=(x,z)=>x>=3*NW-2&&z<2*NH+2;
 // ---------- what each city and county is known for, spread over its land (most of it lands on the new ground east and south of the old tile)
 function ctree(x,z,c1,c2,dot){ T(x+1,G,z+1,1,2.4,1,C.brown); B(x,G+2.4,z,3,1.2,3,c1,{s:false}); B(x+.5,G+3.6,z+.5,2,1.0,2,c2,{s:false});
   if(dot){ T(x+.5,G+2.7,z-.12,.5,.5,.14,dot); T(x+1.9,G+2.9,z+2.98,.5,.5,.14,dot); T(x-.12,G+2.8,z+1.6,.14,.5,.5,dot); T(x+2.98,G+2.7,z+.6,.14,.5,.5,dot); T(x+1.2,G+4.6,z+1.2,.5,.3,.5,dot); } }
@@ -1643,7 +1713,7 @@ for(let i=0;i<54;i++){ const [tx,tz]=SEAT[i%3], x=tx+12+Math.floor(rnd()*230), z
 for(let n=0,k=0;n<40000&&k<760;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(x>=3*NW-2&&z>=NH-2&&z<2*NH) continue; if(!free(x-1,z-1,8,9)) continue; take(x-1,z-1,8,9); k++;
   const sg=SIG[regOf(x,z)]; if(sg&&sg[1].length&&rnd()<.75){ DECO[pick(sg[1])][2](x,z); continue; }
   const c=pick([C.rice,C.lime,C.rice,0xc8d85a]); T(x,G,z,6,.4,7,c); for(let r=0;r<6;r++) T(x+.4+r,G+.4,z+.4,.2,.25,6.2,c===C.rice?0xc4b63c:C.green); }
-for(let n=0,k=0;n<140000&&k<5000;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(!free(x,z,3,3)) continue; if(inCity(x,z)&&rnd2()<.72) continue; take(x,z,3,3); k++; const sg=SIG[regOf(x,z)]; if(sg&&sg[0].length&&rnd()<.62){ const kd=pick(sg[0]); if(DECO[kd][0]<=3&&DECO[kd][1]<=3) DECO[kd][2](x,z); else if(kd==='pines') pine(x+.4,G,z+.4); else tree(x,z,1,true); } else tree(x,z,rnd()<.5,true); }
+for(let n=0,k=0;n<140000&&k<5000;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(!free(x,z,3,3)) continue; if(rnd2()<.72*(1-cityD(x,z))) continue; take(x,z,3,3); k++; const sg=SIG[regOf(x,z)]; if(sg&&sg[0].length&&rnd()<.62){ const kd=pick(sg[0]); if(DECO[kd][0]<=3&&DECO[kd][1]<=3) DECO[kd][2](x,z); else if(kd==='pines') pine(x+.4,G,z+.4); else tree(x,z,1,true); } else tree(x,z,rnd()<.5,true); }
 for(let i=0;i<40;i++){ rnd();rnd();rnd(); }
 
 
@@ -1841,6 +1911,7 @@ const P={ride:null,x:SPOS[0],z:SPOS[1],y:G*S+.5,vy:0,on:true,face:Math.PI,walk:0
 
 // ---------- places (t: where to stand, l: label anchor)
 const lbBox=document.getElementById('labels');
+const TAGE=TAGS.map(g=>{ const e=document.createElement('div'); e.className='lb tag'; e.textContent=g.n; e.style.display='none'; lbBox.appendChild(e); return {e,x:g.x*S,y:g.y*S,z:g.z*S,on:false}; });
 const mePin=document.createElement('div'); mePin.className='mepin'; mePin.textContent='나'; mePin.style.display='none'; lbBox.appendChild(mePin);
 POI.forEach((p,i)=>{ const e=document.createElement('div'); e.className='lb'; e.dataset.i=i; e.textContent=p.n; e.style.display='none'; lbBox.appendChild(e); p.e=e; p.v=false; });
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.dataset.c=n; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
@@ -1885,7 +1956,7 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
 // ---------- controls
 const OVER=2900*WF;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
-const key={}; let jumpQ=false;
+const key={}; let jumpQ=false, runHeld=false, running=false, stam=1, stamShown=-1;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
 addEventListener('keydown',e=>{ const fb=document.activeElement; if((e.code==='Enter'||e.code==='Space')&&fb&&fb.tagName==='BUTTON'&&!fb.closest('#qz,#list,#intro')){ e.preventDefault(); fb.blur(); }
   if(modal){ if(e.code==='Escape') closeQ(); else if(e.code==='Enter'&&!e.repeat&&!document.getElementById('qz').classList.contains('quiz')) document.getElementById('qg').click(); return; } if(document.getElementById('list').style.display==='flex'){ if(e.code==='Escape') document.getElementById('list').style.display='none'; return; } if((e.code==='KeyE'||e.code==='Enter')&&cur){ if(!e.repeat) openQ(cur); return; } if(e.code==='Space'&&!key.Space) jumpQ=true; key[e.code]=true; if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); }); addEventListener('keyup',e=>key[e.code]=false);
@@ -1897,6 +1968,7 @@ joy.addEventListener('pointermove',e=>{ if(e.pointerId===jid) jmove(e); });
 const jend=e=>{ if(e.pointerId===jid){ jid=null; jx=jy=0; knob.style.transform=''; } };
 joy.addEventListener('pointerup',jend); joy.addEventListener('pointercancel',jend);
 document.getElementById('jump').addEventListener('pointerdown',e=>{ jumpQ=true; e.preventDefault(); e.stopPropagation(); });
+{ const rb=document.getElementById('run'); rb.addEventListener('pointerdown',e=>{ runHeld=true; rb.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation(); }); for(const ev of ['pointerup','pointercancel','lostpointercapture']) rb.addEventListener(ev,()=>{ runHeld=false; }); }
 const pts=new Map(); let pinch=0; const cv=renderer.domElement;
 const pdn=e=>{ pts.set(e.pointerId,[e.clientX,e.clientY]); try{e.target.setPointerCapture(e.pointerId);}catch(_){} pinch=0; lbDrag=0; }; cv.addEventListener('pointerdown',pdn); lbBox.addEventListener('pointerdown',pdn);
 const pmv=e=>{ const p=pts.get(e.pointerId); if(!p) return; if(e.pointerType==='mouse'&&!e.buttons){ pts.delete(e.pointerId); return; } lbDrag+=Math.abs(e.clientX-p[0])+Math.abs(e.clientY-p[1]);
@@ -1936,6 +2008,9 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:car4,ax:'z',dir:-1,base:668,span:640,sp:2.4,off:0,fix:445.2,len:3},{o:car5,ax:'z',dir:-1,base:514,span:486,sp:2.8,off:120,fix:672.2,len:3},
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
+{ const o5=train.clone(); MV.add(o5); TRAINS.push({o:o5,fix:406.35,f:u=>364+(1-u)*240});   // a second train follows the first down the Boryeong - Seocheon line
+  let added=0; for(const r of RAILS0.slice().sort((a,b)=>b[3]-a[3])){ if(added>=1) break; if(r[2]>3||r[3]<110||TRAINS.some(m=>Math.abs(m.fix-r[0])<4)) continue;
+    const o=train.clone(); MV.add(o); const z0=r[1]+21, ln=r[3]-23, rev=added%2; TRAINS.push({o,fix:r[0]+.35,f:u=>z0+(rev?1-u:u)*ln}); added++; } }
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
 const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
@@ -1943,18 +2018,26 @@ for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.le
 for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=WIDE?across(RAILS0,'z',m.fix,(z0+z1)/2):fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy]; let n=0;
   const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
-  for(const [x,z,w,h] of ROADS){ if(n>=130) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(8,Math.floor(len/70)+1), sp=2.6+((n*7)%5)*.2;
+  for(const m of LANES) m.sp=Math.max(12.4,m.sp*4.4);
+  for(const [x,z,w,h] of ROADS){ if(n>=260) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(12,Math.floor(len/42)+1), sp=12.5+((n*7)%5)*.7;
     if(ew){ const fp=z+2.25, fm=z+1.75; if(has('x',fp,x,x+len)||has('x',fm,x,x+len)) continue;
       for(let i=0;i<k;i++){ const bus=n%5===4, vl=bus?6:3;
         LANES.push({o:vehicle(vl,cols[n%8],bus),ax:'x',dir:1,base:x+1,span:len-vl-2,sp,off:(i+.3)*len/k,fix:fp,len:vl}); n++;
         const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI; LANES.push({o,ax:'x',dir:-1,base:x+len-1,span:len-5,sp,off:(i+.6)*len/k,fix:fm,len:3}); n++; } }
     else { const f=x+2.2; if(has('z',f,z,z+len)) continue;
       for(let i=0;i<k;i++){ const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI/2; LANES.push({o,ax:'z',dir:-1,base:z+len-1,span:len-5,sp,off:(i+.4)*len/k,fix:f,len:3}); n++; } } } }
+// expressway traffic: faster, two lanes each way up on the decks
+{ const cols=[C.white,C.red,C.navy,C.yellow,C.teal,C.lgray,C.orange,C.blue]; let n=0;
+  for(const h of HWL){ const len=h.hi-h.lo, k=Math.max(1,Math.round(len/150));
+    for(let i=0;i<k;i++) for(const [dir,off] of [[1,.7],[-1,-.7]]){ const bus=n%6===5, vl=bus?6:3, o=vehicle(vl,cols[n%8],bus), sp=18+(n%4)*1.3;
+      if(h.ax==='x'){ if(dir<0) o.rotation.y=Math.PI; LANES.push({o,ax:'x',dir,base:dir>0?h.lo+1:h.hi-1,span:len-vl-2,sp,off:(i+.5*(dir>0?1:1.6))*len/k,fix:h.f+off+(dir>0?0:0),len:vl,y:HY+.5}); }
+      else if(dir<0){ o.rotation.y=Math.PI/2; LANES.push({o,ax:'z',dir:-1,base:h.hi-1,span:len-vl-2,sp,off:(i+.5)*len/k,fix:h.f+.7,len:vl,y:HY+.5}); } else { o.visible=false; }
+      n++; } } }
 for(const m of LANES.concat(TRAINS)){ m.t=0; m.k=1; m.box=[0,0,0,0]; m.dx=m.dz=0; }
 // roof heights: a car has a low bonnet and boot with a taller cabin in the middle; buses and trains are flat on top
 const VY=(G+.3)*S; scene.updateMatrixWorld(true); const TRAINTOP=(G+.2)*S+new THREE.Box3().setFromObject(train).max.y-train.position.y*S;
-function mTop(m,ux,uz){ if(m.f) return TRAINTOP; if(m.len===6) return VY+2.1*S; const b=m.box, fr=m.ax==='x'?(ux-b[0])/(b[1]-b[0]):(uz-b[2])/(b[3]-b[2]); return VY+((fr>.25&&fr<.75)?1.85:1.05)*S; }
-function moverTop(x,z,lim){ const ux=x/S,uz=z/S; let best=-9,bm=null; for(const m of LANES) if(inBox(m.box,ux,uz,.15)){ const t=mTop(m,ux,uz); if(t<=lim&&t>best){ best=t; bm=m; } }
+function mTop(m,ux,uz){ if(m.y) return (m.y+2.1)*S; if(m.f) return TRAINTOP; if(m.len===6) return VY+2.1*S; const b=m.box, fr=m.ax==='x'?(ux-b[0])/(b[1]-b[0]):(uz-b[2])/(b[3]-b[2]); return VY+((fr>.25&&fr<.75)?1.85:1.05)*S; }
+function moverTop(x,z,lim){ const ux=x/S,uz=z/S; let best=-9,bm=null; for(const m of LANES) if(!m.y&&inBox(m.box,ux,uz,.15)){ const t=mTop(m,ux,uz); if(t<=lim&&t>best){ best=t; bm=m; } }
   for(const m of TRAINS) if(inBox(m.box,ux,uz,.15)){ const t=mTop(m,ux,uz); if(t<=lim&&t>best){ best=t; bm=m; } } return [best,bm]; }
 const inBox=(b,x,z,mg)=>x>b[0]-mg&&x<b[1]+mg&&z>b[2]-mg&&z<b[3]+mg, hitB=(a,b)=>a[0]<b[1]&&a[1]>b[0]&&a[2]<b[3]&&a[3]>b[2];
 const pingU=tt=>{ const tp=(tt*.045)%2, te=tp<1?tp:2-tp; return te*te*(3-2*te); };
@@ -1962,22 +2045,22 @@ const ALLMV=LANES.concat(TRAINS);
 function moveTraffic(dt){
   const px=P.x/S,pz=P.z/S;
   for(const m of LANES){ const u=(m.t*m.sp+m.off)%m.span, c=m.dir>0?m.base+u:m.base-u, b=m.box, ox=b[0], oz=b[2];
-    if(m.ax==='x'){ m.o.position.set(c,G+.3,m.fix); if(m.dir>0){ b[0]=c;b[1]=c+m.len;b[2]=m.fix;b[3]=m.fix+1.6; } else { b[0]=c-m.len;b[1]=c;b[2]=m.fix-1.6;b[3]=m.fix; } }
-    else { m.o.position.set(m.fix,G+.3,c); b[0]=m.fix;b[1]=m.fix+1.6;b[2]=c-m.len;b[3]=c; }
-    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const reach=4.5; m.u=u;
+    if(m.ax==='x'){ m.o.position.set(c,m.y||G+.3,m.fix); if(m.dir>0){ b[0]=c;b[1]=c+m.len;b[2]=m.fix;b[3]=m.fix+1.6; } else { b[0]=c-m.len;b[1]=c;b[2]=m.fix-1.6;b[3]=m.fix; } }
+    else { m.o.position.set(m.fix,m.y||G+.3,c); b[0]=m.fix;b[1]=m.fix+1.6;b[2]=c-m.len;b[3]=c; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const reach=m.y?7:9; m.u=u;
     if(!m.st) m.st=m.ax==='x'?(m.dir>0?[m.base,m.base+m.len+reach,m.fix,m.fix+1.6]:[m.base-m.len-reach,m.base,m.fix-1.6,m.fix]):[m.fix,m.fix+1.6,m.base-m.len-reach,m.base];   // where it reappears after the end of its lane
     if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach;
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
   for(const m of TRAINS){ const u=pingU(m.t), z0=m.f(u), b=m.box, oz=b[2]; m.o.position.set(m.fix,G+.2,z0); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=z0-19.8;b[3]=z0+.9;
     const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; m.dx=0; m.dz=(z0-19.8-oz)*S; if(Math.abs(m.dz)>3) m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
-  for(const m of ALLMV){ let stop=P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S;
-    if(!stop) for(const o of ALLMV){ if(o===m) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
+  for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
+    if(!stop) for(const o of ALLMV){ if(o===m||!m.y!==!o.y) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
       // same lane: keep a gap; crossing roads and level crossings: wait for whatever is in the way; end of lane: wait until the start is free
       if((m.sp&&o.ax===m.ax&&o.fix===m.fix?inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0):hitB(m.ahead,ob)&&!hitB(m.box,ob))||(m.sp&&m.u>m.span-2.5&&hitB(m.st,ob))){ stop=true; break; } }
     m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k; }
 }
-function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
+function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(!m.y&&inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
 // ---------- movement with box collision, gravity and jump
 function tryMove(nx,nz){
   if(nx<.5||nz<.5||nx>MW-.5||nz>MH-.5) return false;
@@ -1990,13 +2073,15 @@ function tryMove(nx,nz){
   P.x=nx; P.z=nz; P.y=y; return true;
 }
 function physics(dt,dx,dz){
-  if(dx||dz){ const sp=(BIG?15:13)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
-  if(jumpQ&&P.on){ P.vy=17.5; P.on=false; } jumpQ=false;
+  // sprint: about two seconds at a run, then the gauge takes about forty seconds to fill again
+  { const want=(runHeld||key.ShiftLeft||key.ShiftRight)&&!!(dx||dz); if(want&&stam>0&&(running||stam>=.25)){ running=true; stam=Math.max(0,stam-dt/2); } else { running=false; stam=Math.min(1,stam+dt/40); } }
+  if(dx||dz){ const sp=(BIG?10.5:9.1)*(running?1.9:1)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(jumpQ){ if(P.on){ P.vy=17.5; P.on=false; P.air=1; } else if((P.air||0)<2&&!P.ride){ P.vy=15.5; P.air=2; } } jumpQ=false;   // a second press in the air jumps once more
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
   P.ride=null;
   if(P.vy<=0){ let g=ground(P.x,P.z,P.y+.02)[0]; const mt=moverTop(P.x,P.z,P.y+.02); let rm=null; if(mt[0]>g){ g=mt[0]; rm=mt[1]; }
-    if(ny<=g){ P.y=g; P.vy=0; P.on=true; P.ride=rm; } else { P.y=ny; P.on=false; } }
+    if(ny<=g){ P.y=g; P.vy=0; P.on=true; P.air=0; P.ride=rm; } else { P.y=ny; P.on=false; } }
   else if(hits(P.x,ny,P.z)){ P.vy=0; } else P.y=ny;
 }
 
@@ -2217,6 +2302,7 @@ function tick(){
   const im=Math.hypot(ix,iy); let moving=false,dx=0,dz=0;
   if(started&&im>.12){ const k=Math.min(1,im)/im; ix*=k; iy*=k; const sn=Math.sin(cam.yaw),cs=Math.cos(cam.yaw); dx=cs*ix-sn*iy; dz=-sn*ix-cs*iy;
     let df=Math.atan2(dx,dz)-P.face; df=Math.atan2(Math.sin(df),Math.cos(df)); P.face+=df*Math.min(1,dt*12); moving=true; }
+  if(Math.abs(stam-stamShown)>.01||running!==(stamShown<0)){ const rb=document.getElementById('run'); rb.style.setProperty('--g',(stam*100).toFixed(0)+'%'); rb.classList.toggle('on',running); rb.classList.toggle('low',stam<.25&&!running); stamShown=stam; }
   if(started){ physics(dt/2,dx,dz); physics(dt/2,dx,dz); if(GAME&&GAME.tick) GAME.tick(dt,moving); } else jumpQ=false;
   P.walk+=moving?dt*11:0; const sw=!P.on?.9:(moving?Math.sin(P.walk)*.7:0);
   legL.rotation.x=sw; legR.rotation.x=-sw; armL.rotation.x=P.on?-sw:-2.4; armR.rotation.x=P.on?sw:-2.4;
@@ -2245,6 +2331,8 @@ function tick(){
     const show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; c.on=show; c.e.style.display=show?'':'none';
     if(show) c.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; }
   const lim=cam.dist+80;
+  for(const g of TAGE){ let show=false; if(!wide&&Math.abs(g.x-cam.tx)<lim&&Math.abs(g.z-cam.tz)<lim){ v3.set(g.x,g.y,g.z); const cd=v3.distanceTo(camera.position); v3.project(camera); show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.15&&Math.abs(v3.y)<1.15&&cd<lim; }
+    if(show){ g.on=true; g.e.style.display=''; g.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; } else if(g.on){ g.on=false; g.e.style.display='none'; } }
   for(const p of POI){ if(p.off) continue; if(started){ const rr=p.r*1.7+5, dxp=P.x-p.t[0],dzp=P.z-p.t[1],dxl=P.x-p.l[0],dzl=P.z-p.l[2]; if((Math.abs(dxp)<rr&&Math.abs(dzp)<rr)||(Math.abs(dxl)<rr&&Math.abs(dzl)<rr)){ const d=Math.min(Math.hypot(dxp,dzp),Math.hypot(dxl,dzl)); if(d<rr&&d<nd){ near=p; nd=d; } } }
     let show=false; if(!wide&&Math.abs(p.l[0]-cam.tx)<lim&&Math.abs(p.l[2]-cam.tz)<lim){ v3.set(p.l[0],p.l[1],p.l[2]); const cd=v3.distanceTo(camera.position); v3.project(camera);
       show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.15&&Math.abs(v3.y)<1.15&&cd<lim; }
@@ -2325,7 +2413,7 @@ document.getElementById('qg').onclick=()=>{ document.getElementById('qz').classL
 document.getElementById('qbk').onclick=()=>{ document.getElementById('qz').classList.remove('quiz'); fitQ(); };
 document.getElementById('qx').onclick=closeQ; document.getElementById('qn').onclick=closeQ;
 { const qz=document.getElementById('qz'); let qzDown=false; qz.addEventListener('pointerdown',e=>{ qzDown=e.target===qz; }); qz.addEventListener('click',e=>{ if(qzDown&&e.target===qz) closeQ(); qzDown=false; }); }
-window.__dbg={get game(){return GAME},ROADS,openQ,goTo,mTop,get ride(){return P.ride},TRAINTOP,VY,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
+window.__dbg={get game(){return GAME},RAILS,TOWNS,HWL,TAGE,ROADS,openQ,goTo,mTop,get ride(){return P.ride},TRAINTOP,VY,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
 // start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
 updateEnv(0); bakeEnv(); envDirty=0;
 (async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
