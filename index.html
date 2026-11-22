@@ -2016,23 +2016,25 @@ const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
   else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=WIDE?across(ROADS0,'z',m.fix,m.base-(m.span+m.len)/2):fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
 for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=WIDE?across(RAILS0,'z',m.fix,(z0+z1)/2):fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
-{ const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy]; let n=0;
+// ---------- traffic: 200 vehicles in all. A car keeps pace with a running explorer, expressway traffic is 1.2 times as fast, a train 1.3 times.
+const RUNSP=(BIG?10.5:9.1)*1.9/S, CARS=200;   // running speed in map units a second
+{ const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy,C.lgray];
   const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
-  for(const m of LANES) m.sp=Math.max(12.4,m.sp*4.4);
-  for(const [x,z,w,h] of ROADS){ if(n>=260) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(12,Math.floor(len/42)+1), sp=12.5+((n*7)%5)*.7;
-    if(ew){ const fp=z+2.25, fm=z+1.75; if(has('x',fp,x,x+len)||has('x',fm,x,x+len)) continue;
-      for(let i=0;i<k;i++){ const bus=n%5===4, vl=bus?6:3;
-        LANES.push({o:vehicle(vl,cols[n%8],bus),ax:'x',dir:1,base:x+1,span:len-vl-2,sp,off:(i+.3)*len/k,fix:fp,len:vl}); n++;
-        const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI; LANES.push({o,ax:'x',dir:-1,base:x+len-1,span:len-5,sp,off:(i+.6)*len/k,fix:fm,len:3}); n++; } }
-    else { const f=x+2.2; if(has('z',f,z,z+len)) continue;
-      for(let i=0;i<k;i++){ const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI/2; LANES.push({o,ax:'z',dir:-1,base:z+len-1,span:len-5,sp,off:(i+.4)*len/k,fix:f,len:3}); n++; } } } }
-// expressway traffic: faster, two lanes each way up on the decks
-{ const cols=[C.white,C.red,C.navy,C.yellow,C.teal,C.lgray,C.orange,C.blue]; let n=0;
+  for(const m of LANES) m.sp=RUNSP;
+  const hwy=[], gen=[];
   for(const h of HWL){ const len=h.hi-h.lo, k=Math.max(1,Math.round(len/150));
-    for(let i=0;i<k;i++) for(const [dir,off] of [[1,.7],[-1,-.7]]){ const bus=n%6===5, vl=bus?6:3, o=vehicle(vl,cols[n%8],bus), sp=18+(n%4)*1.3;
-      if(h.ax==='x'){ if(dir<0) o.rotation.y=Math.PI; LANES.push({o,ax:'x',dir,base:dir>0?h.lo+1:h.hi-1,span:len-vl-2,sp,off:(i+.5*(dir>0?1:1.6))*len/k,fix:h.f+off+(dir>0?0:0),len:vl,y:HY+.5}); }
-      else if(dir<0){ o.rotation.y=Math.PI/2; LANES.push({o,ax:'z',dir:-1,base:h.hi-1,span:len-vl-2,sp,off:(i+.5)*len/k,fix:h.f+.7,len:vl,y:HY+.5}); } else { o.visible=false; }
-      n++; } } }
+    for(let i=0;i<k;i++){ if(h.ax==='x'){ hwy.push({ax:'x',dir:1,base:h.lo+1,span:len-8,off:(i+.5)*len/k,fix:h.f+.7,y:HY+.5}); hwy.push({ax:'x',dir:-1,base:h.hi-1,span:len-8,off:(i+.8)*len/k,fix:h.f-.7,y:HY+.5}); }
+      else { hwy.push({ax:'z',dir:-1,base:h.hi-1,span:len-8,off:(i+.5)*len/k,fix:h.f+.7,y:HY+.5}); hwy.push({ax:'z',dir:-1,base:h.hi-1,span:len-8,off:(i+.05)*len/k,fix:h.f-2.3,y:HY+.5}); } } }
+  for(const [x,z,w,h] of ROADS){ const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(12,Math.floor(len/42)+1);
+    if(ew){ const fp=z+2.25, fm=z+1.75; if(has('x',fp,x,x+len)||has('x',fm,x,x+len)) continue;
+      for(let i=0;i<k;i++){ gen.push({ax:'x',dir:1,base:x+1,span:len-8,off:(i+.3)*len/k,fix:fp}); gen.push({ax:'x',dir:-1,base:x+len-1,span:len-8,off:(i+.6)*len/k,fix:fm}); } }
+    else { const f=x+2.2; if(has('z',f,z,z+len)) continue; for(let i=0;i<k;i++) gen.push({ax:'z',dir:-1,base:z+len-1,span:len-8,off:(i+.4)*len/k,fix:f}); } }
+  // the ground cars are thinned evenly over all roads so that every region keeps its share
+  const want=Math.max(0,CARS-LANES.length-hwy.length), step=Math.max(1,gen.length/want); let n=0;
+  const add=(q,sp)=>{ const bus=n%6===5, vl=bus?6:3, o=vehicle(vl,cols[n%9],bus); if(q.ax==='z') o.rotation.y=Math.PI/2; else if(q.dir<0) o.rotation.y=Math.PI; LANES.push(Object.assign(q,{o,len:vl,sp:sp*(.97+.02*(n%4))})); n++; };
+  for(let i=0;i<want&&Math.floor(i*step)<gen.length;i++) add(gen[Math.floor(i*step)],RUNSP);
+  for(const q of hwy) add(q,RUNSP*1.2); }
+for(const m of TRAINS){ const L=Math.abs(m.f(1)-m.f(0)); m.ts=Math.min(3.7,1.3*RUNSP/L/.045); }   // a train's run is timed so that it averages 1.3 times the running speed (a very short line takes at least six seconds)
 for(const m of LANES.concat(TRAINS)){ m.t=0; m.k=1; m.box=[0,0,0,0]; m.dx=m.dz=0; }
 // roof heights: a car has a low bonnet and boot with a taller cabin in the middle; buses and trains are flat on top
 const VY=(G+.3)*S; scene.updateMatrixWorld(true); const TRAINTOP=(G+.2)*S+new THREE.Box3().setFromObject(train).max.y-train.position.y*S;
@@ -2052,13 +2054,13 @@ function moveTraffic(dt){
     if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach;
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
   for(const m of TRAINS){ const u=pingU(m.t), z0=m.f(u), b=m.box, oz=b[2]; m.o.position.set(m.fix,G+.2,z0); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=z0-19.8;b[3]=z0+.9;
-    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; m.dx=0; m.dz=(z0-19.8-oz)*S; if(Math.abs(m.dz)>3) m.dz=0; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; m.dx=0; m.dz=(z0-19.8-oz)*S; if(Math.abs(m.dz)>7) m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
   for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
     if(!stop) for(const o of ALLMV){ if(o===m||!m.y!==!o.y) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
       // same lane: keep a gap; crossing roads and level crossings: wait for whatever is in the way; end of lane: wait until the start is free
       if((m.sp&&o.ax===m.ax&&o.fix===m.fix?inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0):hitB(m.ahead,ob)&&!hitB(m.box,ob))||(m.sp&&m.u>m.span-2.5&&hitB(m.st,ob))){ stop=true; break; } }
-    m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k; }
+    m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k*(m.ts||1); }
 }
 function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(!m.y&&inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
 // ---------- movement with box collision, gravity and jump
