@@ -80,8 +80,9 @@ export function init(api){
   const how=[M&&'미션을 하나씩 마쳐요.',H&&'단서를 읽고 어떤 곳인지 찾아가 퀴즈를 맞히면 보물을 찾은 거예요.',T&&'도장을 많이 모을수록 점수가 올라가요. 퀴즈를 틀리면 10초를 기다려야 하니 설명을 잘 읽고 풀어요.',
     T?`${mins}분이 지나면 끝나요.`:`모두 마치거나 ${mins}분이 지나면 끝나요. 빨리 마칠수록 순위가 높아요.`].filter(Boolean).join(' ');
   { const hero=document.querySelector('#intro .hero'); hero.querySelector('small').textContent=(lv===3?'우리 고장 ':'우리 지역 ')+area;
-    hero.querySelector('h1').textContent=title; hero.querySelector('p').textContent=how+' 이름표가 붙은 곳에 다가가 살펴보기를 누르고, 설명을 읽은 다음 퀴즈를 풀어요.';
+    hero.querySelector('h1').textContent=title; hero.querySelector('p').textContent=how+' 이름표가 붙은 곳에 다가가 살펴보기를 누르고, 설명을 읽은 다음 퀴즈를 풀어요. 멀리 갈 때는 화면을 축소해 시·군 이름을 누르면 그곳으로 이동해요.';
     const go=$('go'), lab=()=>{ if(!go.disabled&&go.textContent!=='게임 시작') go.textContent='게임 시작'; }; lab(); new MutationObserver(lab).observe(go,{attributes:true,childList:true}); }
+  for(const li of document.querySelectorAll('#intro .keys li')) if(li.firstChild.textContent==='바로 가기') li.lastChild.textContent='시·군 이름을 누르고 「이 곳으로 이동」';
   $('count').style.display='none';
   const bar=el('button',{id:'gbar',className:'glass'}), bt=el('i'), bs=el('span'); bar.append(bt,bs); document.body.appendChild(bar);
   const pan=el('div',{id:'gpan'}), ps=el('div',{className:'sheet'}); pan.appendChild(ps); document.body.appendChild(pan);
@@ -171,6 +172,7 @@ export function init(api){
     // 도장 모으기가 들어 있으면 틀렸을 때 10초 동안 답을 고를 수 없다 (창을 닫았다 열어도 그대로)
     wrong(p,box,qm){ if(!st.on) return; st.wrong++; drawBar(); if(!T) return; st.lock=performance.now()+10000;
       const tick=()=>{ const n=Math.ceil((st.lock-performance.now())/1000); if(n<=0){ if(qm.className==='no') qm.textContent='다시 골라 보세요.'; return; } if(qm.className==='no') qm.textContent=`아쉬워요. ${n}초 뒤에 다시 고를 수 있어요.`; setTimeout(tick,500); }; tick(); },
+    canGo:c=>lv===4?c!=='대전광역시':regs.includes(c),
     locked(qm){ const n=Math.ceil(((st.lock||0)-performance.now())/1000); if(!st.on||n<=0) return false; qm.className='no'; qm.textContent=`${n}초 뒤에 다시 고를 수 있어요.`; return true; },
     get state(){ return {st,missions,hunt,hi,score:score(),done:doneN(),total:missions.length+hunt.length,room,gs,lv,regs}; }, finish };
 }
