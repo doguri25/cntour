@@ -29,6 +29,7 @@ button{font-family:inherit;color:inherit}
 .rail button:active{background:rgba(26,115,232,.14)}
 .rail svg{width:20px;height:20px;stroke:#3a4352;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 #zoom{top:12px}#sky{top:204px}
+@media(max-height:440px){#sky{top:12px;right:68px}}
 /* labels */
 #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
 .lb{pointer-events:auto;cursor:pointer}
@@ -39,6 +40,7 @@ button{font-family:inherit;color:inherit}
 #gogo{background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;padding:9px 16px;box-shadow:0 4px 12px rgba(26,115,232,.35)}
 #gox{background:#eef2f7;color:#5b6472;width:34px;height:34px;font-size:17px;line-height:1}
 @media(min-width:760px){#goto{top:70px}}
+@media(max-width:380px){#goto{left:12px;transform:translate(0,-14px);max-width:calc(100% - 80px)}#goto.on{transform:none}}
 #list li{cursor:pointer}
 .lb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(20,30,60,.18),0 4px 10px rgba(20,30,60,.14);will-change:transform;display:flex;align-items:center;gap:5px}
 .lb:before{content:"";width:7px;height:7px;border-radius:50%;background:#f29900;flex:none}
@@ -89,7 +91,7 @@ button{font-family:inherit;color:inherit}
 #qpic{position:relative;border-radius:28px 28px 0 0;overflow:hidden;background:#dfeaf6;aspect-ratio:16/9}
 #qpic canvas{position:static;display:block;width:100%;height:100%}
 #qi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
-#qv{position:absolute;inset:0}#qv svg{display:block;width:100%;height:100%}#qv img{display:block;width:100%;height:100%;object-fit:cover}
+#qv{position:absolute;inset:0;background:#dfeaf6}#qv svg{display:block;width:100%;height:100%}#qv img{display:block;width:100%;height:100%;object-fit:cover}
 #qpic.blk #qv,#qpic.blk #qi{display:none!important}#qpic.blk #qsrc{display:none!important}
 #qpic.ph #qi{display:block}
 #qsrc{position:absolute;left:12px;bottom:10px;font-size:11px;font-weight:700;color:#fff;background:rgba(20,28,44,.6);border-radius:999px;padding:4px 10px;text-decoration:none;display:none;max-width:calc(100% - 130px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -103,14 +105,15 @@ button{font-family:inherit;color:inherit}
 #qz.quiz .c2 #qpic{display:none}#qz.quiz .c2 #stamp{top:auto;bottom:70px;right:16px;width:84px;height:84px;font-size:14px}
 #qz .c2 #qpic{height:16vh}#qz .c2 #qb{padding:12px 16px 14px}#qz .c2 #qd{font-size:13.5px;line-height:1.55;margin-bottom:9px}#qz .c2 #qb h2{font-size:18px;margin-bottom:3px}
 #qz .c2 #qq{padding-top:9px}#qz .c2 #qt{font-size:15px;margin-bottom:6px}#qz .c2 #qo{gap:6px}#qz .c2 #qo button{padding:9px 12px;font-size:14px}#qz .c2 #qn,#qz .c2 #qg{padding:11px;margin-top:8px;font-size:15px}#qz .c2 #qm{font-size:12.5px;margin-bottom:7px;min-height:0}
-@media (max-height:560px) and (min-width:620px){ #qz .sheet{flex-direction:row;width:min(900px,100%)} #qz .sheet #qpic{flex:0 0 40%;aspect-ratio:auto;height:auto!important;display:block!important;border-radius:28px 0 0 28px} #qz #qb{flex:1;min-width:0} #qz #qo{grid-template-columns:repeat(3,1fr)} #qz #qo button{flex-direction:column;align-items:flex-start;gap:4px} #qz .sheet #stamp{top:auto;bottom:64px;right:18px;width:84px;height:84px;font-size:14px} }
+@media (max-height:560px) and (min-width:620px){ #qz .sheet{flex-direction:row;width:min(900px,100%)} #qz .sheet #qpic{flex:0 0 40%;aspect-ratio:auto;height:auto!important;display:block!important;border-radius:28px 0 0 28px} #qz #qb{flex:1;min-width:0} #qz #qo{grid-template-columns:repeat(3,minmax(0,1fr))} #qz #qo button{flex-direction:column;align-items:flex-start;gap:4px;min-width:0;word-break:normal;overflow-wrap:anywhere} #qz .sheet #stamp{top:auto;bottom:64px;right:18px;width:84px;height:84px;font-size:14px} }
 #qb .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 #qr{font-size:12px;font-weight:700;color:var(--p);background:#e8f0fe;border-radius:999px;padding:3px 10px}
 #qs{font-size:12px;font-weight:900;color:#12a37f;display:none}
 #qb h2{margin:0 0 6px;font-size:20px;font-weight:900;letter-spacing:-.01em}
 #qd{margin:0 0 14px;font-size:14.5px;line-height:1.65;color:#3b4352;word-break:keep-all;font-weight:500}
 #qq{border-top:1px solid var(--line);padding-top:14px;display:none}
-#qz.quiz #qq{display:block}#qz.quiz #qg{display:none}
+#qz.quiz #qq{display:block}#qz.quiz #qg{display:none}#qz.quiz #qd{display:none}
+#qbk{border:0;background:none;color:var(--sub);font-size:12.5px;font-weight:700;padding:0;float:right;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 #qq small{display:block;font-size:12px;font-weight:900;color:var(--p);letter-spacing:.04em;margin-bottom:3px}
 #qt{margin:0 0 10px;font-size:16px;font-weight:700;line-height:1.5;word-break:keep-all}
 #qo{display:grid;gap:8px}
@@ -160,14 +163,12 @@ button{font-family:inherit;color:inherit}
 <link rel="modulepreload" href="./addons/geometries/RoundedBoxGeometry.js">
 <link rel="modulepreload" href="./addons/postprocessing/EffectComposer.js">
 <link rel="modulepreload" href="./addons/postprocessing/MaskPass.js">
-<link rel="modulepreload" href="./addons/postprocessing/OutputPass.js">
 <link rel="modulepreload" href="./addons/postprocessing/Pass.js">
 <link rel="modulepreload" href="./addons/postprocessing/RenderPass.js">
 <link rel="modulepreload" href="./addons/postprocessing/ShaderPass.js">
 <link rel="modulepreload" href="./addons/postprocessing/UnrealBloomPass.js">
 <link rel="modulepreload" href="./addons/shaders/CopyShader.js">
 <link rel="modulepreload" href="./addons/shaders/LuminosityHighPassShader.js">
-<link rel="modulepreload" href="./addons/shaders/OutputShader.js">
 <script type="importmap">{"imports":{"three":"./three.module.js","three/addons/":"./addons/"}}</script>
 </head><body>
 <div id="labels"></div>
@@ -187,7 +188,7 @@ button{font-family:inherit;color:inherit}
   <div id="qpic"><canvas id="qc" width="800" height="450"></canvas><div id="qv"></div><img id="qi" alt=""><em id="qe">삽화</em><a id="qsrc" target="_blank" rel="noopener"></a><button id="qsw"></button></div><div id="stamp">탐방<br>도장</div>
   <div id="qb"><div class="top"><span id="qr"></span><span id="qs">✓ 도장 받은 곳</span></div><h2 id="qh"></h2><p id="qd"></p>
     <button class="btn" id="qg">다음 · 퀴즈 풀기</button>
-    <div id="qq"><small>탐방 퀴즈</small><p id="qt"></p><p id="qm"></p><div id="qo"></div><button class="btn" id="qn">계속 탐방하기</button></div></div>
+    <div id="qq"><button id="qbk">설명 다시 보기</button><small>탐방 퀴즈</small><p id="qt"></p><p id="qm"></p><div id="qo"></div><button class="btn" id="qn">계속 탐방하기</button></div></div>
 </div></div>
 <div id="toast"></div>
 <div id="goto" class="glass"><span id="gon"></span><button id="gogo">이 곳으로 이동</button><button id="gox" aria-label="닫기">×</button></div>
@@ -213,7 +214,6 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
-import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -833,7 +833,8 @@ town(110,100,160,118,4); town(110,72,150,88,3); town(196,150,222,166,2);
 // ================= DANGJIN-SI (north) =================
 BX=HW; BZ=0;
 roadEW(0,92,270); lake(238,64,32,58);
-town(96,58,126,84,4); town(140,98,166,112,3); mountain(20,40,12,10,[[32,50,7,7]],'hill');
+town(96,58,126,84,4); { const b0=boxes.length,s0=studs.length,onRail=v=>v[0]>BX+SX+151.2&&v[0]<BX+SX+159.2; town(140,98,166,112,3);   // same random draws as before, minus the row of houses that stood on the railway
+  const kb=boxes.slice(b0).filter(v=>!onRail(v)),ks=studs.slice(s0).filter(v=>!onRail(v)); boxes.length=b0; boxes.push(...kb); studs.length=s0; studs.push(...ks); } mountain(20,40,12,10,[[32,50,7,7]],'hill');
 // ================= GONGJU-SI (south-east) =================
 BX=HW*2; BZ=HH*2;
 lake(0,70,270,8); roadEW(0,86,270); roadNS(120,0,172);
@@ -1426,6 +1427,12 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
 const m4=new THREE.Matrix4(),col=new THREE.Color();
 const boxGeo=new THREE.BoxGeometry(1,1,1),boxMat=seamMat({roughness:.3}),studMat=new THREE.MeshStandardMaterial({roughness:.26});
 const sg=studGeo(1.44), sgM=studGeo(1);
+// a plain 8-sided stud for chunks that are not right next to the camera
+const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,Math.hypot(STUD.p[i],STUD.p[i+2])); h=Math.max(h,STUD.p[i+1]); } r*=1.44*.97; h*=1.44;
+  const p=[],n=[],N=8; for(let i=0;i<N;i++){ const a=i/N*Math.PI*2,b=(i+1)/N*Math.PI*2, ax=Math.cos(a),az=Math.sin(a),bx=Math.cos(b),bz=Math.sin(b);
+    p.push(ax*r,0,az*r, ax*r,h,az*r, bx*r,h,bz*r,  ax*r,0,az*r, bx*r,h,bz*r, bx*r,0,bz*r); n.push(ax,0,az, ax,0,az, bx,0,bz,  ax,0,az, bx,0,bz, bx,0,bz);
+    p.push(0,h,0, bx*r,h,bz*r, ax*r,h,az*r); n.push(0,1,0, 0,1,0, 0,1,0); }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(p),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(n),3)); return g; })();
 const studMeshes=[]; const CHK=90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
 for(const arr of bucket(boxes,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
   const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length);
@@ -1447,24 +1454,33 @@ function part(g,x,y,z,w,h,d,c,st){ const m=new THREE.Mesh(unit,mat(c)); m.scale.
 const wg=new THREE.CylinderGeometry(.42,.42,.3,12);
 function wheel(g,x,z){ const m=new THREE.Mesh(wg,mat(C.black)); m.rotation.x=Math.PI/2; m.position.set(x,.42,z); g.add(m); }
 const MV=new THREE.Group(); MV.scale.setScalar(1.44); scene.add(MV);
+// a finished model becomes one mesh (one material group per colour); models of the same shape share the geometry
+const fuseC=new Map();
+function fuse(g,key){ const ms=[], idx=[]; for(const m of g.children){ let i=ms.indexOf(m.material); if(i<0) i=ms.push(m.material)-1; idx.push(i); }
+  const k=key&&key+'|'+idx.join(''); let geo=k&&fuseC.get(k);
+  if(!geo){ const parts=ms.map(()=>[]); let n=0; g.children.forEach((m,j)=>{ m.updateMatrix(); const s=m.geometry.clone().applyMatrix4(m.matrix), e=s.index?s.toNonIndexed():s; parts[idx[j]].push(e); n+=e.attributes.position.count; });
+    const A=new Float32Array(n*3), N=new Float32Array(n*3); geo=new THREE.BufferGeometry(); let o=0;
+    parts.forEach((l,i)=>{ const s=o; for(const e of l){ A.set(e.attributes.position.array,o*3); N.set(e.attributes.normal.array,o*3); o+=e.attributes.position.count; } geo.addGroup(s,o-s,i); });
+    geo.setAttribute('position',new THREE.BufferAttribute(A,3)); geo.setAttribute('normal',new THREE.BufferAttribute(N,3)); if(k) fuseC.set(k,geo); }
+  g.clear(); g.add(new THREE.Mesh(geo,ms)); return g; }
 function vehicle(len,c,bus){ const g=new THREE.Group();
   part(g,0,.35,0,len,.7,1.6,c);
   if(bus){ part(g,.1,1.05,.05,len-.2,.7,1.5,C.navy); part(g,0,1.75,0,len,.35,1.6,c,true); part(g,0,.75,-.03,len,.18,.03,C.white); part(g,0,.75,1.6,len,.18,.03,C.white); }
   else { part(g,len*.25,1.05,.1,len*.5,.6,1.4,C.navy); part(g,len*.25,1.65,.1,len*.5,.2,1.4,c,true); }
   for(const wx of [.9,len-.9]){ wheel(g,wx,.05); wheel(g,wx,1.55); }
-  MV.add(g); return g; }
+  fuse(g,len+(bus?'b':'c')); MV.add(g); return g; }
 const bus=vehicle(6,C.blue,true),car1=vehicle(3,C.red),car2=vehicle(3,C.yellow),car3=vehicle(3,C.white),car4=vehicle(3,C.teal),car5=vehicle(3,C.orange),car6=vehicle(3,C.purple),bus2=vehicle(6,C.teal,true);
 
 const ship=new THREE.Group();
 part(ship,0,0,0,6,.9,2.4,C.white); part(ship,6,0,.5,1,.9,1.4,C.white); part(ship,0,.9,0,6,.15,2.4,C.red);
 part(ship,1,1.05,.4,3,1.1,1.6,C.blue,true); part(ship,4.6,1.05,1.1,.2,2.4,.2,C.dgray); part(ship,4.8,2.8,1.15,1.1,.6,.08,C.yellow);
-MV.add(ship);
+fuse(ship); MV.add(ship);
 const wake=[]; for(let i=0;i<10;i++){ const m=new THREE.Mesh(unit,mat(0xffffff)); MV.add(m); wake.push(m); }
 const train=new THREE.Group();
 for(let k=0;k<3;k++){ const o=k*6.3; part(train,o,.5,0,6,1.5,1.9,C.white); part(train,o,.5,-.02,6,.35,1.94,C.blue); part(train,o+.4,1.25,-.03,5.2,.5,1.96,C.navy); part(train,o,2.0,0,6,.3,1.9,C.lgray,true);
   for(const wx of [1,5]){ wheel(train,o+wx,.1); wheel(train,o+wx,1.8); } }
 part(train,18.3,.5,.2,.9,1.1,1.5,C.blue); part(train,-.9,.5,.2,.9,1.1,1.5,C.blue);
-MV.add(train); const train2=train.clone(); MV.add(train2); const train3=train.clone(); MV.add(train3);
+fuse(train); MV.add(train); const train2=train.clone(); MV.add(train2); const train3=train.clone(); MV.add(train3);
 
 // ---------- player: a toy explorer built from rounded blocks
 const player=new THREE.Group(), body=new THREE.Group(); player.add(body);
@@ -1492,22 +1508,22 @@ POI.forEach((p,i)=>{ const e=document.createElement('div'); e.className='lb'; e.
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.dataset.c=n; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
 { const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.dataset.c='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
 document.getElementById('tot').textContent=POI.length;
-let illust=null, kindOf=null, ART=new Set(), extraP=null;
-const extra=()=>extraP||(extraP=Promise.all([import('./quiz.js'),import('./photo.js'),import('./illust.js'),import('./ill/list.js').catch(()=>({ART:[]}))]).then(([a,b,c,d])=>{ kindOf=c.kindOf; ART=new Set(d.ART); POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; throw e; }));
+let illust=null, kindOf=null, ART=new Set(), extraP=null, extraN=0;
+const extra=()=>extraP||(extraP=(v=>Promise.all([import('./quiz.js'+v),import('./photo.js'+v),import('./illust.js'+v),import('./ill/list.js'+v).catch(()=>({ART:[]}))]))(extraN?'?r='+extraN:'').then(([a,b,c,d])=>{ kindOf=c.kindOf; ART=new Set(d.ART); POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; extraN++; throw e; }));
 let cur=null,visited=0,modal=null;
 const toast=document.getElementById('toast'); let toastT=0;
 function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>toast.classList.remove('on'),2600); }
 function renderList(){ const done=c=>POI.filter(p=>p.c===c&&p.v).length+'/'+POI.filter(p=>p.c===c).length; document.getElementById('ul').innerHTML=['태안군','서산시','당진시','아산시','천안시','홍성군','예산군','보령시','청양군','공주시','계룡시','서천군','부여군','논산시','금산군'].map(c=>`<h3>${c} ${done(c)}</h3>`+POI.filter(p=>p.c===c).map(p=>`<li data-i="${POI.indexOf(p)}" class="${p.v?'v':''}"><em>${p.v?'✓':''}</em>${p.n}</li>`).join('')).join(''); }
 document.getElementById('count').onclick=()=>{ renderList(); document.getElementById('list').style.display='flex'; };
 document.getElementById('lc').onclick=()=>{ document.getElementById('list').style.display='none'; };
-let gotoT=null, gotoTm=0;
+let gotoT=null, gotoTm=0, lbDrag=0;
 function offerGo(name,x,z){ gotoT=[name,x,z]; document.getElementById('gon').textContent=name; const g=document.getElementById('goto'); g.classList.add('on'); clearTimeout(gotoTm); gotoTm=setTimeout(()=>g.classList.remove('on'),7000); }
 function safeSpot(x,z){ for(let r=0;r<60;r+=1.5) for(let a=0;a<(r?8:1);a++){ const nx=x+Math.cos(a*Math.PI/4)*r, nz=z+Math.sin(a*Math.PI/4)*r; if(nx<2||nz<2||nx>MW-2||nz>MH-2) continue;
     const g=ground(nx,nz,G*S+1.2); if(!g[1]&&g[0]>.5&&!hits(nx,g[0],nz)&&!moverHit(nx,nz,g[0])) return [nx,g[0],nz]; } return [SPOS[0],G*S+.5,SPOS[1]]; }
 function goTo(name,x,z){ const s=safeSpot(x,z); P.x=s[0]; P.y=s[1]+.3; P.z=s[2]; P.vy=0; P.ride=null; cam.tx=P.x; cam.tz=P.z; if(!started){ document.getElementById('intro').style.display='none'; started=true; }
   if(cam.want>60){ cam.want=17; cam.pitch=.8; } document.getElementById('goto').classList.remove('on'); say(name+' 도착!'); }
 function regionSpot(c){ const cl=CL.find(q=>q.e.dataset.c===c); let best=null,bd=1e9; for(const p of POI) if(p.c===c){ const d=Math.hypot(p.t[0]-cl.x,p.t[1]-cl.z); if(d<bd){ bd=d; best=p; } } return best?[best.t[0],best.t[1]]:[cl.x,cl.z]; }
-lbBox.addEventListener('click',e=>{ const el=e.target.closest('.lb'); if(!el) return; if(el.dataset.i!==undefined){ const p=POI[+el.dataset.i]; offerGo(p.n,p.t[0],p.t[1]); } else if(el.dataset.c){ const s=regionSpot(el.dataset.c); offerGo(el.dataset.c,s[0],s[1]); } });
+lbBox.addEventListener('click',e=>{ const el=e.target.closest('.lb'); if(!el||lbDrag>8) return; if(el.dataset.i!==undefined){ const p=POI[+el.dataset.i]; offerGo(p.n,p.t[0],p.t[1]); } else if(el.dataset.c){ const s=regionSpot(el.dataset.c); offerGo(el.dataset.c,s[0],s[1]); } });
 document.getElementById('ul').addEventListener('click',e=>{ const li=e.target.closest('li'); if(!li||li.dataset.i===undefined) return; const p=POI[+li.dataset.i]; document.getElementById('list').style.display='none'; offerGo(p.n,p.t[0],p.t[1]); });
 document.getElementById('gogo').onclick=()=>{ if(gotoT) goTo(gotoT[0],gotoT[1],gotoT[2]); };
 document.getElementById('gox').onclick=()=>document.getElementById('goto').classList.remove('on');
@@ -1531,7 +1547,9 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
 const OVER=2380;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
 const key={}; let jumpQ=false;
-addEventListener('keydown',e=>{ if(modal){ if(e.code==='Escape') closeQ(); else if(e.code==='Enter'&&!document.getElementById('qz').classList.contains('quiz')) document.getElementById('qg').click(); return; } if((e.code==='KeyE'||e.code==='Enter')&&cur){ openQ(cur); return; } if(e.code==='Space'&&!key.Space) jumpQ=true; key[e.code]=true; if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); }); addEventListener('keyup',e=>key[e.code]=false);
+addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
+addEventListener('keydown',e=>{ const fb=document.activeElement; if((e.code==='Enter'||e.code==='Space')&&fb&&fb.tagName==='BUTTON'&&!fb.closest('#qz,#list,#intro')){ e.preventDefault(); fb.blur(); }
+  if(modal){ if(e.code==='Escape') closeQ(); else if(e.code==='Enter'&&!e.repeat&&!document.getElementById('qz').classList.contains('quiz')) document.getElementById('qg').click(); return; } if(document.getElementById('list').style.display==='flex'){ if(e.code==='Escape') document.getElementById('list').style.display='none'; return; } if((e.code==='KeyE'||e.code==='Enter')&&cur){ if(!e.repeat) openQ(cur); return; } if(e.code==='Space'&&!key.Space) jumpQ=true; key[e.code]=true; if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); }); addEventListener('keyup',e=>key[e.code]=false);
 const joy=document.getElementById('joy'),knob=joy.firstElementChild; let jx=0,jy=0,jid=null;
 function jmove(e){ const r=joy.getBoundingClientRect(); let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2); const m=Math.hypot(dx,dy),mx=r.width/2-14;
   if(m>mx){ dx*=mx/m; dy*=mx/m; } knob.style.transform=`translate(${dx}px,${dy}px)`; jx=dx/mx; jy=-dy/mx; }
@@ -1541,14 +1559,14 @@ const jend=e=>{ if(e.pointerId===jid){ jid=null; jx=jy=0; knob.style.transform='
 joy.addEventListener('pointerup',jend); joy.addEventListener('pointercancel',jend);
 document.getElementById('jump').addEventListener('pointerdown',e=>{ jumpQ=true; e.preventDefault(); e.stopPropagation(); });
 const pts=new Map(); let pinch=0; const cv=renderer.domElement;
-cv.addEventListener('pointerdown',e=>{ pts.set(e.pointerId,[e.clientX,e.clientY]); try{cv.setPointerCapture(e.pointerId);}catch(_){} pinch=0; });
-cv.addEventListener('pointermove',e=>{ const p=pts.get(e.pointerId); if(!p) return;
+const pdn=e=>{ pts.set(e.pointerId,[e.clientX,e.clientY]); try{e.target.setPointerCapture(e.pointerId);}catch(_){} pinch=0; lbDrag=0; }; cv.addEventListener('pointerdown',pdn); lbBox.addEventListener('pointerdown',pdn);
+const pmv=e=>{ const p=pts.get(e.pointerId); if(!p) return; if(e.pointerType==='mouse'&&!e.buttons){ pts.delete(e.pointerId); return; } lbDrag+=Math.abs(e.clientX-p[0])+Math.abs(e.clientY-p[1]);
   if(pts.size===1){ cam.yaw-=(e.clientX-p[0])*.006; cam.pitch=Math.min(1.4,Math.max(.22,cam.pitch+(e.clientY-p[1])*.004)); }
   p[0]=e.clientX; p[1]=e.clientY;
-  if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } });
-const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; cv.addEventListener('pointerup',pend); cv.addEventListener('pointercancel',pend);
+  if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } }; cv.addEventListener('pointermove',pmv); lbBox.addEventListener('pointermove',pmv);
+const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; for(const el of [cv,lbBox]){ el.addEventListener('pointerup',pend); el.addEventListener('pointercancel',pend); }
 function zoom(f){ cam.want=Math.min(2900,Math.max(7,cam.want*f)); }
-cv.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
+for(const el of [cv,lbBox]) el.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
 document.getElementById('zi').onclick=()=>zoom(.72); document.getElementById('zo').onclick=()=>zoom(1.4);
 document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=OVER; cam.yaw=0; cam.pitch=.95; } };
 document.getElementById('home').onclick=()=>{ P.x=SPOS[0]; P.z=SPOS[1]; P.y=G*S+.5; P.vy=0; P.ride=null; say('출발 지점으로 돌아왔어요'); };
@@ -1561,7 +1579,7 @@ const clouds=[]; for(let i=0;i<CLN;i++) clouds.push({x:rnd2()*MW,y:62+rnd2()*30,
 const planes=[]; for(let i=0;i<6;i++){ const g=new THREE.Group(), c=[C.blue,C.red,C.teal,C.orange,C.purple,C.navy][i];
   part(g,-4.5,0,-.75,9,1.5,1.5,C.white); part(g,4.5,.15,-.55,1.1,1.1,1.1,C.lblue); part(g,-1.2,.35,-5.5,2.4,.25,11,C.white); part(g,-.9,-.35,-3.4,1.6,.7,.8,c); part(g,-.9,-.35,2.6,1.6,.7,.8,c);
   part(g,-4.5,1.3,-.18,1.6,1.9,.36,c); part(g,-4.5,.7,-2.2,1.3,.2,4.4,C.white); part(g,-4.4,.75,-.78,8.6,.22,1.56,c);
-  g.scale.setScalar(1.7); scene.add(g); const a=rnd2()*Math.PI*2; planes.push({g,x:rnd2()*MW,z:rnd2()*MH,y:105+i*9,a,v:26+rnd2()*14}); }
+  fuse(g,'plane'); g.scale.setScalar(1.7); scene.add(g); const a=rnd2()*Math.PI*2; planes.push({g,x:rnd2()*MW,z:rnd2()*MH,y:105+i*9,a,v:26+rnd2()*14}); }
 function moveSky(dt){
   for(let i=0;i<CLN;i++){ const c=clouds[i]; c.x+=c.v*dt; if(c.x>MW+80) c.x=-80;
     for(let k=0;k<CLP.length;k++){ const p=CLP[k]; m4.makeScale(p[3]*c.s,p[4]*c.s,p[5]*c.s); m4.setPosition(c.x+p[0]*c.s,c.y+p[1]*c.s,c.z+p[2]*c.s); cloudIM.setMatrixAt(i*CLP.length+k,m4); } }
@@ -1592,7 +1610,7 @@ const VY=(G+.3)*S; scene.updateMatrixWorld(true); const TRAINTOP=(G+.2)*S+new TH
 function mTop(m,ux,uz){ if(m.f) return TRAINTOP; if(m.len===6) return VY+2.1*S; const b=m.box, fr=m.ax==='x'?(ux-b[0])/(b[1]-b[0]):(uz-b[2])/(b[3]-b[2]); return VY+((fr>.25&&fr<.75)?1.85:1.05)*S; }
 function moverTop(x,z,lim){ const ux=x/S,uz=z/S; let best=-9,bm=null; for(const m of LANES) if(inBox(m.box,ux,uz,.15)){ const t=mTop(m,ux,uz); if(t<=lim&&t>best){ best=t; bm=m; } }
   for(const m of TRAINS) if(inBox(m.box,ux,uz,.15)){ const t=mTop(m,ux,uz); if(t<=lim&&t>best){ best=t; bm=m; } } return [best,bm]; }
-const inBox=(b,x,z,mg)=>x>b[0]-mg&&x<b[1]+mg&&z>b[2]-mg&&z<b[3]+mg;
+const inBox=(b,x,z,mg)=>x>b[0]-mg&&x<b[1]+mg&&z>b[2]-mg&&z<b[3]+mg, hitB=(a,b)=>a[0]<b[1]&&a[1]>b[0]&&a[2]<b[3]&&a[3]>b[2];
 const pingU=tt=>{ const tp=(tt*.045)%2, te=tp<1?tp:2-tp; return te*te*(3-2*te); };
 const ALLMV=LANES.concat(TRAINS);
 function moveTraffic(dt){
@@ -1600,15 +1618,17 @@ function moveTraffic(dt){
   for(const m of LANES){ const u=(m.t*m.sp+m.off)%m.span, c=m.dir>0?m.base+u:m.base-u, b=m.box, ox=b[0], oz=b[2];
     if(m.ax==='x'){ m.o.position.set(c,G+.3,m.fix); if(m.dir>0){ b[0]=c;b[1]=c+m.len;b[2]=m.fix;b[3]=m.fix+1.6; } else { b[0]=c-m.len;b[1]=c;b[2]=m.fix-1.6;b[3]=m.fix; } }
     else { m.o.position.set(m.fix,G+.3,c); b[0]=m.fix;b[1]=m.fix+1.6;b[2]=c-m.len;b[3]=c; }
-    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const reach=4.5;
+    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const reach=4.5; m.u=u;
+    if(!m.st) m.st=m.ax==='x'?(m.dir>0?[m.base,m.base+m.len+reach,m.fix,m.fix+1.6]:[m.base-m.len-reach,m.base,m.fix-1.6,m.fix]):[m.fix,m.fix+1.6,m.base-m.len-reach,m.base];   // where it reappears after the end of its lane
     if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach;
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
   for(const m of TRAINS){ const u=pingU(m.t), z0=m.f(u), b=m.box, oz=b[2]; m.o.position.set(m.fix,G+.2,z0); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=z0-19.8;b[3]=z0+.9;
     const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4))-z0; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(fwd>0) a[3]+=7; else a[2]-=7; m.dx=0; m.dz=(z0-19.8-oz)*S; if(Math.abs(m.dz)>3) m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
-  for(const m of ALLMV){ let stop=P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05;
-    if(!stop&&m.sp) for(const o of LANES){ if(o===m||o.ax!==m.ax||o.fix!==m.fix) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
-      if(inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0)){ stop=true; break; } }
+  for(const m of ALLMV){ let stop=P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S;
+    if(!stop) for(const o of ALLMV){ if(o===m) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
+      // same lane: keep a gap; crossing roads and level crossings: wait for whatever is in the way; end of lane: wait until the start is free
+      if((m.sp&&o.ax===m.ax&&o.fix===m.fix?inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0):hitB(m.ahead,ob)&&!hitB(m.box,ob))||(m.sp&&m.u>m.span-2.5&&hitB(m.st,ob))){ stop=true; break; } }
     m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k; }
 }
 function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
@@ -1768,7 +1788,7 @@ const rawC=a=>new THREE.Color().setRGB(a[0],a[1],a[2]);
 const skyU={uTop:{value:rawC(envC.top)},uHor:{value:rawC(envC.hor)},uSun:{value:new THREE.Vector3(-.35,.75,.55)},uSunCol:{value:rawC(envC.sc)},uDark:{value:new THREE.Color(0,0,0)},uNight:{value:0},uCloud:{value:.15},uTime:{value:0},uDim:{value:1},uLin:{value:0}};
 const skyDome=new THREE.Mesh(new THREE.SphereGeometry(1,32,16),new THREE.ShaderMaterial({uniforms:skyU,side:THREE.BackSide,depthWrite:false,fog:false,
   vertexShader:'varying vec3 vDir;\nvoid main(){ vDir=position; vec4 p=projectionMatrix*viewMatrix*vec4(position*900.0+cameraPosition,1.0); gl_Position=p.xyww; }',fragmentShader:SKY_FRAG}));
-skyDome.frustumCulled=false; skyDome.renderOrder=-10; scene.add(skyDome);
+skyDome.frustumCulled=false; skyDome.renderOrder=10; scene.add(skyDome);   // after the solid world: the cloud shader runs only where sky shows
 // post-processing: scene -> bloom -> grade -> output (tone mapping). Devices without half-float buffers draw directly.
 let post=null;
 try{ if(renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffer_float')){
@@ -1781,16 +1801,19 @@ try{ if(renderer.capabilities.isWebGL2&&renderer.extensions.has('EXT_color_buffe
   composer.addPass(bloom);
   const grade=new ShaderPass({uniforms:{tDiffuse:{value:null},uTime:{value:0},uSpeed:{value:0},uFlash:{value:0},uFlashColor:{value:new THREE.Color(.2,.9,.55)},uNight:{value:0},uDusk:{value:0},uRain:{value:0},uAspect:{value:1},uRainY:{value:0}},
     vertexShader:'varying vec2 vUv;\nvoid main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',fragmentShader:GRADE_FRAG});
-  composer.addPass(grade); composer.addPass(new OutputPass());
+  { const gf=grade.material.fragmentShader, k=gf.lastIndexOf('}'); grade.material.fragmentShader=gf.slice(0,k)+'\n  #include <tonemapping_fragment>\n  #include <colorspace_fragment>\n}'+gf.slice(k+1); grade.material.needsUpdate=true; }   // the grade pass also tone-maps and converts for the display: one full-screen pass fewer
+  composer.addPass(grade);
   post={composer,bloom,grade:grade.uniforms,rp:composer.passes[0]}; skyU.uLin.value=1;
 } }catch(e){ post=null; skyU.uLin.value=0; }
 // automatic quality: resolution first (100% -> 83% -> 67% -> 53% -> 43%), bloom off at the lowest two steps
-const QL=[1.5,1.25,1.0,.8,.65]; let qLv=LITE?1:0,qAcc=0,qN=0,qHold=0;
+const QL=[1.5,1.25,1.0,.8,.65]; let qLv=LITE?1:0,qAcc=0,qN=0,qHold=0,qPen=8,qUp=9;
+{ const d=window.devicePixelRatio||1; while(qLv<2&&QL[qLv+1]>=d) qLv++; }   // steps above the screen's own pixel ratio change nothing: start below them
 function applyQ(){ const pr=Math.min(window.devicePixelRatio||1,QL[qLv]); renderer.setPixelRatio(pr); const w=innerWidth,h=innerHeight; renderer.setSize(w,h);
   if(post){ post.composer.setPixelRatio(pr); post.composer.setSize(w,h); post.grade.uAspect.value=w/Math.max(1,h); post.bloom.enabled=qLv<3; } }
 applyQ(); addEventListener('resize',applyQ);
-function autoQ(raw){ qAcc+=raw; qN++; if(qN<45) return; const avg=qAcc/qN; qAcc=0; qN=0; if(!started||document.hidden) return;
-  if(avg>1/26&&qLv<QL.length-1){ qLv++; qHold=8; applyQ(); } else if(avg<1/52&&qLv>0){ if(--qHold<=0){ qLv--; qHold=12; applyQ(); } } }
+function autoQ(raw){ qAcc+=Math.min(raw,.1); qN++; if(qN<45) return; const avg=qAcc/qN; qAcc=0; qN=0; if(!started||document.hidden) return; qUp++;   // one long stall (tab hidden, a bake) counts as a single slow frame
+  if(avg>1/26&&qLv<QL.length-1){ qPen=qUp<4?Math.min(qPen*2,512):8; qLv++; qHold=qPen; applyQ(); }   // dropping right after a step up: wait twice as long before trying that step again
+  else if(avg<1/52&&qLv>0&&(qLv>2||QL[qLv]<(window.devicePixelRatio||1))){ if(--qHold<=0){ qLv--; qHold=12; qUp=0; applyQ(); } } }
 // sky reflections on the plastic: the dome baked into a blurred cube map whenever time or weather changes
 let envDirty=.2, envRT=null; const pmrem=new THREE.PMREMGenerator(renderer), envScene=new THREE.Scene(); envScene.add(new THREE.Mesh(skyDome.geometry,skyDome.material));
 function bakeEnv(){ try{ const lin=skyU.uLin.value; skyU.uLin.value=1; const rt=pmrem.fromScene(envScene,0,.1,1000); skyU.uLin.value=lin; scene.environment=rt.texture; scene.environmentIntensity=.5; if(envRT) envRT.dispose(); envRT=rt; }catch(e){} }
@@ -1829,9 +1852,13 @@ function updateEnv(dt){
         snowPos[j]=seedP[i*4]*26+Math.sin(t*.9+i)*1.6; snowPos[j+1]=y; snowPos[j+2]=seedP[i*4+2]*26+Math.cos(t*.7+i*1.7)*1.6; } snowGeo.attributes.position.needsUpdate=true; } }
 }
 let studsOn=true; const clock=new THREE.Clock(); const v3=new THREE.Vector3(); let t=0,frame=0;
-let warmI=0, vehOn=true; const warm=[];
+let warmI=0, vehOn=true, repaint=false; const warm=[];
+addEventListener('resize',()=>{ repaint=true; });   // resizing empties the canvas: draw it once more even while the world rests
+renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; envRT=null; envDirty=.01; repaint=true; });   // the baked shadow map and sky reflection are gone with the old context
+const STUD_R=320;   // studs further than this from the camera are a few pixels wide: leave them out
+function studLOD(c){ const R=STUD_R; for(const m of studMeshes){ const b=m.boundingSphere, q=b.center, dx=q.x-c.x, dy=q.y-c.y, dz=q.z-c.z, l=R+b.radius; const d2=dx*dx+dy*dy+dz*dz; m.visible=studsOn&&d2<l*l; const nl=60+b.radius, g=d2<nl*nl?sg:sgFar; if(m.geometry!==g) m.geometry=g; } }
 function tick(){
-  if(modal&&frame>2){ clock.getDelta(); requestAnimationFrame(tick); return; }   // the world rests while a place sheet is open, so the sheet stays smooth
+  if(modal&&frame>2){ clock.getDelta(); if(repaint){ repaint=false; try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} } requestAnimationFrame(tick); return; }   // the world rests while a place sheet is open, so the sheet stays smooth
   const rawDt=clock.getDelta(), dt=Math.min(.05,rawDt); t+=dt; frame++; autoQ(rawDt);
   const sx=274+((t*1.6)%18); ship.position.set(sx,.8+Math.sin(t*5)*.04,280.2);
   wake.forEach((w,i)=>{ const ph=(i*.37+t*1.6)%1,side=i%2?1:-1,back=1+(i>>1)*1.1+ph; w.position.set(sx-back,.87,281.4+side*(.9+back*.28)); const s=Math.max(.2,(1-ph*.6)*(1.1-back*.09)); w.scale.set(s,.1,s*.8); });
@@ -1862,9 +1889,9 @@ function tick(){
   // places
   let near=null,nd=1e9; const wide=cam.dist>230, sv=cam.dist<170;
   { const vv=cam.dist<700; if(vv!==vehOn){ vehOn=vv; for(const m of LANES) m.o.visible=vv; } }
-  if(sv!==studsOn){ studsOn=sv; for(const m of studMeshes) m.visible=sv; }
-  if(warmI<studMeshes.length||warm.length){ for(const m of warm){ m.visible=studsOn; m.frustumCulled=true; } warm.length=0;
-    for(let k=0;k<4&&warmI<studMeshes.length;k++){ const m=studMeshes[warmI++]; if(!studsOn){ m.visible=true; m.frustumCulled=false; warm.push(m); } } }
+  for(const m of warm){ m.visible=false; m.frustumCulled=true; } warm.length=0;
+  if(sv||studsOn){ studsOn=sv; studLOD(camera.position); }
+  for(let k=0;k<4&&warmI<studMeshes.length;k++){ const m=studMeshes[warmI++]; if(!m.visible){ m.visible=true; m.frustumCulled=false; warm.push(m); } }
   for(const c of CL){ if(!wide){ if(c.on){ c.e.style.display='none'; c.on=false; } continue; } v3.set(c.x,22,c.z).project(camera);
     const show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; c.on=show; c.e.style.display=show?'':'none';
     if(show) c.e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; }
@@ -1886,10 +1913,10 @@ function shot(p){ const L=p.l; let dx=p.t[0]-L[0],dz=p.t[1]-L[2],n=Math.hypot(dx
   const cw=Math.min(W,H*16/9), ch=cw*9/16;
   shotCam.aspect=W/H; shotCam.fov=Math.min(120,2*Math.atan(Math.tan(20*Math.PI/180)*H/ch)*180/Math.PI); shotCam.near=Math.max(.5,D*.04); shotCam.far=5000;
   shotCam.position.set(L[0]+dx*D*.82-dz*D*.38,h*.45+D*.5,L[2]+dz*D*.82+dx*D*.38); shotCam.lookAt(L[0],h*.38,L[2]); shotCam.updateProjectionMatrix(); shotCam.updateMatrixWorld();
-  const pv=player.visible; player.visible=false;
+  const pv=player.visible; player.visible=false; studLOD(shotCam.position);
   try{ if(post){ post.rp.camera=shotCam; post.composer.render(0); post.rp.camera=camera; } else renderer.render(scene,shotCam);
     const c=document.getElementById('qc'); c.getContext('2d').drawImage(renderer.domElement,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height); }catch(e){ if(post) post.rp.camera=camera; }
-  player.visible=pv; try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} }
+  player.visible=pv; studLOD(camera.position); try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} }
 // a real photo where one can be found: the Korean Wikipedia article's lead picture, then a Wikipedia search, then a Wikimedia Commons file search.
 // Nothing found, or the request blocked: the drawn illustration stays.
 const WK='https://ko.wikipedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*', CM='https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*';
@@ -1918,7 +1945,7 @@ async function photo(p){ if(p.ph!==undefined) return p.ph; p.ph=null;
 function picLabel(){ const pic=document.getElementById('qpic'), blk=pic.classList.contains('blk'), ph=pic.classList.contains('ph');
   document.getElementById('qe').textContent=blk?'블록으로 쌓은 모습':'삽화'; document.getElementById('qe').style.display=(!blk&&ph)?'none':''; document.getElementById('qsw').textContent=blk?(ph?'사진 보기':'삽화 보기'):'블록 모습 보기'; }
 function showPhoto(p){ const pic=document.getElementById('qpic'), img=document.getElementById('qi'); pic.classList.remove('ph','blk'); img.removeAttribute('src');
-  { const [k,a]=kindOf(p), key=k==='item'?a:k, v=document.getElementById('qv'); if(ART.has(key)){ v.textContent=''; const im=new Image(); im.alt=''; im.onerror=()=>{ v.innerHTML=illust(p); }; im.src='./ill/'+key+'.webp'; v.appendChild(im); } else v.innerHTML=illust(p); } picLabel();
+  { const [k,a]=kindOf(p), key=k==='item'?a:k, v=document.getElementById('qv'); if(ART.has(key)){ v.textContent=''; const im=new Image(); im.alt=''; im.onerror=()=>{ if(im.parentNode===v) v.innerHTML=illust(p); }; im.src='./ill/'+key+'.webp'; v.appendChild(im); } else v.innerHTML=illust(p); } picLabel();
   photo(p).then(ph=>{ if(modal!==p||!ph) return; img.onload=()=>{ if(modal!==p) return; pic.classList.add('ph'); picLabel(); };
     img.onerror=()=>{ pic.classList.remove('ph'); p.ph=null; picLabel(); }; img.src=ph.src;
     const a=document.getElementById('qsrc'); a.textContent='사진 · '+ph.by; a.href=ph.href; }); }
@@ -1929,15 +1956,15 @@ function stampIt(p){ mapDirty=true; p.v=true; p.e.classList.add('v'); visited++;
 function openQ(p){ if(modal||!p) return; if(!illust){ extra().then(()=>{ if(!modal&&cur===p) openQ(p); },()=>say('잠시 뒤에 다시 눌러 주세요')); return; } modal=p; jx=jy=0; knob.style.transform=''; for(const k in key) key[k]=false;
   shotFor=null; showPhoto(p);
   const $=id=>document.getElementById(id); $('qr').textContent=p.c; $('qh').textContent=p.n; $('qd').textContent=p.d; $('qs').style.display=p.v?'inline':'none';
-  $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'설명을 읽고 알맞은 답을 골라 보세요.';
+  $('stamp').classList.remove('on'); $('qn').style.display=p.v?'block':'none'; const qm=$('qm'); qm.className=''; qm.textContent=p.v?'이미 맞힌 퀴즈예요.':'알맞은 답을 골라 보세요.';
   $('qt').textContent=p.q[0]; const opts=p.q.slice(1).map((t,i)=>({t,ok:i===0})); for(let i=opts.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [opts[i],opts[j]]=[opts[j],opts[i]]; }
   const box=$('qo'); box.textContent='';
   opts.forEach((o,i)=>{ const b=document.createElement('button'); const n=document.createElement('i'); n.textContent=i+1; b.appendChild(n); b.appendChild(document.createTextNode(o.t));
     if(p.v){ b.disabled=true; if(o.ok) b.classList.add('ok'); }
     b.onclick=()=>{ if(p.v) return;
-      if(o.ok){ b.classList.add('ok'); for(const x of box.children) x.disabled=true; stampIt(p); $('stamp').classList.add('on'); qm.className='ok'; qm.textContent='정답이에요! 탐방 도장을 받았어요.'; $('qs').style.display='inline'; $('qn').style.display='block'; fitQ();
+      if(o.ok){ b.classList.add('ok'); for(const x of box.children) x.disabled=true; stampIt(p); qm.className='ok'; qm.textContent='정답이에요! 탐방 도장을 받았어요.'; $('qs').style.display='inline'; $('qn').style.display='block'; fitQ(); $('stamp').classList.add('on');
         if(visited===POI.length) say('충청남도 완주! 도장을 모두 모았어요'); }
-      else { b.classList.add('no'); b.disabled=true; qm.className='no'; qm.textContent='아쉬워요. 설명을 다시 읽고 골라 보세요.'; fitQ(); } };
+      else { b.classList.add('no'); b.disabled=true; qm.className='no'; qm.textContent='아쉬워요. 다시 골라 보세요.'; fitQ(); } };
     box.appendChild(b); });
   $('qg').textContent=p.v?'다음 · 퀴즈 다시 보기':'다음 · 퀴즈 풀기'; $('qz').classList.remove('quiz'); $('qz').classList.add('on'); fitQ(); document.getElementById('act').classList.remove('on'); }
 function closeQ(){ if(!modal) return; modal=null; document.getElementById('qz').classList.remove('on'); if(cur) document.getElementById('act').classList.add('on'); }
@@ -1946,11 +1973,12 @@ function fitQ(){ const sh=document.getElementById('qz').firstElementChild; sh.cl
   const over=()=>sh.scrollHeight>sh.clientHeight+1; if(over()) sh.classList.add('c1'); if(over()) sh.classList.add('c2'); if(over()) sh.style.zoom=Math.max(.6,(sh.clientHeight-2)/sh.scrollHeight).toFixed(3); }
 addEventListener('resize',()=>{ if(modal) fitQ(); });
 document.getElementById('qg').onclick=()=>{ document.getElementById('qz').classList.add('quiz'); fitQ(); };
+document.getElementById('qbk').onclick=()=>{ document.getElementById('qz').classList.remove('quiz'); fitQ(); };
 document.getElementById('qx').onclick=closeQ; document.getElementById('qn').onclick=closeQ;
-document.getElementById('qz').addEventListener('pointerdown',e=>{ if(e.target.id==='qz') closeQ(); });
+{ const qz=document.getElementById('qz'); let qzDown=false; qz.addEventListener('pointerdown',e=>{ qzDown=e.target===qz; }); qz.addEventListener('click',e=>{ if(qzDown&&e.target===qz) closeQ(); qzDown=false; }); }
 window.__dbg={ROADS,openQ,goTo,mTop,get ride(){return P.ride},TRAINTOP,VY,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
 // start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
 updateEnv(0); bakeEnv(); envDirty=0;
 (async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
-  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; setTimeout(extra,1200); }); })();
+  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; setTimeout(()=>extra().catch(()=>{}),1200); }); })();
 </script></body></html>
