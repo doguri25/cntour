@@ -411,10 +411,13 @@ function mountain(x0,z0,nx,nz,peaks,kind){
   }
 }
 const ROADS=[];
-function roadEW(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,len,4])); T(x,G,z,len,.3,4,C.road); for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }
-function roadNS(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,4,len])); T(x,G,z,4,.3,len,C.road); for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }
-function railNS(x,z,len){ T(x,G,z,2.6,.2,len,C.gray); for(let i=z+.3;i<z+len;i+=1.2) T(x+.2,G+.2,i,2.2,.1,.4,C.brown); T(x+.6,G+.3,z,.18,.12,len,C.dgray); T(x+1.8,G+.3,z,.18,.12,len,C.dgray); }
-function railEW(x,z,len){ T(x,G,z,len,.2,2.6,C.gray); for(let i=x+.3;i<x+len;i+=1.2) T(i,G+.2,z+.2,.4,.1,2.2,C.brown); T(x,G+.3,z+.6,len,.12,.18,C.dgray); T(x,G+.3,z+1.8,len,.12,.18,C.dgray); }
+// lay small repeated pieces along a long strip at its stretched size: fn(x0,z0,len) is called in final coordinates
+function along(x,z,len,ns,fn){ if(!REMAP) return fn(x,z,len); const ax=x+OX+BX+SX, az=z+OZ+BZ, a=ns?mapSpan(az,len,172,NH):mapSpan(ax,len,270,NW), nx=ns?fX(ax):a[0], nz=ns?a[0]:fZ(az);
+  const o=[OX,OZ,BX,BZ,SX]; OX=OZ=BX=BZ=SX=0; REMAP=false; fn(nx,nz,a[1]); REMAP=true; [OX,OZ,BX,BZ,SX]=o; }
+function roadEW(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,len,4])); T(x,G,z,len,.3,4,C.road); along(x,z,len,0,(x,z,len)=>{ for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }); }
+function roadNS(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,4,len])); T(x,G,z,4,.3,len,C.road); along(x,z,len,1,(x,z,len)=>{ for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }); }
+function railNS(x,z,len){ T(x,G,z,2.6,.2,len,C.gray); along(x,z,len,1,(x,z,len)=>{ for(let i=z+.3;i<z+len;i+=1.5) T(x+.2,G+.2,i,2.2,.11,.6,C.brown); }); T(x+.55,G+.31,z,.28,.14,len,C.dgray); T(x+1.77,G+.31,z,.28,.14,len,C.dgray); }
+function railEW(x,z,len){ T(x,G,z,len,.2,2.6,C.gray); along(x,z,len,0,(x,z,len)=>{ for(let i=x+.3;i<x+len;i+=1.5) T(i,G+.2,z+.2,.6,.11,2.2,C.brown); }); T(x,G+.31,z+.55,len,.14,.28,C.dgray); T(x,G+.31,z+1.77,len,.14,.28,C.dgray); }
 
 BZ=HH+16;
 // ---------- roads and railway (Janghang line: north-east -> Hongseong -> Gwangcheon)
@@ -1612,6 +1615,11 @@ const SHORE=(()=>{ const W=MAPW,H=MAPH,wat=new Uint8Array(W*H),dist=new Uint8Arr
   for(let d=2;d<=16&&q.length;d++){ const n=[]; for(const k of q){ const i=k%W; for(const m of [i>0?k-1:-1,i<W-1?k+1:-1,k-W,k+W]) if(m>=0&&m<W*H&&wat[m]&&dist[m]===255){ dist[m]=d; n.push(m); } } q=n; }
   const px=new Uint8Array(W*H); for(let k=0;k<W*H;k++) px[k]=dist[k]===255?255:Math.round(Math.max(0,dist[k]-1)/15*255);
   const tx=new THREE.DataTexture(px,W,H,THREE.RedFormat); tx.magFilter=tx.minFilter=THREE.LinearFilter; tx.needsUpdate=true; return tx; })();
+// ---------- two tops of different colour at the same height shimmer where they overlap: the smaller one is lifted a hair
+{ const CS=8,W=Math.ceil(MAPW/CS),g=new Map(), big=[];
+  boxes.forEach((b,n)=>{ if(b[1]>40) return; if(b[3]>300||b[5]>300){ big.push(n); return; } for(let i=Math.floor(b[0]/CS);i<=Math.floor((b[0]+b[3])/CS);i++)for(let j=Math.floor(b[2]/CS);j<=Math.floor((b[2]+b[5])/CS);j++){ const k=j*W+i; (g.get(k)||g.set(k,[]).get(k)).push(n); } });
+  const lift=(m,n)=>{ const a=boxes[m],b=boxes[n]; if(a[6]===b[6]||Math.abs(a[1]+a[4]-b[1]-b[4])>.008) return; if(Math.min(a[0]+a[3],b[0]+b[3])-Math.max(a[0],b[0])<.03||Math.min(a[2]+a[5],b[2]+b[5])-Math.max(a[2],b[2])<.03) return; (a[3]*a[5]<b[3]*b[5]?a:b)[4]+=.016; };
+  for(let pass=0;pass<2;pass++){ for(const a of g.values()) for(let i=0;i<a.length;i++) for(let j=i+1;j<a.length;j++) lift(a[i],a[j]); for(const m of big) for(let n=0;n<boxes.length;n++) if(n!==m&&boxes[n][1]<=40) lift(m,n); } }
 // ---------- the whole world is enlarged 1.2x around the same-sized explorer
 const S=1.44, MW=MAPW*S, MH=MAPH*S;
 for(const b of boxes) for(let i=0;i<6;i++) b[i]*=S;
@@ -1622,7 +1630,7 @@ const SPOS=[START[0]*S,START[1]*S];
 const CS=4,GW=Math.ceil(MW/CS),GH=Math.ceil(MH/CS),grid=Array.from({length:GW*GH},()=>[]);
 boxes.forEach((b,n)=>{ if(b[4]<=.18||b[1]>31) return;
   for(let j=Math.max(0,Math.floor(b[2]/CS));j<=Math.min(GH-1,Math.floor((b[2]+b[5])/CS));j++) for(let i=Math.max(0,Math.floor(b[0]/CS));i<=Math.min(GW-1,Math.floor((b[0]+b[3])/CS));i++) grid[j*GW+i].push(n); });
-const PR=.46,PH=3.08,STEP=.66;
+const PR=.5,PH=3.39,STEP=.66;
 function around(x,z,fn){ const i0=Math.max(0,Math.floor((x-PR)/CS)),i1=Math.min(GW-1,Math.floor((x+PR)/CS)),j0=Math.max(0,Math.floor((z-PR)/CS)),j1=Math.min(GH-1,Math.floor((z+PR)/CS));
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){ const c=grid[j*GW+i]; for(let k=0;k<c.length;k++){ const n=c[k],b=boxes[n];
     if(x+PR>b[0]+.001&&x-PR<b[0]+b[3]-.001&&z+PR>b[2]+.001&&z-PR<b[2]+b[5]-.001) fn(b,n); } } }
@@ -1699,8 +1707,9 @@ const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,
     p.push(0,h,0, bx*r,h,bz*r, ax*r,h,az*r); n.push(0,1,0, 0,1,0, 0,1,0); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(p),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(n),3)); return g; })();
 const studMeshes=[]; const CHK=90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
-for(const arr of bucket(boxes,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
-  const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length);
+const tinyMeshes=[], isTiny=b=>b[1]<3*S&&((b[3]<=.95*S&&b[5]<=.95*S&&b[4]<=1.5*S)||(b[4]<=.3*S&&Math.min(b[3],b[5])<=.65*S&&Math.max(b[3],b[5])<=80));
+for(const [tiny,list] of [[0,boxes.filter(b=>!isTiny(b))],[1,boxes.filter(isTiny)]]) for(const arr of bucket(list,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
+  const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length); if(tiny) tinyMeshes.push(im);
   arr.forEach((b,i)=>{ m4.makeScale(b[3],b[4],b[5]); m4.setPosition(b[0]+b[3]/2,b[1]+b[4]/2,b[2]+b[5]/2); im.setMatrixAt(i,m4); im.setColorAt(i,col.setHex(b[6])); });
   im.castShadow=im.receiveShadow=true; im.computeBoundingSphere(); scene.add(im); }
 for(const arr of bucket(studs,s=>s[0],s=>s[2]).values()){
@@ -1764,7 +1773,7 @@ rb(body,-.24,1.68,.312,.12,.07,.02,0xff9a8b,.01); rb(body,.24,1.68,.312,.12,.07,
 rb(body,0,2.1,-.02,.72,.24,.7,CAPC,.1); rb(body,0,2.02,.4,.6,.07,.3,CAPC,.03); rb(body,0,2.24,-.02,.14,.08,.14,0xffffff,.04);             // cap, brim, button
 body.add(legL,legR,armL,armR);
 const blob=new THREE.Mesh(new THREE.CircleGeometry(.62,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false}));
-blob.rotation.x=-Math.PI/2; scene.add(blob); scene.add(player); player.scale.setScalar(1.3);
+blob.rotation.x=-Math.PI/2; scene.add(blob); scene.add(player); player.scale.setScalar(1.43);
 const P={ride:null,x:SPOS[0],z:SPOS[1],y:G*S+.5,vy:0,on:true,face:Math.PI,walk:0};
 
 // ---------- places (t: where to stand, l: label anchor)
@@ -2125,7 +2134,9 @@ let warmI=0, vehOn=true, repaint=false; const warm=[];
 addEventListener('resize',()=>{ repaint=true; });   // resizing empties the canvas: draw it once more even while the world rests
 renderer.domElement.addEventListener('webglcontextrestored',()=>{ renderer.shadowMap.needsUpdate=true; envRT=null; envDirty=.01; repaint=true; });   // the baked shadow map and sky reflection are gone with the old context
 const STUD_R=320;   // studs further than this from the camera are a few pixels wide: leave them out
-function studLOD(c){ const R=STUD_R; for(const m of studMeshes){ const b=m.boundingSphere, q=b.center, dx=q.x-c.x, dy=q.y-c.y, dz=q.z-c.z, l=R+b.radius; const d2=dx*dx+dy*dy+dz*dz; m.visible=studsOn&&d2<l*l; const nl=60+b.radius, g=d2<nl*nl?sg:sgFar; if(m.geometry!==g) m.geometry=g; } }
+const TINY_R=LITE?210:280;
+function studLOD(c){ if(frame>2) for(const m of tinyMeshes){ const b=m.boundingSphere, q=b.center, dx=q.x-c.x, dy=q.y-c.y, dz=q.z-c.z, l=TINY_R+b.radius; m.visible=dx*dx+dy*dy+dz*dz<l*l; }
+  const R=STUD_R; for(const m of studMeshes){ const b=m.boundingSphere, q=b.center, dx=q.x-c.x, dy=q.y-c.y, dz=q.z-c.z, l=R+b.radius; const d2=dx*dx+dy*dy+dz*dz; m.visible=studsOn&&d2<l*l; const nl=60+b.radius, g=d2<nl*nl?sg:sgFar; if(m.geometry!==g) m.geometry=g; } }
 function tick(){
   if(modal&&frame>2){ clock.getDelta(); if(repaint){ repaint=false; try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} } requestAnimationFrame(tick); return; }   // the world rests while a place sheet is open, so the sheet stays smooth
   const rawDt=clock.getDelta(), dt=Math.min(.05,rawDt); t+=dt; frame++; autoQ(rawDt);
@@ -2159,7 +2170,7 @@ function tick(){
   let near=null,nd=1e9; const wide=cam.dist>230, sv=cam.dist<170;
   { const vv=cam.dist<700; if(vv!==vehOn){ vehOn=vv; for(const m of LANES) m.o.visible=vv; } }
   for(const m of warm){ m.visible=false; m.frustumCulled=true; } warm.length=0;
-  if(sv||studsOn){ studsOn=sv; studLOD(camera.position); }
+  studsOn=sv; studLOD(camera.position);
   for(let k=0;k<4&&warmI<studMeshes.length;k++){ const m=studMeshes[warmI++]; if(!m.visible){ m.visible=true; m.frustumCulled=false; warm.push(m); } }
   for(const c of CL){ if(!wide){ if(c.on){ c.e.style.display='none'; c.on=false; } continue; } v3.set(c.x,22,c.z).project(camera);
     const show=v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; c.on=show; c.e.style.display=show?'':'none';
