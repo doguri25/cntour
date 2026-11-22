@@ -45,6 +45,7 @@ button{font-family:inherit;color:inherit}
 .lb:before{content:"";width:7px;height:7px;border-radius:50%;background:#f29900;flex:none}
 .lb:after{content:"";position:absolute;left:50%;bottom:-4px;margin-left:-4px;width:8px;height:8px;background:inherit;transform:rotate(45deg);border-radius:1px}
 .lb.v{background:var(--p);color:#fff}.lb.v:before{content:"✓";background:none;width:auto;height:auto;font-size:11px;line-height:1}
+.mepin{position:absolute;left:0;top:0;pointer-events:none;background:#d93025;color:#fff;font-size:13px;font-weight:900;border-radius:50% 50% 50% 0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.35);border:2px solid #fff;z-index:2;will-change:transform}
 .lb.big{font-size:14px;padding:7px 14px;background:rgba(31,36,48,.9);color:#fff;font-weight:900;letter-spacing:.02em}.lb.big:before{display:none}
 /* place card */
 #card{position:fixed;left:50%;top:170px;transform:translate(-50%,-520%);width:min(430px,calc(100% - 24px));border-radius:var(--r);padding:14px 18px 15px 20px;transition:transform .32s cubic-bezier(.2,.9,.25,1.05);pointer-events:none;overflow:hidden}
@@ -1840,6 +1841,7 @@ const P={ride:null,x:SPOS[0],z:SPOS[1],y:G*S+.5,vy:0,on:true,face:Math.PI,walk:0
 
 // ---------- places (t: where to stand, l: label anchor)
 const lbBox=document.getElementById('labels');
+const mePin=document.createElement('div'); mePin.className='mepin'; mePin.textContent='나'; mePin.style.display='none'; lbBox.appendChild(mePin);
 POI.forEach((p,i)=>{ const e=document.createElement('div'); e.className='lb'; e.dataset.i=i; e.textContent=p.n; e.style.display='none'; lbBox.appendChild(e); p.e=e; p.v=false; });
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.dataset.c=n; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
 { const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.dataset.c='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:4*NW*S,z:1.5*NH*S}); }
@@ -2222,8 +2224,7 @@ function tick(){
   const sh=ground(P.x,P.z,P.y+.05)[0]; blob.position.set(P.x,sh+.03,P.z); blob.scale.setScalar(1.2*Math.max(.45,1-(P.y-sh)*.25));
   // camera
   cam.dist+=(cam.want-cam.dist)*Math.min(1,dt*3.5);
-  const far=Math.min(1,Math.max(0,(cam.dist-130)/200));
-  const gx=P.x+(MW/2-P.x)*far, gy=P.y+1.9+(2-P.y-1.9)*far, gz=P.z+(MH/2+10-P.z)*far;
+  const gx=P.x, gy=P.y+1.9, gz=P.z;   // the view stays on the explorer however far it is zoomed out
   cam.tx+=(gx-cam.tx)*Math.min(1,dt*8); cam.ty+=(gy-cam.ty)*Math.min(1,dt*5); cam.tz+=(gz-cam.tz)*Math.min(1,dt*8);
   const cp=Math.cos(cam.pitch);
   camera.position.set(cam.tx+Math.sin(cam.yaw)*cp*cam.dist,cam.ty+Math.sin(cam.pitch)*cam.dist,cam.tz+Math.cos(cam.yaw)*cp*cam.dist);
@@ -2234,6 +2235,8 @@ function tick(){
   if(frame===2) renderer.shadowMap.autoUpdate=false;
   // places
   let near=null,nd=1e9; const wide=cam.dist>230, sv=cam.dist<170;
+  // zoomed out, a pin shows where the explorer is
+  if(wide&&started){ v3.set(P.x,P.y+2,P.z).project(camera); mePin.style.display=''; mePin.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; } else if(mePin.style.display!=='none') mePin.style.display='none';
   { const vv=cam.dist<700; if(vv!==vehOn){ vehOn=vv; for(const m of LANES) m.o.visible=vv; } }
   for(const m of warm){ m.visible=false; m.frustumCulled=true; } warm.length=0;
   studsOn=sv; studLOD(camera.position);
