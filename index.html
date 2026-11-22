@@ -925,7 +925,8 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
   for(let n=0;n<N;n++){ par[n]=n; const b=boxes[n], w=b[3], d=b[5], h=b[4], mx=Math.max(w,d), mn=Math.min(w,d);
     if(n<NG){ if(mx>=30) kind[n]=1; continue; }
     if(h<=1.25&&lineOf(w,d)) kind[n]=lineOf(w,d);
-    else if((b[6]===C.road||b[6]===C.water)&&h<=.6&&mx>=7&&mn<=8&&mx>mn*1.4) kind[n]=w>d?2:3;                // a short stretch of road or stream stretches too, so that it still meets its neighbours                                                   // long and low: road, river, rail, fence rail, bridge deck
+    else if((b[6]===C.road||b[6]===C.water)&&h<=.6&&mx>=7&&mn<=8&&mx>mn*1.4) kind[n]=w>d?2:3;
+    else if((b[6]===C.road||b[6]===C.water)&&h<=.6&&b[1]<=G+.05&&mx>=3) kind[n]=1;                               // squares, car parks, ponds                // a short stretch of road or stream stretches too, so that it still meets its neighbours                                                   // long and low: road, river, rail, fence rail, bridge deck
     else if(GC.has(b[6])&&b[1]+h<=G+.5&&(mx>=30||mn>=12)) kind[n]=1; }                              // a wide patch of ground or water
   // things that touch move together as one piece (thin floor markings follow the piece they lie on without joining two pieces)
   const CS=4, cells=new Map(), key=(i,j)=>i*8192+j, E=.35;
@@ -1612,14 +1613,20 @@ function rlDeck(ax,a,b,f){ const lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x'
   rlDeck('z',Z(.3),Z(1.45),X(2.45)); rlDeck('x',X(2.45),X(3.15),Z(.3)); rlDeck('z',Z(.06),Z(.3),X(3.15));              // Seohae: Hongseong side - Hapdeok - Inju - north
   rlDeck('z',Z(1.62),Z(2.2),X(4.62)); rlDeck('x',X(4.03),X(4.62),Z(2.2)); rlDeck('z',Z(2.2),Z(3.05),X(4.03)); rlDeck('x',X(3.35),X(4.03),Z(3.05)); rlDeck('z',Z(3.05),Z(3.95),X(3.35));   // Honam: Daejeon - Gyeryong - Nonsan - Ganggyeong
   for(const r of RLSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // whatever stood on the line is cleared away; roads, water and ground markings stay and the track runs over them
-    for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<r[0]+r[2]+.2&&b[0]+b[3]>r[0]-.2&&b[2]<r[1]+r[3]+.2&&b[2]+b[5]>r[1]-.2&&b[1]+b[4]>G+.3&&b[1]<G+5.2){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
-    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[1]<G+9&&t[0]>r[0]-.2&&t[0]<r[0]+r[2]+.2&&t[2]>r[1]-.2&&t[2]<r[1]+r[3]+.2) studs.splice(i,1); } }
+    for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<r[0]+r[2]+.2&&b[0]+b[3]>r[0]-.2&&b[2]<r[1]+r[3]+.2&&b[2]+b[5]>r[1]-.2&&b[1]+b[4]>G+.3){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
+    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[0]>r[0]-.2&&t[0]<r[0]+r[2]+.2&&t[2]>r[1]-.2&&t[2]<r[1]+r[3]+.2) studs.splice(i,1); } }
   // a station: a roofed platform beside the track, stairs, and a station house on the ground with its name board
-  const station=(name,ax,fu,fv,big,tag)=>{ const x0=X(fu), z0=Z(fv), L=big?26:18, Xa=ax==='x';
+  const clearRect=(x,z,w,d)=>{ for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<x+w&&b[0]+b[3]>x&&b[2]<z+d&&b[2]+b[5]>z&&b[1]+b[4]>G+.3){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
+    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[0]>x&&t[0]<x+w&&t[2]>z&&t[2]<z+d) studs.splice(i,1); } take(Math.floor(x)-1,Math.floor(z)-1,Math.ceil(w)+2,Math.ceil(d)+2); };
+  const station=(name,ax,fu,fv,big,tag)=>{ let x0=X(fu), z0=Z(fv); const L=big?26:18, Xa=ax==='x', W=big?16:11, D=7;
+    // both platforms and the station house want open ground: try places further along the line, nearest first
+    { const fits=(x,z)=>{ for(const side of [1,-1]){ const px=Xa?x-L/2:(side>0?x+3:x-3-3), pz=Xa?(side>0?z+3:z-3-3):z-L/2; if(!free(Math.round(px),Math.round(pz),Xa?L:3,Xa?3:L)) return false; }
+        return [1,-1].some(side=>free(Math.round(Xa?x-W/2:(side>0?x+6:x-6-W))-1,Math.round(Xa?(side>0?z+6:z-6-D):z-D/2)-1,W+2,D+3)); };
+      for(const sh of [0,8,-8,16,-16,24,-24,32,-32,44,-44,56,-56]){ const x=Xa?x0+sh:x0, z=Xa?z0:z0+sh; if(fits(x,z)){ x0=x; z0=z; break; } } }
     for(const side of [1,-1]){ const px=Xa?x0-L/2:(side>0?x0+1.7:x0-1.7-3.4), pz=Xa?(side>0?z0+1.7:z0-1.7-3.4):z0-L/2, pw=Xa?L:3.4, pd=Xa?3.4:L;
-      T(px,G,pz,pw,.75,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,G+.75,cz,.3,2.9,.3,C.white); }
+      clearRect(px-.3,pz-.3,pw+.6,pd+.6); T(px,G,pz,pw,.75,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,G+.75,cz,.3,2.9,.3,C.white); }
       T(px-.3,G+3.65,pz-.3,pw+.6,.3,pd+.6,big?C.glass:C.blue); }
-    let spot=null; const W=big?16:11, D=7; search: for(let r=0;r<34;r+=2) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=Xa?x0-W/2+al:(side>0?x0+6+r*.5:x0-6-r*.5-W), z=Xa?(side>0?z0+6+r*.5:z0-6-r*.5-D):z0-D/2+al; if(free(Math.round(x)-1,Math.round(z)-1,W+2,D+3)){ spot=[Math.round(x),Math.round(z)]; break search; } }
+    let spot=null; search: for(let r=0;r<34;r+=2) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=Xa?x0-W/2+al:(side>0?x0+6+r*.5:x0-6-r*.5-W), z=Xa?(side>0?z0+6+r*.5:z0-6-r*.5-D):z0-D/2+al; if(free(Math.round(x)-1,Math.round(z)-1,W+2,D+3)){ spot=[Math.round(x),Math.round(z)]; break search; } }
     if(spot){ const [x,z]=spot; take(x-1,z-1,W+2,D+3); at(x,z,()=>{ T(-.5,G,-.5,W+1,.14,D+2.5,C.stone); B(0,G,0,W,big?4.2:3,D-1.5,big?0xe9f1f7:C.cream,{s:false}); T(-.4,G+(big?4.2:3),-.4,W+.8,.5,D-.7,big?C.navy:0x3b6fb5);
         for(let i=1;i<W-1;i+=2.4) T(i,G+.5,D-1.5,1.5,big?2.6:1.6,.1,C.glass); T(W/2-1,G,D-1.5,2,2,.12,C.dgray); T(W/2-3,G+(big?4.7:3.5),D-1.6,6,1.1,.25,C.white); T(W/2-2.6,G+(big?4.9:3.7),D-1.34,5.2,.7,.06,C.blue);
         T(1,G+.14,D+.3,.4,.5,1.2,C.wood); T(W-2,G+.14,D+.3,.4,.5,1.2,C.wood); });
