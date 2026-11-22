@@ -1599,39 +1599,38 @@ function hwDraw(ax,lo,len,f,me){ const W=9, X=ax==='x', P=(u,v,lu,h,lv,y,c)=>X?T
   rest('예산휴게소','z',2.6,1.5); rest('공주휴게소','x',3.1,2.25); rest('정안알밤휴게소','z',3.3,2.12); rest('탄천휴게소','z',3.3,2.8); rest('부여백제휴게소','x',2.7,3.4);
   // Sapgyoho sea dike: a stone causeway along the bay from Dangjin towards Asan
   { const [dx,dz]=CO['당진시']; T(dx+TW-Math.round(46*KX),.8,dz+SEAN-5,Math.round(46*KX)+60,1.3,4,C.stone); T(dx+TW-Math.round(46*KX),2.1,dz+SEAN-4,Math.round(46*KX)+60,.12,2,C.road); } }
-// ---------- railways on low viaducts along the real lines: Gyeongbu, the KTX line, Janghang, Seohae and Honam, with their stations
-const RY=G+3, RLL=[], RLSEG=[];
+// ---------- railways on the ground along the real lines: Gyeongbu, the KTX line, Janghang, Seohae and Honam, with their stations
+const RY=G+.32, RLL=[], RLSEG=[];   // top of the track bed
 function rlDeck(ax,a,b,f){ const lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x', P=(u,v,lu,h,lv,y,c)=>X?T(u,y,v,lu,h,lv,c):T(v,y,u,lv,h,lu,c);
-  P(lo-1.6,f-1.6,len+3.2,.4,3.2,RY-.4,C.gray); P(lo-.72,f-.85,len+1.44,.14,.28,RY+.11,C.dgray); P(lo-.72,f+.57,len+1.44,.14,.28,RY+.11,C.dgray);
+  P(lo-1.6,f-1.6,len+3.2,.32,3.2,G,C.gray); P(lo-.72,f-.85,len+1.44,.14,.28,RY+.11,C.dgray); P(lo-.72,f+.57,len+1.44,.14,.28,RY+.11,C.dgray);
   for(let i=lo;i<lo+len;i+=1.8) P(i,f-1.2,.6,.11,2.4,RY,C.brown);
-  for(let i=lo+3;i<lo+len-1;i+=12){ const px=Math.round(X?i:f), pz=Math.round(X?f:i); if(px<1||pz<1||px>=MAPW-1||pz>=MAPH-1||occ[pz*MAPW+px]) continue; P(i,f-.6,1.2,RY-.4-G,1.2,G,C.lgray); }
   RLSEG.push(X?[lo-1.6,f-1.6,len+3.2,3.2]:[f-1.6,lo-1.6,3.2,len+3.2]); RLL.push({ax,lo,hi:lo+len,f}); }
 { const X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), R0=boxes.length;
   rlDeck('z',Z(.05),Z(1.62),X(4.62));                                                                                   // Gyeongbu: Seonghwan - Cheonan - Daejeon
   rlDeck('z',Z(.05),Z(1.3),X(4.05)); rlDeck('x',X(4.05),X(4.62),Z(1.3));                                               // KTX line through Cheonan-Asan to Daejeon
-  rlDeck('x',X(2.9),X(4.62),Z(.7)); rlDeck('z',Z(.7),Z(1.45),X(2.9)); rlDeck('x',X(1.6),X(2.9),Z(1.45)); rlDeck('z',Z(1.45),Z(3.92),X(1.6));   // Janghang: Cheonan - Asan - Yesan - Hongseong - Boryeong - Seocheon
+  rlDeck('x',X(2.9),X(4.62),Z(.7)); rlDeck('z',Z(.7),Z(1.45),X(2.9)); rlDeck('x',X(1.64),X(2.9),Z(1.45)); rlDeck('z',Z(1.45),Z(3.92),X(1.64));   // Janghang: Cheonan - Asan - Yesan - Hongseong - Boryeong - Seocheon
   rlDeck('z',Z(.3),Z(1.45),X(2.45)); rlDeck('x',X(2.45),X(3.15),Z(.3)); rlDeck('z',Z(.06),Z(.3),X(3.15));              // Seohae: Hongseong side - Hapdeok - Inju - north
   rlDeck('z',Z(1.62),Z(2.2),X(4.62)); rlDeck('x',X(4.03),X(4.62),Z(2.2)); rlDeck('z',Z(2.2),Z(3.05),X(4.03)); rlDeck('x',X(3.35),X(4.03),Z(3.05)); rlDeck('z',Z(3.05),Z(3.95),X(3.35));   // Honam: Daejeon - Gyeryong - Nonsan - Ganggyeong
-  for(const r of RLSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // the train's way is cut clear; the ground below stays as it was
-    for(let n=NG;n<R0;n++){ if(n>=HW0&&n<HW1) continue; const b=boxes[n]; if(b[0]<r[0]+r[2]+.3&&b[0]+b[3]>r[0]-.3&&b[2]<r[1]+r[3]+.3&&b[2]+b[5]>r[1]-.3&&b[1]+b[4]>RY-.8&&b[1]<RY+4.6){ if(b[1]<RY-1.2) b[4]=RY-1.2-b[1]; else { b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
-    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>RY-1.3&&t[1]<RY+5&&t[0]>r[0]-.3&&t[0]<r[0]+r[2]+.3&&t[2]>r[1]-.3&&t[2]<r[1]+r[3]+.3) studs.splice(i,1); } }
+  for(const r of RLSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // whatever stood on the line is cleared away; roads, water and ground markings stay and the track runs over them
+    for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<r[0]+r[2]+.2&&b[0]+b[3]>r[0]-.2&&b[2]<r[1]+r[3]+.2&&b[2]+b[5]>r[1]-.2&&b[1]+b[4]>G+.3&&b[1]<G+5.2){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
+    for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[1]<G+9&&t[0]>r[0]-.2&&t[0]<r[0]+r[2]+.2&&t[2]>r[1]-.2&&t[2]<r[1]+r[3]+.2) studs.splice(i,1); } }
   // a station: a roofed platform beside the track, stairs, and a station house on the ground with its name board
   const station=(name,ax,fu,fv,big,tag)=>{ const x0=X(fu), z0=Z(fv), L=big?26:18, Xa=ax==='x';
     for(const side of [1,-1]){ const px=Xa?x0-L/2:(side>0?x0+1.7:x0-1.7-3.4), pz=Xa?(side>0?z0+1.7:z0-1.7-3.4):z0-L/2, pw=Xa?L:3.4, pd=Xa?3.4:L;
-      T(px,RY-.3,pz,pw,.5,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,RY+.2,cz,.3,2.6,.3,C.white); T(cx,G,cz,.5,RY-.3-G,.5,C.lgray); }
-      T(px-.3,RY+2.8,pz-.3,pw+.6,.3,pd+.6,big?C.glass:C.blue); }
+      T(px,G,pz,pw,.75,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,G+.75,cz,.3,2.9,.3,C.white); }
+      T(px-.3,G+3.65,pz-.3,pw+.6,.3,pd+.6,big?C.glass:C.blue); }
     let spot=null; const W=big?16:11, D=7; search: for(let r=0;r<34;r+=2) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=Xa?x0-W/2+al:(side>0?x0+6+r*.5:x0-6-r*.5-W), z=Xa?(side>0?z0+6+r*.5:z0-6-r*.5-D):z0-D/2+al; if(free(Math.round(x)-1,Math.round(z)-1,W+2,D+3)){ spot=[Math.round(x),Math.round(z)]; break search; } }
     if(spot){ const [x,z]=spot; take(x-1,z-1,W+2,D+3); at(x,z,()=>{ T(-.5,G,-.5,W+1,.14,D+2.5,C.stone); B(0,G,0,W,big?4.2:3,D-1.5,big?0xe9f1f7:C.cream,{s:false}); T(-.4,G+(big?4.2:3),-.4,W+.8,.5,D-.7,big?C.navy:0x3b6fb5);
         for(let i=1;i<W-1;i+=2.4) T(i,G+.5,D-1.5,1.5,big?2.6:1.6,.1,C.glass); T(W/2-1,G,D-1.5,2,2,.12,C.dgray); T(W/2-3,G+(big?4.7:3.5),D-1.6,6,1.1,.25,C.white); T(W/2-2.6,G+(big?4.9:3.7),D-1.34,5.2,.7,.06,C.blue);
         T(1,G+.14,D+.3,.4,.5,1.2,C.wood); T(W-2,G+.14,D+.3,.4,.5,1.2,C.wood); });
       // stairs from the station house up to the platform
-      { const n=8, tx=Xa?x0:(x+W/2<x0?x0-3.4:x0+3.4), tz=Xa?(z+D/2<z0?z0-3.4:z0+3.4):z0, sx=x+W/2, sz=z+D/2; for(let k=1;k<=n;k++){ const t=k/n; T(sx+(tx-sx)*t-.9,G,sz+(tz-sz)*t-.9,1.8,(RY-.3-G)*t,1.8,C.lgray); } }
+      { const n=8, tx=Xa?x0:(x+W/2<x0?x0-3.4:x0+3.4), tz=Xa?(z+D/2<z0?z0-3.4:z0+3.4):z0, sx=x+W/2, sz=z+D/2; for(let k=1;k<=n;k++){ const t=k/n; T(sx+(tx-sx)*t-.9,G,sz+(tz-sz)*t-.9,1.8,.12,1.8,C.stone); } }   // a paved path from the station house to the platform
       if(tag) TAGS.push({n:tag,x:x+W/2,y:G+(big?7:5.6),z:z+D/2}); }
-    else if(tag) TAGS.push({n:tag,x:x0,y:RY+4.2,z:z0}); };
+    else if(tag) TAGS.push({n:tag,x:x0,y:G+5,z:z0}); };
   station('성환역','z',4.62,.14,0,'성환역'); station('두정역','z',4.62,.42,0,'두정역'); station('천안역','z',4.62,.66,1,'천안역 승강장'); station('대전역','z',4.62,1.5,1,'대전역'); station('서대전역','z',4.62,1.8,0,'서대전역');
   station('천안아산역','z',4.05,.62,1,'천안아산역 승강장'); station('아산역','x',3.9,.7,0,'아산역'); station('온양온천역','x',3.5,.7,0,'온양온천역'); station('신창역','x',3.15,.7,0,'신창역');
-  station('예산역','x',2.72,1.45,0,'예산역 승강장'); station('삽교역','x',2.2,1.45,0,'삽교역'); station('홍성역','z',1.6,1.62,0,'홍성역 승강장'); station('광천역','z',1.6,1.88,0,'광천역');
-  station('청소역','z',1.6,2.2,0,'청소역 승강장'); station('대천역','z',1.6,2.5,0,'대천역 승강장'); station('웅천역','z',1.6,2.85,0,'웅천역'); station('판교역','z',1.6,3.15,0,'판교역'); station('서천역','z',1.6,3.5,0,'서천역'); station('장항역','z',1.6,3.82,0,'장항역');
+  station('예산역','x',2.72,1.45,0,'예산역 승강장'); station('삽교역','x',2.2,1.45,0,'삽교역'); station('홍성역','z',1.64,1.62,0,'홍성역 승강장'); station('광천역','z',1.64,1.88,0,'광천역');
+  station('청소역','z',1.64,2.2,0,'청소역 승강장'); station('대천역','z',1.64,2.5,0,'대천역 승강장'); station('웅천역','z',1.64,2.85,0,'웅천역'); station('판교역','z',1.64,3.15,0,'판교역'); station('서천역','z',1.64,3.5,0,'서천역'); station('장항역','z',1.64,3.82,0,'장항역');
   station('합덕역','z',2.45,.75,0,'합덕역'); station('인주역','x',3.08,.3,0,'인주역'); station('계룡역','x',4.32,2.2,0,'계룡역 승강장'); station('연산역','x',3.82,3.05,0,'연산역'); station('논산역','z',3.35,3.4,0,'논산역'); station('강경역','z',3.35,3.8,0,'강경역'); }
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
   const [cx,cz]=CO[reg]; let x=cx+Math.round(WIDE?lx*KX:lx),z=cz+Math.round(WIDE?lz*KZ:lz),h,t;
@@ -2065,8 +2064,8 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:car4,ax:'z',dir:-1,base:668,span:640,sp:2.4,off:0,fix:445.2,len:3},{o:car5,ax:'z',dir:-1,base:514,span:486,sp:2.8,off:120,fix:672.2,len:3},
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 // six trains shuttle along the longest runs of the new lines (map units; a train is 1.9 wide and its track runs down the middle of the deck)
-const TRAINS=[]; { const mk=(o,ax,f,a,b)=>{ o.rotation.y=ax==='x'?0:Math.PI/2; TRAINS.push({o,ax,fix:f-.95,y:RY+.2,f:ax==='x'?u=>a+2+u*(b-a-23):u=>a+21+u*(b-a-23)}); }, X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), cl=()=>{ const o=train.clone(); MV.add(o); return o; };
-  mk(train,'z',X(4.62),Z(.05),Z(2.2)); mk(train2,'z',X(4.05),Z(.05),Z(1.3)); mk(train3,'z',X(1.6),Z(1.45),Z(3.92)); mk(cl(),'x',Z(.7),X(2.9),X(4.62)); mk(cl(),'x',Z(1.45),X(1.6),X(2.9)); mk(cl(),'z',X(2.45),Z(.3),Z(1.45)); }
+const TRAINS=[]; { const mk=(o,ax,f,a,b)=>{ o.rotation.y=ax==='x'?0:Math.PI/2; TRAINS.push({o,ax,fix:f-.95,f:ax==='x'?u=>a+2+u*(b-a-23):u=>a+21+u*(b-a-23)}); }, X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), cl=()=>{ const o=train.clone(); MV.add(o); return o; };
+  mk(train,'z',X(4.62),Z(.05),Z(2.2)); mk(train2,'z',X(4.05),Z(.05),Z(1.3)); mk(train3,'z',X(1.64),Z(1.45),Z(3.92)); mk(cl(),'x',Z(.7),X(2.9),X(4.62)); mk(cl(),'x',Z(1.45),X(1.64),X(2.9)); mk(cl(),'z',X(2.45),Z(.3),Z(1.45)); }
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
 const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
@@ -2109,8 +2108,8 @@ function moveTraffic(dt){
     if(m.ax==='x'){ if(m.dir>0) a[1]+=reach; else a[0]-=reach; } else a[2]-=reach;
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
   for(const m of TRAINS){ const u=pingU(m.t), c=m.f(u), b=m.box, xw=m.ax==='x', o0=xw?b[0]:b[2];
-    if(xw){ m.o.position.set(c,m.y,m.fix); b[0]=c-.9;b[1]=c+19.8;b[2]=m.fix;b[3]=m.fix+1.9; } else { m.o.position.set(m.fix,m.y,c); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=c-19.8;b[3]=c+.9; }
-    const a=m.ahead||(m.ahead=[0,0,0,0]); a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
+    if(xw){ m.o.position.set(c,G+.2,m.fix); b[0]=c-.9;b[1]=c+19.8;b[2]=m.fix;b[3]=m.fix+1.9; } else { m.o.position.set(m.fix,G+.2,c); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=c-19.8;b[3]=c+.9; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-c; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(xw){ if(fwd>0) a[1]+=7; else a[0]-=7; } else if(fwd>0) a[3]+=7; else a[2]-=7; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
   for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
     if(!stop&&!m.f) for(const o of ALLMV){ if(o===m||(m.y||0)!==(o.y||0)) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
@@ -2472,7 +2471,7 @@ document.getElementById('qg').onclick=()=>{ document.getElementById('qz').classL
 document.getElementById('qbk').onclick=()=>{ document.getElementById('qz').classList.remove('quiz'); fitQ(); };
 document.getElementById('qx').onclick=closeQ; document.getElementById('qn').onclick=closeQ;
 { const qz=document.getElementById('qz'); let qzDown=false; qz.addEventListener('pointerdown',e=>{ qzDown=e.target===qz; }); qz.addEventListener('click',e=>{ if(qzDown&&e.target===qz) closeQ(); qzDown=false; }); }
-window.__dbg={get game(){return GAME},RAILS,TOWNS,HWL,TAGE,ROADS,openQ,goTo,mTop,get ride(){return P.ride},TRAINTOP,VY,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
+window.__dbg={get game(){return GAME},RAILS,TOWNS,HWL,TAGE,RLSEG,ROADS,openQ,goTo,mTop,get ride(){return P.ride},TRAINTOP,VY,closeQ,get cur(){return cur},get visited(){return visited},LANES,TRAINS,settle(){ for(let i=0;i<220;i++) updateEnv(.05); },MAPW:MW,MAPH:MH,START:SPOS,P,cam,POI,ground,hits,boxes,studs,PH,STEP,get frame(){return frame}};
 // start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
 updateEnv(0); bakeEnv(); envDirty=0;
 (async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
