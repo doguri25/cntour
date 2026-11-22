@@ -232,7 +232,7 @@ const hemi=new THREE.HemisphereLight(0xffffff,0xe6d8b8,1.25); scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff0d8,2.7);
 sun.position.set(800,634,806); sun.target.position.set(972,0,495);
 sun.castShadow=true; {const ms=Math.min(LITE?2048:4096,renderer.capabilities.maxTextureSize); sun.shadow.mapSize.set(ms,ms);}
-const sc=sun.shadow.camera; sc.left=-1090;sc.right=1090;sc.top=750;sc.bottom=-750;sc.near=20;sc.far=2300;
+const sc=sun.shadow.camera; sc.left=-1340;sc.right=1340;sc.top=900;sc.bottom=-900;sc.near=20;sc.far=2900;
 sun.shadow.bias=-0.0008; sun.shadow.normalBias=0.6;
 scene.add(sun,sun.target);
 
@@ -241,7 +241,7 @@ const C={green:0x4fb04a,dgreen:0x2f7d3b,lime:0xa6d04a,sand:0xe8cf8f,tan:0xd2b27a
   pink:0xf4a3b8,teal:0x2bb3a6,purple:0x8a63c9,cream:0xf3e6c4,road:0x3d4249,stone:0xc9c4b6,roof:0x3b4450,glass:0x8fd0f0,rice:0xd9cf4e,wood:0xa8743d,
   thatch:0xd9b25a,bronze:0x6e5a3c,bamboo:0x74c043,gim:0x1c3a2c,grass:0xe9dfb8};
 
-const HW=270, HH=172, START=[677,344];
+const HW=270, HH=172, START=[677,344];   // START is moved to the middle of the new map once the tiles have grown
 const POI=[
  {n:'홍주읍성',t:[146,63],r:5,l:[146,8,60],d:'조선 시대 홍주목을 지키던 돌성이에요. 지금도 남은 성벽을 따라 걷는 길이 있어요.'},
  {n:'조양문',t:[166,57.5],r:5,l:[166,12.5,50.5],d:'홍주읍성의 동쪽 문이에요. 지금은 도로 한가운데에 우뚝 서서 홍성 읍내의 얼굴 노릇을 해요.'},
@@ -317,11 +317,16 @@ const POI=[
 ].map(p=>(p.c='청양군',p.t[0]+=270,p.l[0]+=270,p.t[1]+=344,p.l[2]+=344,p)));
 POI.forEach(p=>{ p.t[0]+=270; p.l[0]+=270; });   // the whole map moved one column east when Taean was added
 // ---------- block collector
-const MAPW=1350,MAPH=688;
+const NW=330,NH=210, MAPW=5*NW,MAPH=4*NH;   // tile size; the regions below were written for 270x172 tiles and are spread onto these
 const boxes=[],studs=[]; let OX=0,OZ=0,BX=0,BZ=0,SX=0; const WATER=new Set(),LAKES=[];
-function lake(x,z,w,d){ LAKES.push([x+BX+SX,z+BZ,w,d]); B(x,G,z,w,.25,d,C.water,{s:false}); WATER.add(boxes.length-1); }
+let REMAP=true;
+// a span on the old grid -> the new grid: things keep their place inside their tile; long things that reach the tile's far edge (roads, rivers, ground) are stretched across the new land
+function mapSpan(a,len,T0,T1){ const i=Math.floor(a/T0+1e-9), a2=i*T1+(a-i*T0); if(len<30) return [a2,len]; const e=a+len, j=Math.floor(e/T0+1e-9), re=e-j*T0; return [a2,(re>T0-3.5?(j+1)*T1:j*T1+re)-a2]; }
+const fX=x=>{ const i=Math.floor(x/270+1e-9); return i*NW+(x-i*270); }, fZ=z=>{ const i=Math.floor(z/172+1e-9); return i*NH+(z-i*172); };
+const mapRect=r=>{ if(!REMAP) return r; const a=mapSpan(r[0],r[2],270,NW), b=mapSpan(r[1],r[3],172,NH); return [a[0],b[0],a[1],b[1]]; };
+function lake(x,z,w,d){ LAKES.push(mapRect([x+BX+SX,z+BZ,w,d])); B(x,G,z,w,.25,d,C.water,{s:false}); WATER.add(boxes.length-1); }
 function B(x,y,z,w,h,d,c,o={}){
-  x+=OX+BX+SX; z+=OZ+BZ; boxes.push([x,y,z,w,h,d,c]);
+  x+=OX+BX+SX; z+=OZ+BZ; if(REMAP){ [x,w]=mapSpan(x,w,270,NW); [z,d]=mapSpan(z,d,172,NH); } boxes.push([x,y,z,w,h,d,c]);
   if(o.s!==false){ const nx=Math.floor(w+1e-6),nz=Math.floor(d+1e-6),ox=(w-nx)/2,oz=(d-nz)/2;
     for(let i=0;i<nx;i++)for(let j=0;j<nz;j++)studs.push([x+ox+i+.5,y+h,z+oz+j+.5,c]); }
 }
@@ -333,7 +338,7 @@ const G=1.2;
 
 // ---------- base, sea, land (smooth ground)
 // ---------- eight region tiles laid out roughly as on the real map
-const TW=270,TH=172;
+let TW=270,TH=172;
 const CO={'태안군':[0,0],'서산시':[270,0],'당진시':[540,0],'아산시':[810,0],'천안시':[1080,0],'홍성군':[270,172],'예산군':[540,172],'보령시':[270,344],'청양군':[540,344],'공주시':[810,344],'계룡시':[1080,344],'서천군':[270,516],'부여군':[540,516],'논산시':[810,516],'금산군':[1080,516]};
 const WEST=new Set(['태안군','서산시','홍성군','보령시','서천군']),NORTH=new Set(['태안군','서산시','당진시','아산시']);
 const nameAt=(x,z)=>Object.keys(CO).find(k=>CO[k][0]===x&&CO[k][1]===z), WS=(x,z)=>WEST.has(nameAt(x,z)), NS=(x,z)=>NORTH.has(nameAt(x,z));
@@ -344,8 +349,6 @@ for(const [tx,tz] of TILES){ const c0=WS(tx,tz),r0=NS(tx,tz),lx=tx+(c0?27:0),lz=
   if(c0){ sea(tx,tz,27,TH); for(let z=lz;z<tz+TH;z+=5){ const o=Math.floor(rnd()*3); T(tx+24-o,0,z,3+o,1.0,5,C.sand); if(rnd()<.5) T(tx+27,G,z,2,0.2,5,C.sand); } }
   if(r0){ sea(lx,tz,tx+TW-lx,22); for(let x=lx;x<tx+TW;x+=5){ const o=Math.floor(rnd()*3); T(x,0,tz+19-o,5,1.0,3+o,C.sand); } }
   for(let i=0;i<330;i++) T(lx+1+Math.floor(rnd()*(tx+TW-lx-4)),G,lz+1+Math.floor(rnd()*(tz+TH-lz-4)),2,0.05,2,rnd()<.5?0x5ab955:0x47a544);
-  if(hasTile(tx+TW,tz)) T(tx+TW-.2,G,lz,.4,.1,tz+TH-lz,C.yellow);
-  if(hasTile(tx,tz+TH)) T(lx,G,tz+TH-.2,tx+TW-lx,.1,.4,C.yellow);
 }
 // open sea south of Taean, and bare land where Daejeon lies (terrain only, no places)
 const SEAT=[[0,172],[0,344],[0,516]], EXTRA=[[810,172],[1080,172]];
@@ -353,7 +356,6 @@ for(const [tx,tz] of SEAT){ T(tx,-3,tz,TW,3,TH,C.black); T(tx,0,tz,TW,.8,TH,C.wa
   for(let i=0;i<260;i++){ rnd();rnd();rnd();rnd(); } }
 for(const [tx,tz] of EXTRA){ T(tx,-3,tz,TW,3,TH,C.black); T(tx,0,tz,TW,G,TH,C.green);
   for(let i=0;i<330;i++) T(tx+1+Math.floor(rnd()*(TW-4)),G,tz+1+Math.floor(rnd()*(TH-4)),2,0.05,2,rnd()<.5?0x5ab955:0x47a544); }
-T(810,G,171.8,540,.1,.4,C.yellow); T(810,G,343.8,540,.1,.4,C.yellow); T(809.8,G,172,.4,.1,172,C.yellow);
 const NG=boxes.length; SX=270;   // regions written before Taean existed are shifted one column east
 
 
@@ -362,7 +364,7 @@ let seed2=99; const rnd2=()=>{seed2=(seed2*1664525+1013904223)>>>0;return seed2/
 function tree(x,z,s=1,lite){ const r=rnd2(); let c1=s?C.dgreen:C.green,c2=s?C.green:C.lime,c3=c2;
   if(r<.11){ c1=0xd9482b; c2=0xf08a24; c3=0xf7c92b; } else if(r<.21){ c1=0xf08a24; c2=0xf7c92b; c3=0xf7c92b; } else if(r<.29){ c1=0xf7c92b; c2=0xe9d85a; c3=0xf3e27a; }
   else if(r<.34){ c1=0xb5312b; c2=0xd9482b; c3=0xf08a24; } else if(r<.38){ c1=0xf4a3b8; c2=0xf9c6d3; c3=0xffffff; } else if(r<.48){ c1=0x7fb93e; c2=C.lime; c3=0xf7c92b; }
-  T(x+1,G,z+1,1,2.0,1,C.brown); B(x,G+2.0,z,3,1.2,3,c1,{s:!lite}); B(x+.5,G+3.2,z+.5,2,1.0,2,c2,{s:!lite}); B(x+1,G+4.2,z+1,1,.8,1,c3); }
+  T(x+1,G,z+1,1,2.4,1,C.brown); B(x,G+2.4,z,3,1.2,3,c1,{s:!lite}); B(x+.5,G+3.6,z+.5,2,1.0,2,c2,{s:!lite}); B(x+1,G+4.6,z+1,1,.8,1,c3); }
 function pine(x,y,z){ T(x+.5,y,z+.5,1,0.8,1,C.brown); B(x,y+.8,z,2,0.8,2,C.dgreen); B(x+.5,y+1.6,z+.5,1,1.0,1,C.dgreen); }
 function fig(x,z,c,y=G){ T(x,y,z,.6,.6,.45,0x27407a); T(x-.05,y+.6,z-.03,.7,.65,.5,c); B(x+.03,y+1.25,z-.02,.54,.5,.5,C.yellow); }
 function statue(x,y,z){ T(x,y,z,.7,.8,.5,C.bronze); T(x-.1,y+.8,z-.05,.9,.9,.6,C.bronze); T(x+.05,y+1.7,z,.6,.6,.5,C.bronze); }
@@ -409,8 +411,8 @@ function mountain(x0,z0,nx,nz,peaks,kind){
   }
 }
 const ROADS=[];
-function roadEW(x,z,len){ ROADS.push([x+BX+SX,z+BZ,len,4]); T(x,G,z,len,.3,4,C.road); for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }
-function roadNS(x,z,len){ ROADS.push([x+BX+SX,z+BZ,4,len]); T(x,G,z,4,.3,len,C.road); for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }
+function roadEW(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,len,4])); T(x,G,z,len,.3,4,C.road); for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }
+function roadNS(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,4,len])); T(x,G,z,4,.3,len,C.road); for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }
 function railNS(x,z,len){ T(x,G,z,2.6,.2,len,C.gray); for(let i=z+.3;i<z+len;i+=1.2) T(x+.2,G+.2,i,2.2,.1,.4,C.brown); T(x+.6,G+.3,z,.18,.12,len,C.dgray); T(x+1.8,G+.3,z,.18,.12,len,C.dgray); }
 function railEW(x,z,len){ T(x,G,z,len,.2,2.6,C.gray); for(let i=x+.3;i<x+len;i+=1.2) T(i,G+.2,z+.2,.4,.1,2.2,C.brown); T(x,G+.3,z+.6,len,.12,.18,C.dgray); T(x,G+.3,z+1.8,len,.12,.18,C.dgray); }
 
@@ -832,7 +834,7 @@ town(110,100,160,118,4); town(110,72,150,88,3); town(196,150,222,166,2);
 // ================= DANGJIN-SI (north) =================
 BX=HW; BZ=0;
 roadEW(0,92,270); lake(238,64,32,58);
-town(96,58,126,84,4); { const b0=boxes.length,s0=studs.length,onRail=v=>v[0]>BX+SX+151.2&&v[0]<BX+SX+159.2; town(140,98,166,112,3);   // same random draws as before, minus the row of houses that stood on the railway
+town(96,58,126,84,4); { const b0=boxes.length,s0=studs.length,onRail=v=>v[0]>fX(BX+SX+151.2)&&v[0]<fX(BX+SX+159.2); town(140,98,166,112,3);   // same random draws as before, minus the row of houses that stood on the railway
   const kb=boxes.slice(b0).filter(v=>!onRail(v)),ks=studs.slice(s0).filter(v=>!onRail(v)); boxes.length=b0; boxes.push(...kb); studs.length=s0; studs.push(...ks); } mountain(20,40,12,10,[[32,50,7,7]],'hill');
 // ================= GONGJU-SI (south-east) =================
 BX=HW*2; BZ=HH*2;
@@ -876,7 +878,7 @@ lake(212,18,8,56); roadEW(0,80,268); roadNS(130,0,170);
 town(108,58,128,76,3); town(136,58,166,76,3);
 // ================= DAEJEON (terrain only: real mountains, streams and Daecheong lake; no places) =================
 BX=810; BZ=172;
-function riv(x,z,w,d){ LAKES.push([x+BX,z+BZ,w,d]); T(x,G,z,w,.25,d,C.water); }   // shallow, can be waded
+function riv(x,z,w,d){ LAKES.push(mapRect([x+BX,z+BZ,w,d])); T(x,G,z,w,.25,d,C.water); }   // shallow, can be waded
 riv(300,2,236,7);                                                   // Geumgang along the north
 riv(150,130,7,42); riv(150,124,70,7); riv(214,70,7,60); riv(214,64,72,7); riv(280,8,7,62);   // Gapcheon: south-west -> centre -> north
 riv(310,100,7,72); riv(284,94,32,7); riv(284,70,7,30);              // Yudeungcheon
@@ -896,9 +898,20 @@ B(262,G,84,12,2.8,4,C.white); B(261.6,G+2.8,83.6,12.8,.5,4.8,C.blue); T(260,G,88
 for(let i=0;i<8;i++) B(300,G+i*1.2,40,2,1.2,2,i%2?C.lgray:C.white,{s:false}); B(298.5,G+9.6,38.5,5,.6,5,C.lgray,{s:false}); B(299.5,G+10.2,39.5,3,1.6,3,C.orange,{s:false}); T(300.8,G+11.8,40.8,.4,4,.4,C.lgray);   // expo tower
 town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
 BX=0; BZ=0;
+// ---------- the tiles grow: everything above was laid out on 270x172 tiles; from here on all coordinates are on the new, larger grid
+REMAP=false; TW=NW; TH=NH;
+for(const t of TILES.concat(SEAT,EXTRA)){ t[0]=t[0]/270*NW; t[1]=t[1]/172*NH; }
+for(const p of POI){ p.t=[fX(p.t[0]),fZ(p.t[1])]; if(p.l) p.l=[fX(p.l[0]),p.l[1],fZ(p.l[2])]; }
+{ const any=(x,z)=>hasTile(x,z)||EXTRA.some(t=>t[0]===x&&t[1]===z);   // borders between neighbours, and grass patches on the new land
+  for(const [tx,tz] of TILES.concat(EXTRA)){ const c0=WS(tx,tz),r0=NS(tx,tz),lx=tx+(c0?27:0),lz=tz+(r0?22:0);
+    if(any(tx+TW,tz)) T(tx+TW-.2,G,lz,.4,.1,tz+TH-lz,C.yellow); if(any(tx,tz+TH)) T(lx,G,tz+TH-.2,tx+TW-lx,.1,.4,C.yellow);
+    for(let i=0;i<130;i++){ const e=rnd2()<.6; T(e?tx+270+rnd2()*(TW-273):lx+1+rnd2()*(tx+TW-lx-4),G,e?lz+1+rnd2()*(tz+TH-lz-4):tz+172+rnd2()*(TH-175),2,0.05,2,rnd2()<.5?0x5ab955:0x47a544); } } }
 // map-centre plaza (start)
+START[0]=MAPW/2; START[1]=2*NH-10;
+at(START[0]-677,START[1]-344,()=>{
 T(674.5,G,338,10,.12,12,C.cream);
 T(682.4,G,347.4,.5,4.4,.5,C.dgray); T(680.6,G+3.4,347.5,1.7,.7,.3,C.blue); T(683,G+3.4,347.5,1.7,.7,.3,C.teal); T(680.6,G+2.4,347.5,1.7,.7,.3,C.orange); T(683,G+2.4,347.5,1.7,.7,.3,C.purple);
+});
 
 // ---------- free-land bookkeeping
 const occ=new Uint8Array(MAPW*MAPH);
@@ -1501,23 +1514,77 @@ function apt2(x,z,h,c){ B(x,G,z,4,h,4,pick([C.white,C.cream,0xeef1f4])); T(x+1.3
   for(const wx of [.35,2.95]){ T(x+wx,G+.6,z+4,.7,h-1.2,.08,C.navy); T(x+wx,G+.6,z-.08,.7,h-1.2,.08,C.navy); } T(x-.08,G+.6,z+1.4,.08,h-1.2,1.2,C.navy); T(x+4,G+.6,z+1.4,.08,h-1.2,1.2,C.navy);
   B(x+1,G+h,z+1,2,.8,2,c); }
 function tower(x,z,h){ const c=pick([C.glass,0x7fb8e6,0x9ad7d0,0xb8c7e6]); B(x,G,z,5,h,5,c,{s:false}); for(let y=1.2;y<h;y+=2.4) T(x-.06,G+y,z-.06,5.12,.25,5.12,C.white); B(x-.2,G+h,z-.2,5.4,.5,5.4,C.white,{s:false}); B(x+1.5,G+h+.5,z+1.5,2,1.2,2,C.lgray); }
-const CITY=[[810,0,1080,172,130,16],[1080,0,1350,172,180,26],[810,172,1080,344,150,24],[1080,172,1350,344,230,46]];   // x0,z0,x1,z1, apartments, towers
+const CITY=[[810,0,1080,172,130,16],[1080,0,1350,172,180,26],[810,172,1080,344,150,24],[1080,172,1350,344,230,46]].map(c=>[fX(c[0]),fZ(c[1]),fX(c[2]),fZ(c[3]),Math.round(c[4]*1.3),Math.round(c[5]*1.2)]);   // x0,z0,x1,z1, apartments, towers
 for(const [x0,z0,x1,z1,na,nt] of CITY){
   for(let n=0,k=0;n<nt*400&&k<nt;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,7,7)) continue; take(x-1,z-1,7,7); k++; tower(x,z,1.2*(6+Math.floor(rnd()*10))); }
   for(let n=0,k=0;n<na*300&&k<na;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
     apt2(x,z,1.2*(8+Math.floor(rnd()*9)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow,C.purple,C.red])); }
 }
 // smaller cities: a few apartment blocks in Seosan and Dangjin, and hanok houses in Buyeo and Gongju
-for(const [x0,z0,x1,z1,na] of [[366,56,446,116,12],[632,44,712,104,12]]){
+for(const [x0,z0,x1,z1,na] of [[fX(366),56,fX(446),116,12],[fX(632),44,fX(712),104,12]]){
   for(let n=0,k=0;n<na*400&&k<na;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
     apt2(x,z,1.2*(6+Math.floor(rnd()*6)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow])); } }
-for(const [x0,z0,x1,z1,nh] of [[630,556,720,626,12],[860,394,950,454,12]]){
+for(const [x0,z0,x1,z1,nh] of [[fX(630),fZ(556),fX(720),fZ(626),12],[fX(860),fZ(394),fX(950),fZ(454),12]]){
   for(let n=0,k=0;n<nh*400&&k<nh;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
     hanok(x,z,6+2*Math.floor(rnd()*2),4,2.2); T(x-.6,G,z+4.6,7,.8,.4,C.stone); if(rnd()<.5) pine(x+7.2,G,z+2); } }
-const inCity=(x,z)=>x>=808&&z<346;
+const inCity=(x,z)=>x>=3*NW-2&&z<2*NH+2;
+// ---------- what each city and county is known for, spread over its land (most of it lands on the new ground east and south of the old tile)
+function ctree(x,z,c1,c2,dot){ T(x+1,G,z+1,1,2.4,1,C.brown); B(x,G+2.4,z,3,1.2,3,c1,{s:false}); B(x+.5,G+3.6,z+.5,2,1.0,2,c2,{s:false});
+  if(dot){ T(x+.5,G+2.7,z-.12,.5,.5,.14,dot); T(x+1.9,G+2.9,z+2.98,.5,.5,.14,dot); T(x-.12,G+2.8,z+1.6,.14,.5,.5,dot); T(x+2.98,G+2.7,z+.6,.14,.5,.5,dot); T(x+1.2,G+4.6,z+1.2,.5,.3,.5,dot); } }
+const bed=(x,z,w,d)=>T(x,G,z,w,.3,d,0x9a6a44);
+const DECO={
+  tulip:[6,5,(x,z)=>{ bed(x,z,6,5); const cs=[C.red,C.yellow,C.pink,C.purple]; for(let i=0;i<5;i++)for(let j=0;j<4;j++){ T(x+.75+i*1.1,G+.3,z+.75+j*1.1,.2,.4,.2,0x3f9a45); B(x+.5+i*1.1,G+.7,z+.5+j*1.1,.7,.5,.7,cs[j],{s:false}); } }],
+  salt:[7,7,(x,z)=>{ T(x,G,z,7,.15,7,0xd9d2c4); for(let i=0;i<3;i++)for(let j=0;j<3;j++) T(x+.4+i*2.2,G+.15,z+.4+j*2.2,1.8,.08,1.8,(i+j)%2?0xf4f6f8:0xc7dbe6); B(x+5.6,G+.23,z+5.6,1,.7,1,C.white,{s:false}); T(x+5.9,G+.93,z+5.9,.4,.4,.4,C.white); }],
+  pines:[5,4,(x,z)=>{ pine(x,G,z); pine(x+2.8,G,z+1.6); pine(x+.6,G,z+2); }],
+  boat:[6,3,(x,z)=>{ const c=pick([C.blue,C.red,C.teal,C.orange]); T(x,G,z,6,.12,3,C.sand); B(x+.6,G+.12,z+.8,3.8,.7,1.4,c,{s:false}); T(x+4.4,G+.12,z+1.05,.9,.7,.9,c); T(x+1,G+.82,z+1,1.6,.6,1,C.white); T(x+2.9,G+.82,z+1.4,.2,1.8,.2,C.wood); }],
+  garlic:[6,5,(x,z)=>{ bed(x,z,6,5); for(let i=0;i<5;i++)for(let j=0;j<4;j++){ T(x+.6+i*1.1,G+.3,z+.6+j*1.1,.45,.22,.45,C.white); T(x+.72+i*1.1,G+.52,z+.72+j*1.1,.2,.7,.2,0xbfe08f); } }],
+  pasture:[8,6,(x,z)=>{ T(x,G,z,8,.1,6,0x8fd66a); for(let i=0;i<=4;i++){ T(x+i*1.95,G,z,.2,.9,.2,C.white); T(x+i*1.95,G,z+5.8,.2,.9,.2,C.white); } T(x,G+.6,z+.05,8,.12,.1,C.white); T(x,G+.6,z+5.85,8,.12,.1,C.white); cow(x+1.2,z+1.4); cow(x+4.4,z+3.4); }],
+  paddy:[8,6,(x,z)=>{ T(x,G,z,8,.25,6,0xb9a26a); T(x+.4,G+.25,z+.4,7.2,.06,5.2,0x8fc9dc); for(let i=0;i<8;i++)for(let j=0;j<5;j++) T(x+.8+i*.85,G+.3,z+.8+j*1,.18,.55,.18,0x58b04a); }],
+  steel:[9,7,(x,z)=>{ B(x,G,z+2.2,6,3,4.4,C.lgray,{s:false}); T(x-.2,G+3,z+2,6.4,.4,4.8,C.gray); for(let i=0;i<3;i++) T(x+.6+i*1.8,G+.8,z+6.6,1,1.2,.08,C.navy); for(const cx of [6.6,7.9]) for(let i=0;i<6;i++) T(x+cx,G+i*1.2,z+.6,1,1.2,1,i%2?C.white:C.red); B(x+6.6,G,z+3.2,2,.9,2,0x7a4a34,{s:false}); }],
+  silo:[5,4,(x,z)=>{ for(const dx of [0,2.6]){ B(x+dx,G,z,2,4.2,2,C.white,{s:false}); T(x+dx+.2,G+4.2,z+.2,1.6,.5,1.6,C.lgray); } T(x+2,G+3.2,z+.8,.6,.3,.4,C.gray); T(x+.4,G,z+2.4,4,.3,1.2,0xe9d27a); }],
+  spa:[5,5,(x,z)=>{ T(x,G,z,5,.5,5,C.stone); T(x+.6,G+.5,z+.6,3.8,.1,3.8,0x9fd8ef); T(x+1.4,G+1.3,z+1.6,.6,.6,.6,C.white); T(x+2.6,G+2.1,z+2.4,.8,.8,.8,C.white); T(x+2,G+3.2,z+1.8,.5,.5,.5,C.white); }],
+  ginkgo:[3,3,(x,z)=>ctree(x,z,0xf2c230,0xf7d95a)],
+  pear:[3,3,(x,z)=>ctree(x,z,0xa9d98f,0xffffff,0xe6d072)],
+  walnut:[3,3,(x,z)=>ctree(x,z,0x2f7d46,0x3f9a57,0x9a6a3c)],
+  apple:[3,3,(x,z)=>ctree(x,z,0x4fa64a,C.lime,C.red)],
+  chestnut:[3,3,(x,z)=>ctree(x,z,0x5a8f3c,0x86b354,0x7a4a24)],
+  jujube:[3,3,(x,z)=>ctree(x,z,0x6fae4a,0x9bcf73,0xa8322a)],
+  willow:[3,3,(x,z)=>{ T(x+1,G,z+1,1,2.6,1,C.brown); B(x,G+2.6,z,3,1,3,0xa6d96a,{s:false}); for(const [dx,dz] of [[0,0],[2.7,0],[0,2.7],[2.7,2.7],[1.3,-.05],[1.3,2.75]]) T(x+dx,G+.9,z+dz,.3,1.7,.3,0x8fcf5a); }],
+  grape:[6,4,(x,z)=>{ for(const [dx,dz] of [[0,0],[5.7,0],[0,3.7],[5.7,3.7]]) T(x+dx,G,z+dz,.3,1.9,.3,C.wood); T(x,G+1.9,z,6,.15,4,0x6f9a4a); for(let i=0;i<5;i++)for(let j=0;j<3;j++) T(x+.6+i*1.1,G+1.3,z+.6+j*1.3,.5,.6,.5,0x6b3fa0); }],
+  stork:[3,3,(x,z)=>{ T(x+1.3,G,z+1.3,.4,6,.4,C.wood); B(x+.6,G+6,z+.6,1.8,.4,1.8,C.tan,{s:false}); T(x+1.1,G+6.4,z+1.1,.8,.9,.5,C.white); T(x+1.1,G+6.7,z+1.6,.3,.3,.35,C.black); T(x+1.25,G+7.3,z+1.0,.3,.3,.3,C.white); T(x+1.3,G+7.35,z+.6,.2,.15,.45,C.red); }],
+  coal:[6,4,(x,z)=>{ B(x,G,z+.4,3,.8,3,C.black,{s:false}); B(x+.5,G+.8,z+.9,2,.7,2,C.black,{s:false}); T(x+3.4,G,z+1.4,2.6,.12,.2,C.dgray); T(x+3.4,G,z+2.4,2.6,.12,.2,C.dgray); T(x+3.8,G+.4,z+1.3,1.8,.9,1.4,C.dgray); T(x+4,G+1.3,z+1.5,1.4,.3,1,C.black); }],
+  pepper:[6,5,(x,z)=>{ bed(x,z,6,5); for(let i=0;i<5;i++)for(let j=0;j<4;j++){ T(x+.6+i*1.1,G+.3,z+.6+j*1.1,.45,.75,.45,0x3f9a45); T(x+.7+i*1.1,G+1.05,z+.7+j*1.1,.25,.35,.25,(i+j)%3?C.red:0x58b04a); } }],
+  goji:[6,5,(x,z)=>{ for(let i=0;i<3;i++)for(let j=0;j<2;j++){ const bx=x+.3+i*2,bz=z+.5+j*2.4; B(bx,G,bz,1.3,1,1.3,0x4f9a45,{s:false}); T(bx+.2,G+1,bz+.2,.3,.3,.3,0xe4572e); T(bx+.8,G+.6,bz-.1,.3,.3,.12,0xe4572e); T(bx-.1,G+.4,bz+.7,.12,.3,.3,0xe4572e); } }],
+  totem:[4,3,(x,z)=>{ T(x+.5,G,z+1,.7,3.4,.7,C.wood); T(x+.35,G+3.4,z+.85,1,.9,1,0xe8c9a0); T(x+.25,G+4.3,z+.75,1.2,.35,1.2,C.black); T(x+.6,G+3.6,z+1.84,.5,.2,.05,C.red); T(x+2.5,G,z+1,.7,2.8,.7,C.wood); T(x+2.35,G+2.8,z+.85,1,.9,1,0xe8c9a0); T(x+2.25,G+3.7,z+.75,1.2,.35,1.2,C.red); }],
+  hanok:[7,5,(x,z)=>{ hanok(x+.5,z+.5,5,3,2); T(x,G,z+4.2,6.4,.7,.4,C.stone); }],
+  mound:[6,6,(x,z)=>{ B(x,G,z,6,1,5.4,C.green,{s:false}); B(x+1,G+1,z+.8,4,.9,3.8,C.green,{s:false}); B(x+2,G+1.9,z+1.7,2,.6,2,C.green,{s:false}); T(x+2.5,G,z+5.5,1,.6,.4,C.stone); }],
+  tank:[5,3,(x,z)=>{ T(x,G,z,4.2,.5,.6,C.dgray); T(x,G,z+2,4.2,.5,.6,C.dgray); T(x+.1,G+.4,z+.2,4,.9,2.2,0x4d6b3c); B(x+1,G+1.3,z+.6,1.8,.7,1.4,0x44603a,{s:false}); T(x+2.8,G+1.5,z+1.15,2,.25,.3,C.dgray); }],
+  flags:[5,2,(x,z)=>{ [C.red,C.blue,C.white].forEach((c,i)=>{ T(x+.3+i*1.7,G,z+.8,.2,5,.2,C.white); T(x+.5+i*1.7,G+4,z+.86,1.2,.8,.08,c); }); T(x,G,z+.4,5,.2,1,C.lgray); }],
+  barracks:[9,4,(x,z)=>{ B(x,G,z,9,1.8,3.4,0xd8d3bf,{s:false}); T(x-.2,G+1.8,z-.2,9.4,.5,3.8,0x4d6b3c); for(let i=0;i<4;i++) T(x+.8+i*2.2,G+.6,z+3.4,1,.8,.06,C.navy); T(x+4,G,z+3.4,1,1.5,.06,C.brown); }],
+  ginseng:[7,5,(x,z)=>{ for(let r=0;r<3;r++){ const zz=z+.3+r*1.6; T(x+.3,G,zz+.4,6.4,.4,.5,0x3f8f45); T(x,G,zz,.15,1.3,.15,C.wood); T(x+6.85,G,zz,.15,1.3,.15,C.wood); T(x,G+1.3,zz-.1,7,.1,1.25,0x24282c); T(x+1.5,G+.4,zz+.5,.2,.35,.2,C.red); T(x+4.4,G+.4,zz+.5,.2,.35,.2,C.red); } }],
+  reed:[5,5,(x,z)=>{ T(x,G,z,5,.15,5,0x9fd0c8); for(let i=0;i<24;i++) T(x+.2+rnd()*4.5,G+.15,z+.2+rnd()*4.5,.2,1.4+rnd()*1.2,.2,rnd()<.5?C.tan:0xefe2bd); }],
+  ramie:[6,3,(x,z)=>{ T(x+.2,G,z+1.3,.25,2.6,.25,C.wood); T(x+5.5,G,z+1.3,.25,2.6,.25,C.wood); T(x+.2,G+2.5,z+1.38,5.55,.1,.1,C.wood); for(let i=0;i<4;i++) T(x+.7+i*1.2,G+.9,z+1.38,1,1.6,.08,i%2?0xf7f3e6:C.white); }],
+  lotus:[6,5,(x,z)=>{ T(x,G,z,6,.2,5,0x7fbad0); T(x-.2,G,z-.2,6.4,.3,.2,C.stone); for(const [dx,dz,fl] of [[.6,.7,1],[2.4,1.2,0],[4.4,.8,1],[1.3,3,0],[3.2,3.4,1],[4.8,2.8,0]]){ T(x+dx,G+.2,z+dz,.9,.08,.9,0x4f9a45); if(fl) B(x+dx+.2,G+.28,z+dz+.2,.5,.45,.5,C.pink,{s:false}); } }],
+  lantern:[2,2,(x,z)=>{ T(x+.5,G,z+.5,1,.3,1,C.stone); T(x+.75,G+.3,z+.75,.5,1.2,.5,C.stone); B(x+.4,G+1.5,z+.4,1.2,.6,1.2,0xe9e2c8,{s:false}); T(x+.2,G+2.1,z+.2,1.6,.3,1.6,C.stone); T(x+.7,G+2.4,z+.7,.6,.4,.6,C.stone); }],
+  berry:[7,5,(x,z)=>{ for(let i=0;i<2;i++){ B(x,G,z+i*2.6,7,.9,2,0xf4f6f8,{s:false}); T(x+.3,G+.9,z+.3+i*2.6,6.4,.4,1.4,C.white); T(x+7,G+.2,z+.8+i*2.6,.06,.5,.4,C.red); } }],
+};
+const THEME={'태안군':[['tulip',16],['salt',9],['pines',22],['boat',9]],'서산시':[['garlic',18],['pasture',11],['paddy',16]],'당진시':[['paddy',20],['steel',6],['silo',9]],
+  '아산시':[['spa',9],['ginkgo',34],['pear',22]],'천안시':[['walnut',32],['willow',18],['grape',13]],'홍성군':[['pasture',6]],'예산군':[['apple',38],['stork',9],['paddy',7]],
+  '보령시':[['coal',9],['ginkgo',18],['boat',6],['pines',12]],'청양군':[['pepper',20],['goji',15],['totem',11]],'공주시':[['chestnut',34],['hanok',11],['mound',7]],
+  '계룡시':[['tank',7],['flags',9],['barracks',9],['pines',12]],'금산군':[['ginseng',34],['chestnut',10]],'서천군':[['reed',18],['ramie',12],['pines',16]],
+  '부여군':[['lotus',13],['lantern',16],['hanok',9],['chestnut',10]],'논산시':[['berry',20],['jujube',22],['barracks',6]]};
+for(const [reg,list] of Object.entries(THEME)){ const [cx,cz]=CO[reg];
+  for(const [kind,cnt] of list){ const [w,d,fn]=DECO[kind];
+    for(let n=0,k=0;n<cnt*260&&k<cnt;n++){ const x=cx+3+Math.floor(rnd()*(TW-6-w)), z=cz+3+Math.floor(rnd()*(TH-6-d)); if(!free(x-1,z-1,w+2,d+2)) continue; take(x-1,z-1,w+2,d+2); k++; fn(x,z); } } }
+// the ordinary scatter of fields and trees also follows the region: most of a region's trees and fields are its own kind
+const SIG={'태안군':[['pines','pines','pines'],['salt','tulip']],'서산시':[['pines'],['garlic','paddy']],'당진시':[[],['paddy','paddy','silo']],'아산시':[['ginkgo','ginkgo','pear'],['paddy','spa']],
+  '천안시':[['walnut','willow'],['grape']],'예산군':[['apple'],['paddy']],'보령시':[['ginkgo','pines'],['paddy','coal']],'청양군':[['chestnut'],['pepper','goji']],'공주시':[['chestnut'],['paddy','mound']],
+  '계룡시':[['pines'],['flags','tank']],'금산군':[['chestnut'],['ginseng']],'서천군':[['pines'],['reed','ramie']],'부여군':[['jujube','lantern'],['lotus']],'논산시':[['jujube'],['berry']]};
+const REGS=Object.entries(CO), regOf=(x,z)=>{ for(const [n,[cx,cz]] of REGS) if(x>=cx&&x<cx+TW&&z>=cz&&z<cz+TH) return n; return ''; };
+
 // ---------- ambient life: hamlets, greenhouses, ponds, people, boats, sea islands
 function rndLand(){ return [Math.floor(rnd()*MAPW),Math.floor(rnd()*MAPH)]; }
-const inDJ=(x,z)=>x>=806&&z>=170&&z<346;
+const inDJ=(x,z)=>x>=3*NW-4&&z>=NH-2&&z<2*NH+2;
 for(let n=0,k=0;n<30000&&k<170;n++){ const [x,z]=rndLand(); if(inDJ(x,z)||!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
   house(x,z,3,3,1.2*(1+Math.floor(rnd()*2)),pick(pal),pick([C.red,C.blue,C.roof,C.orange,C.dgreen])); if(rnd()<.7) house(x+5,z+.5,3,3,2.4,pick(pal),rnd()<.5?pick([C.red,C.roof,C.blue]):0); else thatched(x+5.5,z+1,3,2); if(rnd()<.5) fig(x+3.6,z+4,pick([C.red,C.blue,C.yellow,C.pink,C.teal])); }
 for(let n=0,k=0;n<20000&&k<100;n++){ const [x,z]=rndLand(); if(inDJ(x,z)||!free(x-1,z-1,9,8)) continue; take(x-1,z-1,9,8); k++;
@@ -1528,9 +1595,10 @@ for(let i=0;i<54;i++){ const [tx,tz]=SEAT[i%3], x=tx+12+Math.floor(rnd()*230), z
   if(i%6===5){ T(x,0,z,7,1.4,7,C.tan); T(x+1,1.4,z+1,5,.5,5,C.green); pine(x+1.4,1.9,z+1.4); pine(x+3.6,1.9,z+3); if(i%12===5) lighthouse(x+4.4,z+.6,C.red); }
   else boat(x,z,pick([C.white,C.red,C.blue,C.yellow]),pick([C.white,C.blue,C.red,C.teal])); }
 // ---------- scatter fields and trees on free land
-for(let n=0,k=0;n<40000&&k<760;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(x>=808&&z>=170&&z<344) continue; if(!free(x-1,z-1,8,9)) continue; take(x-1,z-1,8,9); k++;
+for(let n=0,k=0;n<40000&&k<760;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(x>=3*NW-2&&z>=NH-2&&z<2*NH) continue; if(!free(x-1,z-1,8,9)) continue; take(x-1,z-1,8,9); k++;
+  const sg=SIG[regOf(x,z)]; if(sg&&sg[1].length&&rnd()<.75){ DECO[pick(sg[1])][2](x,z); continue; }
   const c=pick([C.rice,C.lime,C.rice,0xc8d85a]); T(x,G,z,6,.4,7,c); for(let r=0;r<6;r++) T(x+.4+r,G+.4,z+.4,.2,.25,6.2,c===C.rice?0xc4b63c:C.green); }
-for(let n=0,k=0;n<140000&&k<5000;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(!free(x,z,3,3)) continue; if(inCity(x,z)&&rnd2()<.72) continue; take(x,z,3,3); k++; tree(x,z,rnd()<.5,true); }
+for(let n=0,k=0;n<140000&&k<5000;n++){ const x=Math.floor(rnd()*MAPW),z=Math.floor(rnd()*MAPH); if(!free(x,z,3,3)) continue; if(inCity(x,z)&&rnd2()<.72) continue; take(x,z,3,3); k++; const sg=SIG[regOf(x,z)]; if(sg&&sg[0].length&&rnd()<.62){ const kd=pick(sg[0]); if(DECO[kd][0]<=3&&DECO[kd][1]<=3) DECO[kd][2](x,z); else if(kd==='pines') pine(x+.4,G,z+.4); else tree(x,z,1,true); } else tree(x,z,rnd()<.5,true); }
 for(let i=0;i<40;i++){ rnd();rnd();rnd(); }
 
 
@@ -1545,7 +1613,7 @@ const SHORE=(()=>{ const W=MAPW,H=MAPH,wat=new Uint8Array(W*H),dist=new Uint8Arr
   const px=new Uint8Array(W*H); for(let k=0;k<W*H;k++) px[k]=dist[k]===255?255:Math.round(Math.max(0,dist[k]-1)/15*255);
   const tx=new THREE.DataTexture(px,W,H,THREE.RedFormat); tx.magFilter=tx.minFilter=THREE.LinearFilter; tx.needsUpdate=true; return tx; })();
 // ---------- the whole world is enlarged 1.2x around the same-sized explorer
-const S=1.728, MW=MAPW*S, MH=MAPH*S;
+const S=1.44, MW=MAPW*S, MH=MAPH*S;
 for(const b of boxes) for(let i=0;i<6;i++) b[i]*=S;
 for(const s of studs){ s[0]*=S; s[1]*=S; s[2]*=S; }
 POI.forEach(p=>{ p.m=[p.t[0],p.t[1]]; p.t=[p.t[0]*S,p.t[1]*S]; p.l=p.l.map(v=>v*S); p.r*=S; });
@@ -1554,7 +1622,7 @@ const SPOS=[START[0]*S,START[1]*S];
 const CS=4,GW=Math.ceil(MW/CS),GH=Math.ceil(MH/CS),grid=Array.from({length:GW*GH},()=>[]);
 boxes.forEach((b,n)=>{ if(b[4]<=.18||b[1]>31) return;
   for(let j=Math.max(0,Math.floor(b[2]/CS));j<=Math.min(GH-1,Math.floor((b[2]+b[5])/CS));j++) for(let i=Math.max(0,Math.floor(b[0]/CS));i<=Math.min(GW-1,Math.floor((b[0]+b[3])/CS));i++) grid[j*GW+i].push(n); });
-const PR=.4,PH=2.66,STEP=.8;
+const PR=.46,PH=3.08,STEP=.66;
 function around(x,z,fn){ const i0=Math.max(0,Math.floor((x-PR)/CS)),i1=Math.min(GW-1,Math.floor((x+PR)/CS)),j0=Math.max(0,Math.floor((z-PR)/CS)),j1=Math.min(GH-1,Math.floor((z+PR)/CS));
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){ const c=grid[j*GW+i]; for(let k=0;k<c.length;k++){ const n=c[k],b=boxes[n];
     if(x+PR>b[0]+.001&&x-PR<b[0]+b[3]-.001&&z+PR>b[2]+.001&&z-PR<b[2]+b[5]-.001) fn(b,n); } } }
@@ -1583,8 +1651,8 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
       .replace('#include <color_fragment>',`#include <color_fragment>
       #ifdef USE_COLOR
       if(abs(vON.y)<0.5 && vWP.y>-0.01){
-        float uu=abs(vON.x)>0.5?vWP.z:vWP.x; vec3 bt=texture2D(uBrick,vec2(uu/3.456,vWP.y/4.1472)).rgb;
-        { float rw=floor(vWP.y/2.0736+0.001); vec2 cid=vec2(floor((uu+mod(rw,2.0)*1.728)/3.456),rw+(abs(vON.x)>0.5?37.0:0.0));
+        float uu=abs(vON.x)>0.5?vWP.z:vWP.x; vec3 bt=texture2D(uBrick,vec2(uu/2.88,vWP.y/3.456)).rgb;
+        { float rw=floor(vWP.y/1.728+0.001); vec2 cid=vec2(floor((uu+mod(rw,2.0)*1.44)/2.88),rw+(abs(vON.x)>0.5?37.0:0.0));
           float h1=fract(sin(dot(cid,vec2(41.3,289.1)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
           float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.92+0.42*h2)*(0.84+0.3*h1),dtl); }
         float fw=max(fwidth(uu),fwidth(vWP.y)), fade=clamp(0.11/(fw+0.001),0.0,1.0);
@@ -1602,7 +1670,7 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
           float band=smoothstep(.1,.0,dp)*(0.5+0.5*sin(dp*90.0-uTime*1.5+o1.b*7.0+o2.r*3.0));
           float crest=smoothstep(.55,.98,o1.b*1.5+o2.b*.7)*smoothstep(.3,.8,dp)*.4*dtl;
           diffuseColor.rgb=mix(wc,vec3(.93,.98,1.),clamp(band*.42*dtl+crest+smoothstep(.03,.0,dp)*.45*mix(.5,1.0,dtl),0.0,1.0));
-        } else { vec2 cid=floor(vWP.xz/3.456); float h1=fract(sin(dot(cid,vec2(12.9898,78.233)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
+        } else { vec2 cid=floor(vWP.xz/2.88); float h1=fract(sin(dot(cid,vec2(12.9898,78.233)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
           float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.97+0.16*h2)*(0.95+0.1*h1),dtl); }
       }
       #endif`)
@@ -1696,14 +1764,14 @@ rb(body,-.24,1.68,.312,.12,.07,.02,0xff9a8b,.01); rb(body,.24,1.68,.312,.12,.07,
 rb(body,0,2.1,-.02,.72,.24,.7,CAPC,.1); rb(body,0,2.02,.4,.6,.07,.3,CAPC,.03); rb(body,0,2.24,-.02,.14,.08,.14,0xffffff,.04);             // cap, brim, button
 body.add(legL,legR,armL,armR);
 const blob=new THREE.Mesh(new THREE.CircleGeometry(.62,20),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false}));
-blob.rotation.x=-Math.PI/2; scene.add(blob); scene.add(player); player.scale.setScalar(1.12);
+blob.rotation.x=-Math.PI/2; scene.add(blob); scene.add(player); player.scale.setScalar(1.3);
 const P={ride:null,x:SPOS[0],z:SPOS[1],y:G*S+.5,vy:0,on:true,face:Math.PI,walk:0};
 
 // ---------- places (t: where to stand, l: label anchor)
 const lbBox=document.getElementById('labels');
 POI.forEach((p,i)=>{ const e=document.createElement('div'); e.className='lb'; e.dataset.i=i; e.textContent=p.n; e.style.display='none'; lbBox.appendChild(e); p.e=e; p.v=false; });
 const CL=Object.entries(CO).map(([n,[x,z]])=>{ const e=document.createElement('div'); e.className='lb big'; e.dataset.c=n; e.textContent=n; e.style.display='none'; lbBox.appendChild(e); return {e,x:(x+TW/2)*1.44,z:(z+TH/2)*1.44}; });
-{ const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.dataset.c='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:1080*1.44,z:258*1.44}); }
+{ const e=document.createElement('div'); e.className='lb big'; e.textContent='대전광역시'; e.dataset.c='대전광역시'; e.style.display='none'; e.style.opacity='.75'; lbBox.appendChild(e); CL.push({e,x:4*NW*S,z:1.5*NH*S}); }
 document.getElementById('tot').textContent=POI.length;
 let illust=null, kindOf=null, ART=new Set(), extraP=null, extraN=0;
 const extra=()=>extraP||(extraP=(v=>Promise.all([import('./quiz.js'+v),import('./photo.js'+v),import('./illust.js'+v),import('./ill/list.js'+v).catch(()=>({ART:[]}))]))(extraN?'?r='+extraN:'').then(([a,b,c,d])=>{ kindOf=c.kindOf; ART=new Set(d.ART); POI.forEach((p,i)=>{ p.q=a.QUIZ[i]; p.w=b.PHOTO[i]; }); illust=c.illust; }).catch(e=>{ extraP=null; extraN++; throw e; }));
@@ -1741,7 +1809,7 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
   mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
 
 // ---------- controls
-const OVER=2860;
+const OVER=2900;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
 const key={}; let jumpQ=false;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
@@ -1792,6 +1860,10 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:car4,ax:'z',dir:-1,base:668,span:640,sp:2.4,off:0,fix:445.2,len:3},{o:car5,ax:'z',dir:-1,base:514,span:486,sp:2.8,off:120,fix:672.2,len:3},
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
+// the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
+for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
+  else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
+for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy]; let n=0;
   const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
   for(const [x,z,w,h] of ROADS){ if(n>=130) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(8,Math.floor(len/70)+1), sp=2.6+((n*7)%5)*.2;
@@ -1841,8 +1913,8 @@ function tryMove(nx,nz){
   P.x=nx; P.z=nz; P.y=y; return true;
 }
 function physics(dt,dx,dz){
-  if(dx||dz){ const sp=12*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
-  if(jumpQ&&P.on){ P.vy=18.5; P.on=false; } jumpQ=false;
+  if(dx||dz){ const sp=11.5*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(jumpQ&&P.on){ P.vy=17.5; P.on=false; } jumpQ=false;
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
   P.ride=null;
@@ -2057,8 +2129,8 @@ function studLOD(c){ const R=STUD_R; for(const m of studMeshes){ const b=m.bound
 function tick(){
   if(modal&&frame>2){ clock.getDelta(); if(repaint){ repaint=false; try{ if(post) post.composer.render(0); else renderer.render(scene,camera); }catch(e){} } requestAnimationFrame(tick); return; }   // the world rests while a place sheet is open, so the sheet stays smooth
   const rawDt=clock.getDelta(), dt=Math.min(.05,rawDt); t+=dt; frame++; autoQ(rawDt);
-  const sx=274+((t*1.6)%18); ship.position.set(sx,.8+Math.sin(t*5)*.04,280.2);
-  wake.forEach((w,i)=>{ const ph=(i*.37+t*1.6)%1,side=i%2?1:-1,back=1+(i>>1)*1.1+ph; w.position.set(sx-back,.87,281.4+side*(.9+back*.28)); const s=Math.max(.2,(1-ph*.6)*(1.1-back*.09)); w.scale.set(s,.1,s*.8); });
+  const sx=fX(274)+((t*1.6)%18); ship.position.set(sx,.8+Math.sin(t*5)*.04,fZ(280.2));
+  wake.forEach((w,i)=>{ const ph=(i*.37+t*1.6)%1,side=i%2?1:-1,back=1+(i>>1)*1.1+ph; w.position.set(sx-back,.87,fZ(281.4)+side*(.9+back*.28)); const s=Math.max(.2,(1-ph*.6)*(1.1-back*.09)); w.scale.set(s,.1,s*.8); });
   moveTraffic(dt); moveSky(dt);
   // input
   let ix=jx+(key.KeyD||key.ArrowRight?1:0)-(key.KeyA||key.ArrowLeft?1:0), iy=jy+(key.KeyW||key.ArrowUp?1:0)-(key.KeyS||key.ArrowDown?1:0);
