@@ -2017,7 +2017,7 @@ for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.le
   else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=WIDE?across(ROADS0,'z',m.fix,m.base-(m.span+m.len)/2):fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
 for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=WIDE?across(RAILS0,'z',m.fix,(z0+z1)/2):fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
 // ---------- traffic: 200 vehicles in all. A car keeps pace with a running explorer, expressway traffic is 1.2 times as fast, a train 1.3 times.
-const RUNSP=(BIG?10.5:9.1)*1.9/S, CARS=200;   // running speed in map units a second
+const RUNSP=(BIG?12:10.4)*1.9/S, CARS=200;   // running speed in map units a second
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy,C.lgray];
   const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
   for(const m of LANES) m.sp=RUNSP;
@@ -2077,7 +2077,7 @@ function tryMove(nx,nz){
 function physics(dt,dx,dz){
   // sprint: about two seconds at a run, then the gauge takes about forty seconds to fill again
   { const want=(runHeld||key.ShiftLeft||key.ShiftRight)&&!!(dx||dz); if(want&&stam>0&&(running||stam>=.25)){ running=true; stam=Math.max(0,stam-dt/2); } else { running=false; stam=Math.min(1,stam+dt/40); } }
-  if(dx||dz){ const sp=(BIG?10.5:9.1)*(running?1.9:1)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(dx||dz){ const sp=(BIG?12:10.4)*(running?1.9:1)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
   if(jumpQ){ if(P.on){ P.vy=17.5; P.on=false; P.air=1; } else if((P.air||0)<2&&!P.ride){ P.vy=15.5; P.air=2; } } jumpQ=false;   // a second press in the air jumps once more
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
