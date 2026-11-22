@@ -39,7 +39,6 @@ button{font-family:inherit;color:inherit}
 #goto button{border:0;border-radius:999px;cursor:pointer;font-weight:900;font-size:13.5px;flex:none}
 #gogo{background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;padding:9px 16px;box-shadow:0 4px 12px rgba(26,115,232,.35)}
 #gox{background:#eef2f7;color:#5b6472;width:34px;height:34px;font-size:17px;line-height:1}
-@media(min-width:760px){#goto{top:70px}}
 @media(max-width:380px){#goto{left:12px;transform:translate(0,-14px);max-width:calc(100% - 80px)}#goto.on{transform:none}}
 #list li{cursor:pointer}
 .lb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(20,30,60,.18),0 4px 10px rgba(20,30,60,.14);will-change:transform;display:flex;align-items:center;gap:5px}
@@ -843,7 +842,7 @@ town(92,94,116,112,4); town(128,94,160,110,4); town(60,40,84,52,2);
 // ================= SEOCHEON-GUN (far south-west) =================
 BX=0; BZ=HH*3;
 lake(27,158,243,14); roadNS(48,0,154); roadEW(48,80,222); railNS(136,0,157);
-B(138.7,G,70,1.2,.5,12,C.lgray,{s:false}); B(140,G,71,3.6,2.6,9,C.white); B(139.6,G+2.6,70.6,4.4,.4,9.8,C.teal);
+B(138.7,G,70,1.2,.5,9.6,C.lgray,{s:false}); B(140,G,71,3.6,2.6,9,C.white); B(139.6,G+2.6,70.6,4.4,.4,9.8,C.teal);
 town(92,58,130,74,3); town(58,128,90,146,3); mountain(90,20,14,12,[[104,32,8,7]],'hill'); mountain(180,20,14,12,[[194,32,7,7]],'hill');
 SX=0;
 // ================= TAEAN-GUN (far north-west peninsula) =================
@@ -1284,7 +1283,198 @@ const SITES=[
 ['공주시','상신리 돌담마을',234,104,'village',{},'계룡산 자락에 돌담이 구불구불 이어진 마을이에요.'],
 ['서천군','서천갯벌',32,52,'beach',{mud:1},'수많은 철새가 쉬어 가는 넓은 갯벌이에요. 유네스코 세계자연유산이에요.'],
 ['부여군','백마강 억새밭',90,110,'forest',{reed:1},'백마강 가에 억새와 갈대가 넓게 펼쳐진 곳이에요.'],
-['논산시','노성 궐리사',112,34,'shrine',{},'공자를 모신 사당이에요. 노성면에 있어요.']
+['논산시','노성 궐리사',112,34,'shrine',{},'공자를 모신 사당이에요. 노성면에 있어요.'],
+// second round: about half as many places again in every city and county
+['홍성군','홍주향교',150,70,'shrine',{},'조선 시대에 홍주 고을 학생들을 가르치던 학교예요. 공자를 모신 사당도 함께 있어요.'],
+['홍성군','백야기념관',70,40,'museum',{},'김좌진 장군의 삶과 청산리 대첩을 보여 주는 기념관이에요. 장군의 호가 백야예요.'],
+['홍성군','백야사',64,46,'shrine',{},'김좌진 장군을 모신 사당이에요. 해마다 장군을 기리는 제사를 올려요.'],
+['홍성군','김좌진 장군 동상',140,84,'statue',{},'홍성 읍내 오거리 한가운데에 서 있는 동상이에요. 그래서 이곳을 장군상 오거리라고 불러요.'],
+['홍성군','용봉사',172,34,'temple',{},'용봉산 중턱에 있는 오래된 절이에요. 절 가까이 바위에 새긴 부처님이 있어요.'],
+['홍성군','신경리 마애여래입상',178,28,'buddha',{rock:1},'용봉산의 큰 바위에 새긴 고려 시대 부처님이에요. 키가 4m쯤 돼요.'],
+['홍성군','용봉산 병풍바위',186,38,'rock',{},'병풍을 펼친 것처럼 바위가 길게 늘어선 곳이에요. 용봉산에서 손꼽히는 풍경이에요.'],
+['홍성군','고산사',60,110,'temple',{},'결성면 청룡산에 있는 작은 절이에요. 대웅전이 보물로 지정돼 있어요.'],
+['홍성군','결성농요농사박물관',52,118,'museum',{},'농사지을 때 부르던 결성농요와 옛 농사 도구를 보여 주는 박물관이에요.'],
+['홍성군','만해 민족시비공원',64,126,'stones',{},'만해 한용운 생가 옆에 있는 공원이에요. 여러 시인의 시를 새긴 돌이 숲길에 서 있어요.'],
+['홍성군','엄찬 고택',168,66,'hanok',{},'성삼문의 외손자 엄찬이 살던 집이에요. 홍북읍 노은리에 있는 오래된 기와집이에요.'],
+['홍성군','장곡산성',150,140,'fort',{},'장곡면 산 위에 돌로 쌓은 옛 산성이에요. 백제 부흥군과 얽힌 이야기가 전해져요.'],
+['홍성군','대교공원',128,92,'flower',{},'홍성천 가에 꽃과 나무를 심어 가꾼 공원이에요. 읍내 사람들이 산책하러 와요.'],
+['홍성군','남당항 해양분수공원',30,120,'pond',{jets:1},'남당항 바닷가에 있는 분수 공원이에요. 여름이면 아이들이 물놀이를 해요.'],
+['홍성군','속동 갯벌마을',34,84,'beach',{mud:1},'물이 빠지면 넓은 갯벌이 드러나는 마을이에요. 조개를 캐는 체험을 할 수 있어요.'],
+['홍성군','은하 딸기',96,124,'farm',{},'은하면 비닐하우스에서 기르는 딸기예요. 겨울부터 봄까지 딸기 따기 체험을 해요.'],
+['홍성군','홍성 한돈',110,150,'farm',{},'홍성은 우리나라에서 돼지를 가장 많이 기르는 군이에요. 홍성 돼지고기는 한돈으로 이름나 있어요.'],
+['홍성군','보개산 솔바람길',100,70,'forest',{},'구항면 보개산 소나무 숲을 따라 걷는 길이에요. 솔향기가 가득해요.'],
+['예산군','윤봉길의사기념관',92,40,'museum',{},'윤봉길 의사의 유품과 독립운동 이야기를 보여 주는 기념관이에요. 충의사 옆에 있어요.'],
+['예산군','윤봉길 의사 생가',98,46,'hanok',{thatch:1},'윤봉길 의사가 태어난 초가집이에요. 냇물로 둘러싸인 섬 같은 곳이라 도중도라고 불러요.'],
+['예산군','수덕여관',58,30,'hanok',{thatch:1},'수덕사 들머리에 있는 초가 여관이에요. 화가 이응노가 머물며 그림을 그렸어요.'],
+['예산군','덕숭산',50,24,'peak',{h:8},'수덕사를 품고 있는 산이에요. 높지 않지만 바위와 소나무가 어우러져 있어요.'],
+['예산군','가야산 석문봉',40,12,'peak',{h:10,rock:1},'가야산에서 바위가 가장 멋진 봉우리예요. 꼭대기에 돌탑이 서 있어요.'],
+['예산군','용궁리 백송',116,64,'forest',{},'추사 김정희가 중국에서 씨앗을 가져와 심었다는 흰 소나무예요. 천연기념물이에요.'],
+['예산군','대흥향교',168,120,'shrine',{},'조선 시대에 대흥 고을 학생들이 공부하던 학교예요. 마당에 오래된 은행나무가 있어요.'],
+['예산군','대흥슬로시티',160,112,'village',{},'예당호 가에 있는 느리게 사는 마을이에요. 느린꼬부랑길을 따라 마을을 둘러봐요.'],
+['예산군','예당호 느린호수길',150,96,'bridge',{},'예당호 물 위에 나무 데크로 놓은 산책길이에요. 호수를 따라 길게 이어져요.'],
+['예산군','광시 황새마을',190,140,'village',{},'황새와 함께 사는 마을이에요. 논에 농약을 쓰지 않아 황새가 먹이를 찾으러 와요.'],
+['예산군','한국토종씨앗박물관',120,150,'museum',{},'우리 땅에서 대대로 심어 온 토종 씨앗을 모아 둔 박물관이에요. 대술면에 있어요.'],
+['예산군','예산 사과와인',136,50,'farm',{},'예산 사과로 와인을 만드는 농장이에요. 가을에는 사과 따기 체험도 해요.'],
+['예산군','예산 벚꽃로',150,70,'flower',{cs:[C.pink,C.white]},'봄이면 예산읍 길을 따라 벚꽃이 길게 피어요. 벚꽃 축제도 열려요.'],
+['예산군','덕산 메타세쿼이아길',78,56,'forest',{},'키 큰 메타세쿼이아 나무가 줄지어 선 길이에요. 덕산온천 가까이에 있어요.'],
+['예산군','예산향교',130,34,'shrine',{},'조선 시대에 예산 고을 학생들을 가르치던 학교예요. 예산읍에 있어요.'],
+['예산군','옥계저수지',66,18,'pond',{},'가야산 아래 덕산면에 있는 저수지예요. 산 그림자가 물에 비쳐요.'],
+['예산군','봉수산 자연휴양림',176,130,'forest',{},'봉수산 숲속에 있는 휴양림이에요. 예당호가 내려다보여요.'],
+['보령시','보령머드박물관',62,74,'museum',{},'보령 갯벌 진흙이 어떻게 화장품과 축제가 되었는지 보여 주는 박물관이에요. 대천해수욕장에 있어요.'],
+['보령시','보령 무궁화수목원',170,80,'flower',{cs:[C.pink,C.white,C.purple]},'성주산 자락에 무궁화를 많이 심어 가꾼 수목원이에요. 여름에 무궁화가 활짝 피어요.'],
+['보령시','성주산',180,64,'peak',{h:10},'보령을 대표하는 산이에요. 옛날에는 이 산에서 석탄을 캤어요.'],
+['보령시','화장골 계곡',188,72,'pond',{},'성주산 깊은 골짜기에 맑은 물이 흐르는 계곡이에요. 여름에 물놀이하러 많이 와요.'],
+['보령시','장현리 귀학송',150,40,'forest',{},'줄기가 여섯 갈래로 갈라져 자란 큰 소나무예요. 청라면에 있어요.'],
+['보령시','보령향교',120,76,'shrine',{},'조선 시대에 보령 고을 학생들을 가르치던 학교예요. 주포면에 있어요.'],
+['보령시','보령읍성',126,68,'fort',{},'조선 시대에 보령 고을을 지키려고 쌓은 성이에요. 성문 누각이 남아 있어요.'],
+['보령시','토정 이지함 묘',100,60,'tomb',{},'토정비결로 알려진 이지함 선생의 무덤이에요. 바다가 보이는 언덕에 있어요.'],
+['보령시','신경섭 가옥',146,48,'hanok',{},'청라 은행마을에 있는 조선 후기 기와집이에요. 가을이면 은행잎이 마당을 덮어요.'],
+['보령시','성주사지 천년역사관',176,92,'museum',{},'성주사 절터에서 나온 유물과 절의 옛 모습을 보여 주는 곳이에요.'],
+['보령시','대천해수욕장 분수광장',56,82,'pond',{jets:1},'대천해수욕장 한가운데 있는 광장이에요. 바닥에서 물줄기가 솟아올라요.'],
+['보령시','용두해수욕장',60,120,'beach',{},'소나무 숲이 감싼 조용한 해수욕장이에요. 남포면 바닷가에 있어요.'],
+['보령시','보령댐',206,110,'pond',{},'보령호의 물을 가두는 댐이에요. 충남 서쪽 여러 시·군이 이 물을 마셔요.'],
+['보령시','보령 아미산',214,130,'peak',{h:9},'미산면에 있는 산이에요. 꼭대기에서 보령호가 내려다보여요.'],
+['보령시','무창포 주꾸미',70,150,'market',{},'봄이면 무창포에서 주꾸미와 도다리 축제가 열려요. 갓 잡은 주꾸미를 맛볼 수 있어요.'],
+['보령시','대천김',90,90,'market',{},'보령 앞바다에서 기른 김으로 만들어요. 고소한 맛으로 전국에 이름나 있어요.'],
+['보령시','사현 포도',110,124,'farm',{},'남포면 사현마을에서 기르는 포도예요. 달고 향이 진해요.'],
+['청양군','칠갑타워',150,74,'tower',{n:8},'칠갑호 가에 세운 전망 타워예요. 호수와 칠갑산을 한눈에 볼 수 있어요.'],
+['청양군','천장호 용·호랑이 조형물',190,60,'statue',{},'천장호 출렁다리 건너편에 있는 큰 조형물이에요. 칠갑산 전설 속 용과 호랑이예요.'],
+['청양군','정산향교',200,80,'shrine',{},'조선 시대에 정산 고을 학생들이 공부하던 학교예요. 정산면에 있어요.'],
+['청양군','읍내리 석조여래삼존입상',126,70,'buddha',{},'청양 읍내에 모신 고려 시대 돌부처 세 분이에요. 보물로 지정돼 있어요.'],
+['청양군','칠갑산 아흔아홉골',160,50,'forest',{},'골짜기가 아흔아홉 개나 된다는 깊은 숲이에요. 칠갑산에서 가장 깊은 곳이에요.'],
+['청양군','칠갑산 삼형제봉',172,42,'peak',{h:9},'봉우리 세 개가 형제처럼 나란히 선 곳이에요. 칠갑산 능선에 있어요.'],
+['청양군','왕진나루',240,150,'ship',{sail:1},'금강을 건너던 옛 나루터예요. 백제 때부터 배가 오가던 곳이에요.'],
+['청양군','청양 멜론',220,130,'farm',{},'청양 들판 비닐하우스에서 기르는 멜론이에요. 달고 향긋해요.'],
+['청양군','청양 수박',210,140,'farm',{},'칠갑산 자락에서 기른 수박이에요. 여름에 달고 시원해요.'],
+['청양군','백세공원',132,84,'flower',{},'청양 읍내 지천 가에 있는 공원이에요. 가을에 고추구기자축제가 이곳에서 열려요.'],
+['청양군','한티고개',140,36,'sign',{},'칠갑산을 넘어가는 높은 고개예요. 옛날에는 굽이굽이 걸어서 넘었어요.'],
+['청양군','윤남석 가옥',180,126,'hanok',{},'장평면에 있는 조선 후기 기와집이에요. 안채와 사랑채가 잘 남아 있어요.'],
+['청양군','냉천골',164,58,'pond',{},'여름에도 물이 차가운 칠갑산 골짜기예요. 더위를 피해 사람들이 찾아와요.'],
+['청양군','구봉광산',80,110,'cave',{},'옛날에 금을 캐던 광산이에요. 남양면 구봉산에 굴이 남아 있어요.'],
+['청양군','운장암',100,100,'temple',{},'남양면 산속에 있는 작은 절이에요. 금동 보살상이 전해 와요.'],
+['청양군','칠갑산 오토캠핑장',152,66,'forest',{},'칠갑산 숲속에서 텐트를 치고 하룻밤 묵는 곳이에요. 밤에는 별이 잘 보여요.'],
+['서산시','일락사',150,150,'temple',{},'가야산 자락에 있는 조용한 절이에요. 해미읍성에서 산길로 이어져요.'],
+['서산시','천장사',120,160,'temple',{},'고북면 연암산에 있는 작은 절이에요. 경허 스님이 머물며 수행했어요.'],
+['서산시','서산 동문동성당',132,84,'church',{},'서산 읍내에 있는 오래된 성당이에요. 높은 종탑이 멀리서도 보여요.'],
+['서산시','간월도 어리굴젓 기념탑',90,150,'statue',{},'간월도 굴 따는 아낙네들을 본뜬 조형물이에요. 해마다 굴이 많이 나기를 비는 제사를 올려요.'],
+['서산시','벌천포해수욕장',60,20,'beach',{},'모래 대신 둥근 몽돌이 깔린 해수욕장이에요. 파도에 돌 구르는 소리가 나요.'],
+['서산시','대산항',40,14,'ship',{},'큰 화물선이 드나드는 항구예요. 대산읍 바닷가에 있어요.'],
+['서산시','삼길산 전망대',66,10,'tower',{n:6},'삼길포 뒤 산꼭대기에 있는 전망대예요. 서해 섬들이 한눈에 보여요.'],
+['서산시','정순왕후 생가',110,70,'hanok',{},'조선 영조의 왕비 정순왕후가 태어난 집이에요. 음암면에 있는 기와집이에요.'],
+['서산시','서산 감태',70,60,'market',{},'가로림만 갯벌에서 겨울에 뜯는 초록빛 해초예요. 김처럼 말려서 먹어요.'],
+['서산시','가로림만 갯벌',56,52,'beach',{mud:1},'서산과 태안 사이에 깊숙이 들어온 바다의 갯벌이에요. 점박이물범이 찾아와요.'],
+['서산시','도비산',84,124,'peak',{h:8},'부석사를 품고 있는 산이에요. 꼭대기에서 천수만이 내려다보여요.'],
+['서산시','해미향교',146,136,'shrine',{},'조선 시대에 해미 고을 학생들을 가르치던 학교예요. 해미읍성 가까이에 있어요.'],
+['당진시','심훈기념관',70,60,'museum',{},'소설 상록수를 쓴 심훈의 삶과 작품을 보여 주는 기념관이에요. 필경사 옆에 있어요.'],
+['당진시','삽교호 바다공원',190,96,'flower',{},'삽교호 방조제 옆 바닷가에 꾸민 공원이에요. 조형물과 꽃밭 사이를 산책해요.'],
+['당진시','당진 아미산',130,120,'peak',{h:8},'당진에서 가장 높은 산이에요. 면천면에 있어요.'],
+['당진시','석문방조제',60,24,'beach',{},'바다를 막아 길게 쌓은 둑이에요. 둑 위로 곧게 뻗은 길이 10km쯤 돼요.'],
+['당진시','안섬포구',170,40,'market',{},'송악읍에 있는 작은 포구예요. 풍어를 비는 당제가 전해 와요.'],
+['당진시','골정지',110,126,'pond',{},'면천읍성 옆에 있는 연못이에요. 여름이면 연꽃이 가득 피어요.'],
+['당진시','면천 은행나무',116,132,'forest',{},'면천초등학교 옛터에 서 있는 아주 오래된 은행나무 두 그루예요. 천연기념물이에요.'],
+['당진시','면천향교',122,138,'shrine',{},'조선 시대에 면천 고을 학생들을 가르치던 학교예요.'],
+['당진시','영랑사',100,90,'temple',{},'고대면 영파산에 있는 조용한 절이에요. 아주 오래전에 처음 세웠다고 전해져요.'],
+['당진시','신평양조장',200,70,'factory',{},'3대째 막걸리를 빚어 온 오래된 양조장이에요. 신평면에 있어요.'],
+['당진시','당진 꽈리고추',150,100,'farm',{},'쭈글쭈글한 모양의 꽈리고추예요. 당진 면천에서 많이 길러요.'],
+['당진시','합덕수리민속박물관',214,140,'museum',{},'합덕제 옆에 있는 박물관이에요. 옛사람들이 논에 물을 대던 방법을 보여 줘요.'],
+['공주시','선화당',70,70,'shrine',{},'조선 시대 충청도 관찰사가 일하던 건물이에요. 공주 한옥마을 옆에 옮겨 지었어요.'],
+['공주시','공주향교',84,66,'shrine',{},'조선 시대에 공주 학생들을 가르치던 학교예요. 교동에 있어요.'],
+['공주시','공주제일교회',92,74,'church',{},'오래된 붉은 벽돌 교회예요. 지금은 기독교 박물관으로도 쓰여요.'],
+['공주시','금강신관공원',100,56,'flower',{},'금강 가에 넓게 펼쳐진 공원이에요. 강 건너로 공산성이 보여요.'],
+['공주시','공주보',60,80,'bridge',{},'금강 물길을 조절하는 보예요. 보 위로 다리가 놓여 있어요.'],
+['공주시','마곡사 백범 명상길',40,30,'forest',{},'백범 김구 선생이 마곡사에 머물 때 걷던 솔숲 길이에요.'],
+['공주시','태화산',30,22,'peak',{h:9},'마곡사를 품고 있는 산이에요. 소나무 숲이 울창해요.'],
+['공주시','금학생태공원',110,96,'pond',{},'저수지 둘레에 나무 데크 길을 놓은 공원이에요. 공주 시내 남쪽 숲속에 있어요.'],
+['공주시','박동진 판소리 전수관',130,60,'hanok',{},'판소리 명창 박동진 선생을 기리고 판소리를 가르치는 곳이에요.'],
+['공주시','유구전통시장',30,70,'market',{},'유구읍에 서는 시장이에요. 유구는 예부터 옷감 짜는 일로 이름났어요.'],
+['공주시','무성산성',60,36,'fort',{},'무성산 꼭대기에 돌로 쌓은 산성이에요. 홍길동이 쌓았다는 전설이 있어요.'],
+['공주시','충남역사박물관',96,84,'museum',{},'충청남도의 옛 문서와 유물을 보여 주는 박물관이에요. 봄에는 벚꽃이 아름다워요.'],
+['공주시','정안천 메타세쿼이아길',80,40,'forest',{},'정안천 가에 메타세쿼이아가 줄지어 선 길이에요. 여름에는 가까운 연못에 연꽃이 피어요.'],
+['서천군','봉선저수지',130,40,'pond',{},'서천에서 가장 큰 저수지예요. 물가를 따라 벚나무 길이 이어져요.'],
+['서천군','천방산',140,30,'peak',{h:8},'서천 북쪽에 솟은 산이에요. 꼭대기에서 서해와 금강이 보여요.'],
+['서천군','서천향교',110,70,'shrine',{},'조선 시대에 서천 고을 학생들을 가르치던 학교예요.'],
+['서천군','건지산성',170,110,'fort',{},'한산면 건지산에 쌓은 백제 산성이에요. 한산모시관 뒤쪽 산에 있어요.'],
+['서천군','장항도시탐험역',60,140,'museum',{},'기차가 다니지 않게 된 옛 장항역을 고쳐 만든 문화 공간이에요. 전망대에 올라 장항을 내려다봐요.'],
+['서천군','서천 주꾸미',40,36,'market',{},'봄에 마량리에서 동백꽃 주꾸미 축제가 열려요. 서천 앞바다 주꾸미가 이름나 있어요.'],
+['서천군','장항항',52,150,'ship',{},'금강이 바다와 만나는 곳에 있는 항구예요. 옛날에는 쌀과 금속을 실어 날랐어요.'],
+['서천군','비인해수욕장',36,60,'beach',{},'물이 빠지면 갯벌이 넓게 드러나는 해수욕장이에요. 조개 캐기 체험을 해요.'],
+['서천군','이하복 고택',150,90,'hanok',{thatch:1},'기산면에 있는 오래된 초가집이에요. 옛 농가의 모습이 잘 남아 있어요.'],
+['서천군','서천 치유의 숲',120,52,'forest',{},'종천면 숲속에서 걷고 쉬는 곳이에요. 저수지 둘레로 숲길이 이어져요.'],
+['서천군','동백대교',70,156,'bridge',{h:9},'서천 장항과 전북 군산을 잇는 다리예요. 금강 하구를 가로질러요.'],
+['서천군','서래야 쌀',180,60,'farm',{},'서천 너른 들에서 기른 쌀의 이름이에요. 밥맛이 좋기로 알려져 있어요.'],
+['태안군','태안향교',150,80,'shrine',{},'조선 시대에 태안 고을 학생들을 가르치던 학교예요. 태안읍에 있어요.'],
+['태안군','흥주사',160,66,'temple',{},'백화산 자락에 있는 오래된 절이에요. 절 앞에 900년 된 은행나무가 서 있어요.'],
+['태안군','솔향기길',130,20,'forest',{},'바닷가 소나무 숲을 따라 걷는 길이에요. 기름 유출 사고 때 자원봉사자들이 다니던 길에서 시작됐어요.'],
+['태안군','연포해수욕장',110,110,'beach',{},'물이 따뜻해서 늦여름까지 해수욕을 하는 곳이에요. 근흥면에 있어요.'],
+['태안군','만대항',140,10,'market',{},'태안반도 북쪽 끝에 있는 작은 항구예요. 솔향기길이 여기에서 시작돼요.'],
+['태안군','영목항',190,164,'ship',{},'안면도 남쪽 끝에 있는 항구예요. 원산안면대교가 바로 옆에 있어요.'],
+['태안군','운여해변',176,150,'beach',{},'소나무 숲이 물에 비치는 해 질 녘 풍경으로 이름난 해변이에요. 안면도에 있어요.'],
+['태안군','삼봉해수욕장',170,124,'beach',{},'바위 봉우리 세 개가 서 있는 해수욕장이에요. 안면도 북쪽에 있어요.'],
+['태안군','태안해양유물전시관',96,96,'museum',{},'태안 앞바다에 가라앉은 옛 배와 도자기를 보여 주는 전시관이에요. 신진도에 있어요.'],
+['태안군','경이정',156,84,'shrine',{},'태안읍 한가운데 있는 조선 시대 정자예요. 바닷길을 오가던 사신들이 쉬어 갔어요.'],
+['태안군','태안 육쪽마늘',140,60,'farm',{},'쪽이 여섯 개로 갈라지는 마늘이에요. 태안 황토밭에서 길러요.'],
+['아산시','영괴대',130,90,'stones',{},'조선 시대 사도세자가 온양에 왔을 때 활을 쏘던 자리예요. 느티나무와 비석이 남아 있어요.'],
+['아산시','온양향교',140,84,'shrine',{},'조선 시대에 온양 고을 학생들을 가르치던 학교예요.'],
+['아산시','영인산성',90,40,'fort',{},'영인산 꼭대기에 돌로 쌓은 옛 산성이에요. 성벽을 따라 긴 계단 길이 나 있어요.'],
+['아산시','맹사성기념관',170,110,'museum',{},'조선의 이름난 재상 맹사성을 기리는 기념관이에요. 맹씨행단 옆에 있어요.'],
+['아산시','아산 생태곤충원',150,70,'dome',{},'살아 있는 곤충과 식물을 볼 수 있는 유리 온실이에요. 아산그린타워 옆에 있어요.'],
+['아산시','윤보선 대통령 생가',60,20,'hanok',{},'우리나라 제4대 대통령 윤보선이 태어난 집이에요. 둔포면에 있는 큰 기와집이에요.'],
+['아산시','김옥균 선생 유허',80,50,'tomb',{},'갑신정변을 이끈 김옥균 선생의 무덤이 있는 곳이에요. 영인면에 있어요.'],
+['아산시','아산만방조제',40,14,'beach',{},'아산과 평택 사이 바다를 막은 긴 둑이에요. 둑 위로 길이 나 있어요.'],
+['아산시','광덕산',180,150,'peak',{h:10},'아산과 천안에 걸쳐 있는 산이에요. 아산에서 가장 높아요.'],
+['아산시','강당골 계곡',170,140,'pond',{},'광덕산에서 흘러내리는 맑은 계곡이에요. 여름에 물놀이하러 많이 와요.'],
+['아산시','탕정 디스플레이 공장',220,80,'factory',{},'텔레비전과 휴대 전화 화면을 만드는 큰 공장이 모여 있는 곳이에요. 탕정면에 있어요.'],
+['천안시','흑성산',150,110,'peak',{h:10},'독립기념관 뒤에 솟은 산이에요. 꼭대기에 방송 송신탑이 있어요.'],
+['천안시','성불사',110,70,'temple',{},'태조산 중턱에 있는 절이에요. 천안 시내가 내려다보여요.'],
+['천안시','만일사',90,30,'temple',{},'성거산에 있는 오래된 절이에요. 바위에 새긴 부처님과 오층석탑이 있어요.'],
+['천안시','천안박물관',80,100,'museum',{},'천안의 역사와 옛 생활 모습을 보여 주는 박물관이에요. 천안삼거리공원 옆에 있어요.'],
+['천안시','직산현 관아',60,30,'hanok',{},'조선 시대 직산 고을의 관청 건물이에요. 대문과 동헌이 남아 있어요.'],
+['천안시','직산향교',66,24,'shrine',{},'조선 시대에 직산 고을 학생들을 가르치던 학교예요.'],
+['천안시','조병옥 박사 생가',200,124,'hanok',{thatch:1},'독립운동가이자 정치가인 조병옥 박사가 태어난 초가집이에요. 유관순 열사 생가와 가까워요.'],
+['천안시','박문수 어사 묘',190,100,'tomb',{},'암행어사로 이름난 박문수의 무덤이에요. 은석산 꼭대기 가까이에 있어요.'],
+['천안시','독립기념관 단풍나무숲길',160,116,'forest',{},'독립기념관을 둘러싼 숲길에 단풍나무가 줄지어 서 있어요. 가을에 붉게 물들어요.'],
+['천안시','태학산 자연휴양림',40,140,'forest',{},'풍세면 태학산 소나무 숲에 있는 휴양림이에요. 숲속의 집과 야영장이 있어요.'],
+['천안시','위례성',100,24,'fort',{},'위례산에 돌로 쌓은 옛 산성이에요. 백제의 첫 도읍이었다는 이야기가 전해져요.'],
+['천안시','북면 벚꽃길',180,60,'flower',{cs:[C.pink,C.white]},'북면 냇가를 따라 벚나무가 15km쯤 이어지는 길이에요. 봄에 벚꽃 축제가 열려요.'],
+['부여군','정림사지박물관',132,62,'museum',{},'정림사 절터 옆에 있는 박물관이에요. 백제에 불교가 전해진 이야기를 보여 줘요.'],
+['부여군','삼충사',120,40,'shrine',{},'백제의 충신 성충, 흥수, 계백을 모신 사당이에요. 부소산 안에 있어요.'],
+['부여군','부소산 사자루',112,32,'shrine',{},'부소산에서 가장 높은 곳에 있는 누각이에요. 백마강이 내려다보여요.'],
+['부여군','장하리 삼층석탑',170,120,'pagoda',{},'장암면에 있는 고려 시대 석탑이에요. 정림사지 석탑을 닮게 지었어요.'],
+['부여군','미암사 와불',60,60,'buddha',{},'내산면 미암사에 있는 아주 큰 누운 부처님이에요. 쌀이 나왔다는 쌀바위 전설도 전해져요.'],
+['부여군','부여향교',126,70,'shrine',{},'조선 시대에 부여 고을 학생들을 가르치던 학교예요.'],
+['부여군','규암 자온길',100,66,'village',{},'백마강 건너 규암마을의 오래된 집과 가게를 고쳐 만든 거리예요. 공방과 책방이 있어요.'],
+['부여군','백제원',96,72,'museum',{},'백제의 생활 모습과 옛 물건을 모아 둔 박물관이에요. 식물원도 함께 있어요.'],
+['부여군','반교마을 돌담길',40,40,'village',{},'외산면 반교마을에 구불구불 이어진 돌담길이에요. 밭에서 나온 돌로 쌓았어요.'],
+['부여군','부여 수박',180,80,'farm',{},'부여 들판 비닐하우스에서 기르는 수박이에요. 전국에서 손꼽히게 많이 나요.'],
+['부여군','부여 밤',60,100,'forest',{},'부여는 밤이 아주 많이 나는 곳이에요. 가을에 알밤을 주워요.'],
+['부여군','주암리 은행나무',70,30,'forest',{},'내산면에 있는 아주 오래된 은행나무예요. 나라에 큰일이 있을 때마다 알려 주었다는 전설이 있어요.'],
+['논산시','반야사',150,70,'cave',{},'옛 광산 굴 안에 법당을 차린 절이에요. 가야곡면에 있어요.'],
+['논산시','노성산성',120,26,'fort',{},'노성산 꼭대기에 돌로 쌓은 백제 산성이에요. 성 안에 우물터가 남아 있어요.'],
+['논산시','노성향교',116,40,'shrine',{},'조선 시대에 노성 고을 학생들을 가르치던 학교예요. 명재고택 바로 옆에 있어요.'],
+['논산시','백제군사박물관',170,100,'museum',{},'백제의 무기와 군사 이야기를 보여 주는 박물관이에요. 계백 장군 묘 옆에 있어요.'],
+['논산시','강경성당',40,100,'church',{},'강경 읍내에 있는 오래된 성당이에요. 지붕이 뾰족하고 천장이 높아요.'],
+['논산시','강경역사관',34,92,'museum',{},'옛 은행 건물을 고쳐 만든 전시관이에요. 강경 포구가 북적이던 때의 모습을 보여 줘요.'],
+['논산시','팔괘정',30,110,'shrine',{},'송시열이 금강 가에 지은 정자예요. 강경 죽림서원 가까이에 있어요.'],
+['논산시','양촌 곶감',200,130,'farm',{},'양촌면에서 감을 깎아 바람에 말려 만든 곶감이에요. 겨울에 곶감 축제가 열려요.'],
+['논산시','연산역 급수탑',190,60,'tower',{n:5,c:C.lgray},'옛날 증기 기관차에 물을 넣어 주던 탑이에요. 연산역에 지금도 남아 있어요.'],
+['논산시','김장생 선생 묘',196,72,'tomb',{},'조선의 큰 학자 사계 김장생 선생의 무덤이에요. 연산면에 있어요.'],
+['논산시','상월 고구마',140,36,'farm',{},'상월면 황토밭에서 기른 고구마예요. 달고 포슬포슬해요.'],
+['계룡시','계룡대',110,80,'museum',{},'육군·해군·공군 본부가 함께 있는 곳이에요. 계룡산 아래 신도안에 있어요.'],
+['계룡시','무상사',80,50,'temple',{},'세계 여러 나라 사람들이 찾아와 수행하는 절이에요. 계룡산 자락에 있어요.'],
+['계룡시','염선재',160,110,'shrine',{},'광산 김씨 집안에서 제사를 준비하던 집이에요. 두마면에 있어요.'],
+['계룡시','계룡군문화축제 광장',130,96,'statue',{},'해마다 가을에 군악대 행진과 군 장비 전시가 열리는 곳이에요.'],
+['계룡시','천마산',170,70,'peak',{h:7},'계룡 시내 가까이에 있는 낮은 산이에요. 시민들이 자주 오르는 산책길이 있어요.'],
+['계룡시','새터산공원',150,90,'forest',{},'계룡시청 옆 작은 산에 만든 공원이에요. 숲속 산책길이 있어요.'],
+['금산군','금산향교',130,80,'shrine',{},'조선 시대에 금산 고을 학생들을 가르치던 학교예요. 금산읍에 있어요.'],
+['금산군','청풍서원',190,90,'shrine',{},'고려의 충신 야은 길재를 모신 서원이에요. 부리면에 있어요.'],
+['금산군','신안사',210,60,'temple',{},'제원면 신음산에 있는 오래된 절이에요. 봄이면 벚꽃이 절을 둘러싸요.'],
+['금산군','지구별그림책마을',100,120,'village',{},'그림책을 읽고 숲에서 쉬는 마을이에요. 진산면에 있어요.'],
+['금산군','인삼어죽마을',200,100,'market',{},'금강에서 잡은 민물고기에 인삼을 넣어 끓인 어죽으로 이름난 마을이에요.'],
+['금산군','금강생태과학체험장',180,110,'museum',{},'금강에 사는 물고기와 풀, 벌레를 배우는 체험장이에요. 문 닫은 학교를 고쳐 만들었어요.'],
+['금산군','육백고지 전승탑',90,50,'statue',{},'6·25 전쟁 때 이곳에서 싸운 사람들을 기리는 탑이에요. 남이면 높은 고개에 있어요.'],
+['금산군','성치산',70,140,'peak',{h:9},'십이폭포가 흘러내리는 산이에요. 남이면에 있어요.'],
+['금산군','추부 추어탕 마을',150,30,'market',{},'미꾸라지를 갈아 끓인 추어탕 집이 모여 있는 마을이에요. 추부면에 있어요.'],
+['금산군','진산성지성당',60,40,'church',{},'우리나라 천주교의 첫 순교자를 기리는 성당이에요. 진산면에 있어요.']
 ];
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
   const [cx,cz]=CO[reg]; let x=cx+lx,z=cz+lz,h,t;
@@ -1317,6 +1507,13 @@ for(const [x0,z0,x1,z1,na,nt] of CITY){
   for(let n=0,k=0;n<na*300&&k<na;n++){ const x=x0+4+Math.floor(rnd()*(x1-x0-12)),z=z0+4+Math.floor(rnd()*(z1-z0-12)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
     apt2(x,z,1.2*(8+Math.floor(rnd()*9)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow,C.purple,C.red])); }
 }
+// smaller cities: a few apartment blocks in Seosan and Dangjin, and hanok houses in Buyeo and Gongju
+for(const [x0,z0,x1,z1,na] of [[366,56,446,116,12],[632,44,712,104,12]]){
+  for(let n=0,k=0;n<na*400&&k<na;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,6,7)) continue; take(x-1,z-1,6,7); k++;
+    apt2(x,z,1.2*(6+Math.floor(rnd()*6)),pick([C.orange,C.teal,C.blue,C.pink,C.yellow])); } }
+for(const [x0,z0,x1,z1,nh] of [[630,556,720,626,12],[860,394,950,454,12]]){
+  for(let n=0,k=0;n<nh*400&&k<nh;n++){ const x=x0+Math.floor(rnd()*(x1-x0)),z=z0+Math.floor(rnd()*(z1-z0)); if(!free(x-1,z-1,11,7)) continue; take(x-1,z-1,11,7); k++;
+    hanok(x,z,6+2*Math.floor(rnd()*2),4,2.2); T(x-.6,G,z+4.6,7,.8,.4,C.stone); if(rnd()<.5) pine(x+7.2,G,z+2); } }
 const inCity=(x,z)=>x>=808&&z<346;
 // ---------- ambient life: hamlets, greenhouses, ponds, people, boats, sea islands
 function rndLand(){ return [Math.floor(rnd()*MAPW),Math.floor(rnd()*MAPH)]; }
@@ -1348,7 +1545,7 @@ const SHORE=(()=>{ const W=MAPW,H=MAPH,wat=new Uint8Array(W*H),dist=new Uint8Arr
   const px=new Uint8Array(W*H); for(let k=0;k<W*H;k++) px[k]=dist[k]===255?255:Math.round(Math.max(0,dist[k]-1)/15*255);
   const tx=new THREE.DataTexture(px,W,H,THREE.RedFormat); tx.magFilter=tx.minFilter=THREE.LinearFilter; tx.needsUpdate=true; return tx; })();
 // ---------- the whole world is enlarged 1.2x around the same-sized explorer
-const S=1.44, MW=MAPW*S, MH=MAPH*S;
+const S=1.728, MW=MAPW*S, MH=MAPH*S;
 for(const b of boxes) for(let i=0;i<6;i++) b[i]*=S;
 for(const s of studs){ s[0]*=S; s[1]*=S; s[2]*=S; }
 POI.forEach(p=>{ p.m=[p.t[0],p.t[1]]; p.t=[p.t[0]*S,p.t[1]*S]; p.l=p.l.map(v=>v*S); p.r*=S; });
@@ -1357,7 +1554,7 @@ const SPOS=[START[0]*S,START[1]*S];
 const CS=4,GW=Math.ceil(MW/CS),GH=Math.ceil(MH/CS),grid=Array.from({length:GW*GH},()=>[]);
 boxes.forEach((b,n)=>{ if(b[4]<=.18||b[1]>31) return;
   for(let j=Math.max(0,Math.floor(b[2]/CS));j<=Math.min(GH-1,Math.floor((b[2]+b[5])/CS));j++) for(let i=Math.max(0,Math.floor(b[0]/CS));i<=Math.min(GW-1,Math.floor((b[0]+b[3])/CS));i++) grid[j*GW+i].push(n); });
-const PR=.4,PH=2.66,STEP=.66;
+const PR=.4,PH=2.66,STEP=.8;
 function around(x,z,fn){ const i0=Math.max(0,Math.floor((x-PR)/CS)),i1=Math.min(GW-1,Math.floor((x+PR)/CS)),j0=Math.max(0,Math.floor((z-PR)/CS)),j1=Math.min(GH-1,Math.floor((z+PR)/CS));
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){ const c=grid[j*GW+i]; for(let k=0;k<c.length;k++){ const n=c[k],b=boxes[n];
     if(x+PR>b[0]+.001&&x-PR<b[0]+b[3]-.001&&z+PR>b[2]+.001&&z-PR<b[2]+b[5]-.001) fn(b,n); } } }
@@ -1386,8 +1583,8 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
       .replace('#include <color_fragment>',`#include <color_fragment>
       #ifdef USE_COLOR
       if(abs(vON.y)<0.5 && vWP.y>-0.01){
-        float uu=abs(vON.x)>0.5?vWP.z:vWP.x; vec3 bt=texture2D(uBrick,vec2(uu/2.88,vWP.y/3.456)).rgb;
-        { float rw=floor(vWP.y/1.728+0.001); vec2 cid=vec2(floor((uu+mod(rw,2.0)*1.44)/2.88),rw+(abs(vON.x)>0.5?37.0:0.0));
+        float uu=abs(vON.x)>0.5?vWP.z:vWP.x; vec3 bt=texture2D(uBrick,vec2(uu/3.456,vWP.y/4.1472)).rgb;
+        { float rw=floor(vWP.y/2.0736+0.001); vec2 cid=vec2(floor((uu+mod(rw,2.0)*1.728)/3.456),rw+(abs(vON.x)>0.5?37.0:0.0));
           float h1=fract(sin(dot(cid,vec2(41.3,289.1)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
           float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.92+0.42*h2)*(0.84+0.3*h1),dtl); }
         float fw=max(fwidth(uu),fwidth(vWP.y)), fade=clamp(0.11/(fw+0.001),0.0,1.0);
@@ -1405,7 +1602,7 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
           float band=smoothstep(.1,.0,dp)*(0.5+0.5*sin(dp*90.0-uTime*1.5+o1.b*7.0+o2.r*3.0));
           float crest=smoothstep(.55,.98,o1.b*1.5+o2.b*.7)*smoothstep(.3,.8,dp)*.4*dtl;
           diffuseColor.rgb=mix(wc,vec3(.93,.98,1.),clamp(band*.42*dtl+crest+smoothstep(.03,.0,dp)*.45*mix(.5,1.0,dtl),0.0,1.0));
-        } else { vec2 cid=floor(vWP.xz/2.88); float h1=fract(sin(dot(cid,vec2(12.9898,78.233)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
+        } else { vec2 cid=floor(vWP.xz/3.456); float h1=fract(sin(dot(cid,vec2(12.9898,78.233)))*43758.5453), h2=fract(sin(dot(cid,vec2(93.7,17.9)))*24634.63);
           float lm=dot(diffuseColor.rgb,vec3(.2126,.7152,.0722)); diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(lm),diffuseColor.rgb,0.97+0.16*h2)*(0.95+0.1*h1),dtl); }
       }
       #endif`)
@@ -1426,9 +1623,9 @@ function seamMat(p){ const m=new THREE.MeshStandardMaterial(p);
   return m; }
 const m4=new THREE.Matrix4(),col=new THREE.Color();
 const boxGeo=new THREE.BoxGeometry(1,1,1),boxMat=seamMat({roughness:.3}),studMat=new THREE.MeshStandardMaterial({roughness:.26});
-const sg=studGeo(1.44), sgM=studGeo(1);
+const sg=studGeo(S), sgM=studGeo(1);
 // a plain 8-sided stud for chunks that are not right next to the camera
-const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,Math.hypot(STUD.p[i],STUD.p[i+2])); h=Math.max(h,STUD.p[i+1]); } r*=1.44*.97; h*=1.44;
+const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,Math.hypot(STUD.p[i],STUD.p[i+2])); h=Math.max(h,STUD.p[i+1]); } r*=S*.97; h*=S;
   const p=[],n=[],N=8; for(let i=0;i<N;i++){ const a=i/N*Math.PI*2,b=(i+1)/N*Math.PI*2, ax=Math.cos(a),az=Math.sin(a),bx=Math.cos(b),bz=Math.sin(b);
     p.push(ax*r,0,az*r, ax*r,h,az*r, bx*r,h,bz*r,  ax*r,0,az*r, bx*r,h,bz*r, bx*r,0,bz*r); n.push(ax,0,az, ax,0,az, bx,0,bz,  ax,0,az, bx,0,bz, bx,0,bz);
     p.push(0,h,0, bx*r,h,bz*r, ax*r,h,az*r); n.push(0,1,0, 0,1,0, 0,1,0); }
@@ -1453,7 +1650,7 @@ function part(g,x,y,z,w,h,d,c,st){ const m=new THREE.Mesh(unit,mat(c)); m.scale.
   if(st) for(let i=0;i<Math.floor(w);i++)for(let j=0;j<Math.floor(d);j++){ const s=new THREE.Mesh(sgM,mat(c)); s.position.set(x+i+.5,y+h,z+j+.5); g.add(s); } return m; }
 const wg=new THREE.CylinderGeometry(.42,.42,.3,12);
 function wheel(g,x,z){ const m=new THREE.Mesh(wg,mat(C.black)); m.rotation.x=Math.PI/2; m.position.set(x,.42,z); g.add(m); }
-const MV=new THREE.Group(); MV.scale.setScalar(1.44); scene.add(MV);
+const MV=new THREE.Group(); MV.scale.setScalar(S); scene.add(MV);
 // a finished model becomes one mesh (one material group per colour); models of the same shape share the geometry
 const fuseC=new Map();
 function fuse(g,key){ const ms=[], idx=[]; for(const m of g.children){ let i=ms.indexOf(m.material); if(i<0) i=ms.push(m.material)-1; idx.push(i); }
@@ -1544,7 +1741,7 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
   mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
 
 // ---------- controls
-const OVER=2380;
+const OVER=2860;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
 const key={}; let jumpQ=false;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
@@ -1565,7 +1762,7 @@ const pmv=e=>{ const p=pts.get(e.pointerId); if(!p) return; if(e.pointerType==='
   p[0]=e.clientX; p[1]=e.clientY;
   if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } }; cv.addEventListener('pointermove',pmv); lbBox.addEventListener('pointermove',pmv);
 const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; for(const el of [cv,lbBox]){ el.addEventListener('pointerup',pend); el.addEventListener('pointercancel',pend); }
-function zoom(f){ cam.want=Math.min(2900,Math.max(7,cam.want*f)); }
+function zoom(f){ cam.want=Math.min(3500,Math.max(7,cam.want*f)); }
 for(const el of [cv,lbBox]) el.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
 document.getElementById('zi').onclick=()=>zoom(.72); document.getElementById('zo').onclick=()=>zoom(1.4);
 document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=OVER; cam.yaw=0; cam.pitch=.95; } };
@@ -1596,13 +1793,13 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy]; let n=0;
-  const has=(ax,fix)=>LANES.some(m=>m.ax===ax&&Math.abs(m.fix-fix)<.2);
-  for(const [x,z,w,h] of ROADS){ if(n>=84) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(8,Math.floor(len/70)+1), sp=2.6+((n*7)%5)*.2;
-    if(ew){ const fp=z+2.25, fm=z+1.75; if(has('x',fp)||has('x',fm)) continue;
+  const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
+  for(const [x,z,w,h] of ROADS){ if(n>=130) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(8,Math.floor(len/70)+1), sp=2.6+((n*7)%5)*.2;
+    if(ew){ const fp=z+2.25, fm=z+1.75; if(has('x',fp,x,x+len)||has('x',fm,x,x+len)) continue;
       for(let i=0;i<k;i++){ const bus=n%5===4, vl=bus?6:3;
         LANES.push({o:vehicle(vl,cols[n%8],bus),ax:'x',dir:1,base:x+1,span:len-vl-2,sp,off:(i+.3)*len/k,fix:fp,len:vl}); n++;
         const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI; LANES.push({o,ax:'x',dir:-1,base:x+len-1,span:len-5,sp,off:(i+.6)*len/k,fix:fm,len:3}); n++; } }
-    else { const f=x+2.2; if(has('z',f)) continue;
+    else { const f=x+2.2; if(has('z',f,z,z+len)) continue;
       for(let i=0;i<k;i++){ const o=vehicle(3,cols[n%8]); o.rotation.y=Math.PI/2; LANES.push({o,ax:'z',dir:-1,base:z+len-1,span:len-5,sp,off:(i+.4)*len/k,fix:f,len:3}); n++; } } } }
 for(const m of LANES.concat(TRAINS)){ m.t=0; m.k=1; m.box=[0,0,0,0]; m.dx=m.dz=0; }
 // roof heights: a car has a low bonnet and boot with a taller cabin in the middle; buses and trains are flat on top
@@ -1644,8 +1841,8 @@ function tryMove(nx,nz){
   P.x=nx; P.z=nz; P.y=y; return true;
 }
 function physics(dt,dx,dz){
-  if(dx||dz){ const sp=10.5*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
-  if(jumpQ&&P.on){ P.vy=17; P.on=false; } jumpQ=false;
+  if(dx||dz){ const sp=12*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(jumpQ&&P.on){ P.vy=18.5; P.on=false; } jumpQ=false;
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
   P.ride=null;
