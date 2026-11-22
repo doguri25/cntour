@@ -1,0 +1,78 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>충청남도 블록 탐방 · 선생님 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--p:#1a73e8;--ink:#1f2430;--sub:#5b6472;--line:#e3e8ef;--bg:#f6f9fc}
+*{box-sizing:border-box}body{margin:0;font-family:'Noto Sans KR',system-ui,sans-serif;color:var(--ink);background:var(--bg);-webkit-text-size-adjust:100%}
+header{padding:28px 20px 8px;max-width:1080px;margin:0 auto}header small{color:var(--p);font-weight:700;letter-spacing:.08em;font-size:12px}
+h1{margin:4px 0 6px;font-size:26px;font-weight:900}header p{margin:0;color:var(--sub);font-size:14.5px;line-height:1.6}
+main{max-width:1080px;margin:0 auto;padding:16px 20px 60px;display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:860px){main{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.card{background:#fff;border-radius:24px;padding:22px;box-shadow:0 1px 2px rgba(20,30,60,.06),0 8px 24px rgba(20,30,60,.07)}
+h2{margin:0 0 14px;font-size:17px;font-weight:900}
+label.t{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:16px 0 8px}#lv{margin-bottom:0}.set>label.t:first-of-type{margin-top:0}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:10px 16px;font:inherit;font-size:14.5px;font-weight:700;color:var(--ink);cursor:pointer}
+.seg button.on{background:#e8f0fe;border-color:var(--p);color:var(--p)}
+.seg button small{display:block;font-weight:500;font-size:11.5px;color:var(--sub);margin-top:1px}.seg button.on small{color:var(--p)}
+.note{font-size:13px;color:var(--sub);line-height:1.6;margin:10px 0 0}
+.btn{display:block;width:100%;border:0;border-radius:999px;background:var(--p);color:#fff;font:inherit;font-size:16px;font-weight:700;padding:14px;margin-top:20px;cursor:pointer;box-shadow:0 6px 16px rgba(26,115,232,.3)}
+.btn.line{background:#fff;color:var(--p);border:1.5px solid var(--line);box-shadow:none;margin-top:10px;font-size:14.5px;padding:11px}
+#qrbox{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+#qr{width:min(300px,100%);aspect-ratio:1;background:#fff;border-radius:16px;border:1px solid var(--line);padding:10px}#qr svg{width:100%;height:100%;display:block}
+#sum{font-weight:900;font-size:17px}#code{font-size:13px;color:var(--sub)}
+#link{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:12.5px;color:var(--sub);background:var(--bg)}
+#rank{list-style:none;margin:0;padding:0}
+#rank li{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:14px;font-size:16px;font-weight:700}
+#rank li:nth-child(odd){background:var(--bg)}
+#rank li em{font-style:normal;width:30px;height:30px;border-radius:50%;background:#e8f0fe;color:var(--p);display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:14px}
+#rank li:nth-child(1) em{background:#fbbc04;color:#fff}#rank li:nth-child(2) em{background:#9aa5b1;color:#fff}#rank li:nth-child(3) em{background:#c9864a;color:#fff}
+#rank li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#rank li b{color:var(--p);font-variant-numeric:tabular-nums}
+#rank li small{color:var(--sub);font-weight:500;width:52px;text-align:right;font-variant-numeric:tabular-nums}
+#st{font-size:13px;color:var(--sub);margin:0 0 12px}.wide{grid-column:1/-1}
+body.show header,body.show .set{display:none}body.show main{grid-template-columns:minmax(0,340px) minmax(0,1fr);max-width:1280px}body.show #rank li{font-size:22px;padding:14px 16px}
+@media(max-width:859px){body.show main{grid-template-columns:minmax(0,1fr)}}
+</style></head><body>
+<header><small>CHUNGNAM BLOCK TOUR</small><h1>충청남도 블록 탐방 · 선생님 화면</h1>
+<p>학년과 게임 방식을 고르고 QR을 만들면, 학생들은 태블릿으로 QR을 찍어 바로 같은 게임에 들어옵니다. 게임을 마치고 올린 기록은 아래 순위표에 모입니다.</p></header>
+<main>
+<section class="card set"><h2>게임 정하기</h2>
+  <label class="t">학년</label><div class="seg" id="lv"><button data-v="3" class="on">3학년<small>우리 고장 (시·군 하나)</small></button><button data-v="4">4학년<small>우리 지역 (충청남도 전체)</small></button></div>
+  <div id="rw"><label class="t">시·군</label><div class="seg" id="r"></div></div>
+  <label class="t">게임 방식</label><div class="seg" id="g">
+    <button data-v="m" class="on">미션 탐방<small>정해진 미션을 모두 마치기</small></button>
+    <button data-v="t">도장 모으기<small>시간 안에 도장 많이 받기</small></button>
+    <button data-v="h">보물찾기<small>단서를 읽고 그곳 찾아가기</small></button></div>
+  <label class="t">제한 시간</label><div class="seg" id="min"><button data-v="5">5분</button><button data-v="10">10분</button><button data-v="15" class="on">15분</button><button data-v="20">20분</button><button data-v="30">30분</button></div>
+  <p class="note" id="scope"></p>
+  <button class="btn" id="make">QR 만들기</button>
+</section>
+<section class="card"><h2>학생에게 보여 줄 QR</h2><div id="qrbox"><div id="qr"></div><div id="sum">먼저 왼쪽에서 QR을 만들어 주세요</div><div id="code"></div>
+  <input id="link" readonly aria-label="게임 주소"><button class="btn line" id="copy">주소 복사</button><button class="btn line" id="big">순위표 크게 보기</button></div></section>
+<section class="card wide"><h2>우리 반 순위표</h2><p id="st">QR을 만들면 그 게임의 기록이 여기에 모입니다.</p><ol id="rank"></ol></section>
+</main>
+<script type="module">
+import qrcode from './qr.js';
+import {loadScores,clock,MODES,REGIONS} from './game.js';
+const $=id=>document.getElementById(id), pick={lv:'3',r:'홍성군',g:'m',min:'15'};
+$('r').append(...REGIONS.map(n=>{ const b=document.createElement('button'); b.dataset.v=n; b.textContent=n; if(n==='홍성군') b.className='on'; return b; }));
+for(const k of ['lv','r','g','min']) $(k).addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; pick[k]=b.dataset.v; for(const x of $(k).children) x.classList.toggle('on',x===b); note(); });
+function note(){ $('rw').style.display=pick.lv==='3'?'':'none';
+  $('scope').textContent=pick.lv==='3'?`3학년은 ${pick.r} 안의 장소만 이름표와 퀴즈가 나옵니다. 다른 시·군은 걸어가 볼 수는 있지만 문제로 나오지 않습니다.`:'4학년은 충청남도 15개 시·군 전체가 문제로 나옵니다.'; }
+note();
+let room=null, timer=null;
+function make(){ room=Array.from(crypto.getRandomValues(new Uint8Array(6)),b=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[b%32]).join('');
+  const u=new URL('./index.html',location.href); u.search=''; u.searchParams.set('g',pick.g); u.searchParams.set('lv',pick.lv); if(pick.lv==='3') u.searchParams.set('r',pick.r); u.searchParams.set('min',pick.min); u.searchParams.set('room',room);
+  const q=qrcode(0,'M'); q.addData(u.href); q.make(); $('qr').innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true});
+  $('sum').textContent=`${pick.lv}학년 · ${pick.lv==='3'?pick.r:'충청남도'} · ${MODES[pick.g]} · ${pick.min}분`; $('code').textContent='방 코드 '+room; $('link').value=u.href;
+  history.replaceState(null,'','#'+room+'.'+encodeURIComponent($('sum').textContent)+'.'+encodeURIComponent(u.search)); $('rank').textContent=''; poll(); clearInterval(timer); timer=setInterval(poll,5000); }
+async function poll(){ if(!room||document.hidden) return; try{ const rows=await loadScores(room); $('st').textContent=rows.length?`${rows.length}팀이 기록을 올렸습니다. 5초마다 새로 고칩니다.`:'아직 올라온 기록이 없습니다. 5초마다 새로 고칩니다.';
+    $('rank').textContent=''; rows.forEach((r,i)=>{ const li=document.createElement('li'); for(const [t,v] of [['em',i+1],['span',r.name],['b',r.score+'점'],['small',clock(r.time)]]){ const e=document.createElement(t); e.textContent=v; li.appendChild(e); } $('rank').appendChild(li); }); }
+  catch(e){ $('st').textContent='순위를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'; } }
+$('make').onclick=make;
+$('copy').onclick=async()=>{ if(!$('link').value) return; try{ await navigator.clipboard.writeText($('link').value); $('copy').textContent='복사했습니다'; }catch(e){ $('link').select(); } setTimeout(()=>$('copy').textContent='주소 복사',1500); };
+$('big').onclick=()=>{ const on=document.body.classList.toggle('show'); $('big').textContent=on?'설정으로 돌아가기':'순위표 크게 보기'; };
+// reopening the page keeps the same game (the room is kept in the address)
+if(location.hash.length>1){ const [rm,sum,qs]=location.hash.slice(1).split('.'); if(/^[A-Z0-9]{6}$/.test(rm)&&qs){ room=rm; const u=new URL('./index.html',location.href); u.search=decodeURIComponent(qs);
+    const q=qrcode(0,'M'); q.addData(u.href); q.make(); $('qr').innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true}); $('sum').textContent=decodeURIComponent(sum); $('code').textContent='방 코드 '+room; $('link').value=u.href; poll(); timer=setInterval(poll,5000); } }
+</script></body></html>
