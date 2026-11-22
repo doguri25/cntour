@@ -317,16 +317,18 @@ const POI=[
 ].map(p=>(p.c='청양군',p.t[0]+=270,p.l[0]+=270,p.t[1]+=344,p.l[2]+=344,p)));
 POI.forEach(p=>{ p.t[0]+=270; p.l[0]+=270; });   // the whole map moved one column east when Taean was added
 // ---------- block collector
-const NW=330,NH=210, MAPW=5*NW,MAPH=4*NH;   // tile size; the regions below were written for 270x172 tiles and are spread onto these
+// a class game (?g=…) is played on a wide board unless the teacher switched it off (x= without 'w'): same things, twice as far apart
+const GQ=new URLSearchParams(location.search), WIDE=GQ.get('wide')==='1'||(!!GQ.get('g')&&(GQ.get('x')===null||GQ.get('x').includes('w')));   // ?wide=1 shows the wide board in free play
+const NW=WIDE?540:330,NH=WIDE?344:210, MAPW=5*NW,MAPH=4*NH, KX=NW/270, KZ=NH/172, WF=NW/330, SEAW=WIDE?27*KX:27, SEAN=WIDE?22*KZ:22;   // tile size; the regions below were written for 270x172 tiles and are spread onto these
 const boxes=[],studs=[]; let OX=0,OZ=0,BX=0,BZ=0,SX=0; const WATER=new Set(),LAKES=[];
-let REMAP=true;
+let REMAP=!WIDE; const studAt=[], RAILS=[];
 // a span on the old grid -> the new grid: things keep their place inside their tile; long things that reach the tile's far edge (roads, rivers, ground) are stretched across the new land
 function mapSpan(a,len,T0,T1){ const i=Math.floor(a/T0+1e-9), a2=i*T1+(a-i*T0); if(len<30) return [a2,len]; const e=a+len, j=Math.floor(e/T0+1e-9), re=e-j*T0; return [a2,(re>T0-3.5?(j+1)*T1:j*T1+re)-a2]; }
-const fX=x=>{ const i=Math.floor(x/270+1e-9); return i*NW+(x-i*270); }, fZ=z=>{ const i=Math.floor(z/172+1e-9); return i*NH+(z-i*172); };
+const fX=WIDE?x=>x*KX:x=>{ const i=Math.floor(x/270+1e-9); return i*NW+(x-i*270); }, fZ=WIDE?z=>z*KZ:z=>{ const i=Math.floor(z/172+1e-9); return i*NH+(z-i*172); };
 const mapRect=r=>{ if(!REMAP) return r; const a=mapSpan(r[0],r[2],270,NW), b=mapSpan(r[1],r[3],172,NH); return [a[0],b[0],a[1],b[1]]; };
 function lake(x,z,w,d){ LAKES.push(mapRect([x+BX+SX,z+BZ,w,d])); B(x,G,z,w,.25,d,C.water,{s:false}); WATER.add(boxes.length-1); }
 function B(x,y,z,w,h,d,c,o={}){
-  x+=OX+BX+SX; z+=OZ+BZ; if(REMAP){ [x,w]=mapSpan(x,w,270,NW); [z,d]=mapSpan(z,d,172,NH); } boxes.push([x,y,z,w,h,d,c]);
+  x+=OX+BX+SX; z+=OZ+BZ; if(REMAP){ [x,w]=mapSpan(x,w,270,NW); [z,d]=mapSpan(z,d,172,NH); } studAt.push(studs.length); boxes.push([x,y,z,w,h,d,c]);
   if(o.s!==false){ const nx=Math.floor(w+1e-6),nz=Math.floor(d+1e-6),ox=(w-nx)/2,oz=(d-nz)/2;
     for(let i=0;i<nx;i++)for(let j=0;j<nz;j++)studs.push([x+ox+i+.5,y+h,z+oz+j+.5,c]); }
 }
@@ -416,8 +418,8 @@ function along(x,z,len,ns,fn){ if(!REMAP) return fn(x,z,len); const ax=x+OX+BX+S
   const o=[OX,OZ,BX,BZ,SX]; OX=OZ=BX=BZ=SX=0; REMAP=false; fn(nx,nz,a[1]); REMAP=true; [OX,OZ,BX,BZ,SX]=o; }
 function roadEW(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,len,4])); T(x,G,z,len,.3,4,C.road); along(x,z,len,0,(x,z,len)=>{ for(let i=x+1;i<x+len-2;i+=4) T(i,G+.3,z+1.9,2,.04,.2,C.white); }); }
 function roadNS(x,z,len){ ROADS.push(mapRect([x+BX+SX,z+BZ,4,len])); T(x,G,z,4,.3,len,C.road); along(x,z,len,1,(x,z,len)=>{ for(let i=z+1;i<z+len-2;i+=4) T(x+1.9,G+.3,i,.2,.04,2,C.white); }); }
-function railNS(x,z,len){ T(x,G,z,2.6,.2,len,C.gray); along(x,z,len,1,(x,z,len)=>{ for(let i=z+.3;i<z+len;i+=1.5) T(x+.2,G+.2,i,2.2,.11,.6,C.brown); }); T(x+.55,G+.31,z,.28,.14,len,C.dgray); T(x+1.77,G+.31,z,.28,.14,len,C.dgray); }
-function railEW(x,z,len){ T(x,G,z,len,.2,2.6,C.gray); along(x,z,len,0,(x,z,len)=>{ for(let i=x+.3;i<x+len;i+=1.5) T(i,G+.2,z+.2,.6,.11,2.2,C.brown); }); T(x,G+.31,z+.55,len,.14,.28,C.dgray); T(x,G+.31,z+1.77,len,.14,.28,C.dgray); }
+function railNS(x,z,len){ RAILS.push([x+OX+BX+SX,z+OZ+BZ,2.6,len]); T(x,G,z,2.6,.2,len,C.gray); along(x,z,len,1,(x,z,len)=>{ for(let i=z+.3;i<z+len;i+=1.5) T(x+.2,G+.2,i,2.2,.11,.6,C.brown); }); T(x+.55,G+.31,z,.28,.14,len,C.dgray); T(x+1.77,G+.31,z,.28,.14,len,C.dgray); }
+function railEW(x,z,len){ RAILS.push([x+OX+BX+SX,z+OZ+BZ,len,2.6]); T(x,G,z,len,.2,2.6,C.gray); along(x,z,len,0,(x,z,len)=>{ for(let i=x+.3;i<x+len;i+=1.5) T(i,G+.2,z+.2,.6,.11,2.2,C.brown); }); T(x,G+.31,z+.55,len,.14,.28,C.dgray); T(x,G+.31,z+1.77,len,.14,.28,C.dgray); }
 
 BZ=HH+16;
 // ---------- roads and railway (Janghang line: north-east -> Hongseong -> Gwangcheon)
@@ -837,7 +839,7 @@ town(110,100,160,118,4); town(110,72,150,88,3); town(196,150,222,166,2);
 // ================= DANGJIN-SI (north) =================
 BX=HW; BZ=0;
 roadEW(0,92,270); lake(238,64,32,58);
-town(96,58,126,84,4); { const b0=boxes.length,s0=studs.length,onRail=v=>v[0]>fX(BX+SX+151.2)&&v[0]<fX(BX+SX+159.2); town(140,98,166,112,3);   // same random draws as before, minus the row of houses that stood on the railway
+town(96,58,126,84,4); { const b0=boxes.length,s0=studs.length,onRail=v=>v[0]>(REMAP?fX(BX+SX+151.2):BX+SX+151.2)&&v[0]<(REMAP?fX(BX+SX+159.2):BX+SX+159.2); town(140,98,166,112,3);   // same random draws as before, minus the row of houses that stood on the railway
   const kb=boxes.slice(b0).filter(v=>!onRail(v)),ks=studs.slice(s0).filter(v=>!onRail(v)); boxes.length=b0; boxes.push(...kb); studs.length=s0; studs.push(...ks); } mountain(20,40,12,10,[[32,50,7,7]],'hill');
 // ================= GONGJU-SI (south-east) =================
 BX=HW*2; BZ=HH*2;
@@ -902,13 +904,52 @@ for(let i=0;i<8;i++) B(300,G+i*1.2,40,2,1.2,2,i%2?C.lgray:C.white,{s:false}); B(
 town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
 BX=0; BZ=0;
 // ---------- the tiles grow: everything above was laid out on 270x172 tiles; from here on all coordinates are on the new, larger grid
+// ---------- the wide board: every hand-built thing keeps its size and moves to twice its distance; roads, rivers, rails, water and ground stretch with the land
+const ROADS0=ROADS.map(r=>r.slice()), RAILS0=RAILS.map(r=>r.slice());
+if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), GC=new Set([C.water,C.road,C.sand,C.green,0x5ab955,0x47a544,C.black,C.yellow]);
+  const find=a=>{ while(par[a]!==a){ par[a]=par[par[a]]; a=par[a]; } return a; };
+  const lineOf=(w,d)=>{ const mx=Math.max(w,d), mn=Math.min(w,d); return mx>=30&&mn<=8?(w>d?2:3):0; };
+  for(let n=0;n<N;n++){ par[n]=n; const b=boxes[n], w=b[3], d=b[5], h=b[4], mx=Math.max(w,d), mn=Math.min(w,d);
+    if(n<NG){ if(mx>=30) kind[n]=1; continue; }
+    if(h<=1.25&&lineOf(w,d)) kind[n]=lineOf(w,d);                                                   // long and low: road, river, rail, fence rail, bridge deck
+    else if(GC.has(b[6])&&b[1]+h<=G+.5&&(mx>=30||mn>=12)) kind[n]=1; }                              // a wide patch of ground or water
+  // things that touch move together as one piece (thin floor markings follow the piece they lie on without joining two pieces)
+  const CS=4, cells=new Map(), key=(i,j)=>i*8192+j, E=.35;
+  const touch=(a,b)=>a[0]-E<b[0]+b[3]&&b[0]-E<a[0]+a[3]&&a[2]-E<b[2]+b[5]&&b[2]-E<a[2]+a[5];
+  for(const flat of [false,true]) for(let n=NG;n<N;n++){ if(kind[n]||(boxes[n][4]<=.12)!==flat) continue; const b=boxes[n]; let done=false;
+    for(let i=Math.floor((b[0]-E)/CS);i<=Math.floor((b[0]+b[3]+E)/CS)&&!done;i++) for(let j=Math.floor((b[2]-E)/CS);j<=Math.floor((b[2]+b[5]+E)/CS)&&!done;j++){ const k=key(i,j); let a=cells.get(k);
+      if(a) for(const m of a){ if(touch(b,boxes[m])){ const ra=find(n), rb=find(m); if(ra!==rb) par[ra]=rb; if(flat){ done=true; break; } } }
+      if(!flat){ if(!a) cells.set(k,a=[]); a.push(n); } } }
+  const box=new Map(); for(let n=0;n<N;n++){ if(kind[n]) continue; const r=find(n), b=boxes[n]; let q=box.get(r); if(!q) box.set(r,q=[1e9,1e9,-1e9,-1e9]); q[0]=Math.min(q[0],b[0]); q[1]=Math.min(q[1],b[2]); q[2]=Math.max(q[2],b[0]+b[3]); q[3]=Math.max(q[3],b[2]+b[5]); }
+  for(const q of box.values()){ q[4]=(q[0]+q[2])/2*(KX-1); q[5]=(q[1]+q[3])/2*(KZ-1); }
+  const rect=r=>{ const l=lineOf(r[2],r[3]); if(l===2){ const e=r[3]*(KX-1)/2; return [r[0]*KX-e,(r[1]+r[3]/2)*KZ-r[3]/2,r[2]*KX+2*e,r[3]]; } if(l===3){ const e=r[2]*(KZ-1)/2; return [(r[0]+r[2]/2)*KX-r[2]/2,r[1]*KZ-e,r[2],r[3]*KZ+2*e]; } return [r[0]*KX,r[1]*KZ,r[2]*KX,r[3]*KZ]; };
+  // each stud belongs to the block whose top it sits on (found by position: block numbers shift when a region removes blocks)
+  const own=new Int32Array(studs.length).fill(-1), sg=new Map(), had=new Uint8Array(N);
+  for(let n=0;n<N;n++){ const b=boxes[n]; for(let i=Math.floor(b[0]/CS);i<=Math.floor((b[0]+b[3])/CS);i++) for(let j=Math.floor(b[2]/CS);j<=Math.floor((b[2]+b[5])/CS);j++){ if(b[3]>60||b[5]>60) continue; const k=key(i,j); let a=sg.get(k); if(!a) sg.set(k,a=[]); a.push(n); } }
+  const bigs=[]; for(let n=0;n<N;n++) if(boxes[n][3]>60||boxes[n][5]>60) bigs.push(n);
+  studs.forEach((st,i)=>{ const hit=m=>{ const b=boxes[m]; return Math.abs(b[1]+b[4]-st[1])<.01&&st[0]>b[0]-.01&&st[0]<b[0]+b[3]+.01&&st[2]>b[2]-.01&&st[2]<b[2]+b[5]+.01&&b[6]===st[3]; };
+    const a=sg.get(key(Math.floor(st[0]/CS),Math.floor(st[2]/CS))); if(a) for(const m of a) if(hit(m)){ own[i]=m; break; } if(own[i]<0) for(const m of bigs) if(hit(m)){ own[i]=m; break; } if(own[i]>=0) had[own[i]]=1; });
+  const out=[];
+  studs.forEach((st,i)=>{ const n=own[i]; if(n<0){ st[0]*=KX; st[2]*=KZ; out.push(st); } else if(!kind[n]){ const q=box.get(find(n)); st[0]+=q[4]; st[2]+=q[5]; out.push(st); } });
+  for(let n=0;n<N;n++){ const b=boxes[n];
+    if(!kind[n]){ const q=box.get(find(n)); b[0]+=q[4]; b[2]+=q[5]; continue; }
+    const r=kind[n]===1?[b[0]*KX,b[2]*KZ,b[3]*KX,b[5]*KZ]:rect([b[0],b[2],b[3],b[5]]); b[0]=r[0]; b[2]=r[1]; b[3]=r[2]; b[5]=r[3];
+    if(had[n]){ const nx=Math.floor(b[3]+1e-6),nz=Math.floor(b[5]+1e-6),ox=(b[3]-nx)/2,oz=(b[5]-nz)/2; for(let i=0;i<nx;i++)for(let j=0;j<nz;j++) out.push([b[0]+ox+i+.5,b[1]+b[4],b[2]+oz+j+.5,b[6]]); } }
+  studs.length=0; for(const st of out) studs.push(st);
+  ROADS.forEach((r,i)=>ROADS[i]=rect(r)); LAKES.forEach((r,i)=>LAKES[i]=rect(r)); RAILS.forEach((r,i)=>RAILS[i]=rect(r));
+  // a place follows the piece it belongs to
+  const qs=[...box.values()];
+  for(const p of POI){ const lx=p.l?p.l[0]:p.t[0], lz=p.l?p.l[2]:p.t[1]; let best=null, bd=1e9, ba=1e18;   // the smallest piece under the name tag, else the nearest piece within reach
+    for(const q of qs){ if(q[2]-q[0]<1.5&&q[3]-q[1]<1.5) continue; const dx=Math.max(q[0]-lx,0,lx-q[2]), dz=Math.max(q[1]-lz,0,lz-q[3]), d=Math.hypot(dx,dz), ar=(q[2]-q[0])*(q[3]-q[1]); if(d<bd-1e-6||(d<1e-6&&bd<1e-6&&ar<ba)){ bd=d; ba=ar; best=q; } }
+    if(best&&bd<6){ p.t=[p.t[0]+best[4],p.t[1]+best[5]]; if(p.l) p.l=[p.l[0]+best[4],p.l[1],p.l[2]+best[5]]; }
+    else { p.t=[p.t[0]*KX,p.t[1]*KZ]; if(p.l) p.l=[p.l[0]*KX,p.l[1],p.l[2]*KZ]; } } }
 REMAP=false; TW=NW; TH=NH;
 for(const t of TILES.concat(SEAT,EXTRA)){ t[0]=t[0]/270*NW; t[1]=t[1]/172*NH; }
-for(const p of POI){ p.t=[fX(p.t[0]),fZ(p.t[1])]; if(p.l) p.l=[fX(p.l[0]),p.l[1],fZ(p.l[2])]; }
+if(!WIDE) for(const p of POI){ p.t=[fX(p.t[0]),fZ(p.t[1])]; if(p.l) p.l=[fX(p.l[0]),p.l[1],fZ(p.l[2])]; }
 { const any=(x,z)=>hasTile(x,z)||EXTRA.some(t=>t[0]===x&&t[1]===z);   // borders between neighbours, and grass patches on the new land
-  for(const [tx,tz] of TILES.concat(EXTRA)){ const c0=WS(tx,tz),r0=NS(tx,tz),lx=tx+(c0?27:0),lz=tz+(r0?22:0);
+  for(const [tx,tz] of TILES.concat(EXTRA)){ const c0=WS(tx,tz),r0=NS(tx,tz),lx=tx+(c0?SEAW:0),lz=tz+(r0?SEAN:0);
     if(any(tx+TW,tz)) T(tx+TW-.2,G,lz,.4,.1,tz+TH-lz,C.yellow); if(any(tx,tz+TH)) T(lx,G,tz+TH-.2,tx+TW-lx,.1,.4,C.yellow);
-    for(let i=0;i<130;i++){ const e=rnd2()<.6; T(e?tx+270+rnd2()*(TW-273):lx+1+rnd2()*(tx+TW-lx-4),G,e?lz+1+rnd2()*(tz+TH-lz-4):tz+172+rnd2()*(TH-175),2,0.05,2,rnd2()<.5?0x5ab955:0x47a544); } } }
+    if(!WIDE) for(let i=0;i<130;i++){ const e=rnd2()<.6; T(e?tx+270+rnd2()*(TW-273):lx+1+rnd2()*(tx+TW-lx-4),G,e?lz+1+rnd2()*(tz+TH-lz-4):tz+172+rnd2()*(TH-175),2,0.05,2,rnd2()<.5?0x5ab955:0x47a544); } } }
 // map-centre plaza (start)
 START[0]=MAPW/2; START[1]=2*NH-10;
 at(START[0]-677,START[1]-344,()=>{
@@ -920,7 +961,7 @@ T(682.4,G,347.4,.5,4.4,.5,C.dgray); T(680.6,G+3.4,347.5,1.7,.7,.3,C.blue); T(683
 const occ=new Uint8Array(MAPW*MAPH);
 function mark(){ occ.fill(0); for(let n=NG;n<boxes.length;n++){ const b=boxes[n]; if(b[4]<=.06) continue;
   for(let j=Math.max(0,Math.floor(b[2]-1));j<Math.min(MAPH,b[2]+b[5]+1);j++) for(let i=Math.max(0,Math.floor(b[0]-1));i<Math.min(MAPW,b[0]+b[3]+1);i++) occ[j*MAPW+i]=1; } }
-function inLand(x,z){ if(EXTRA.some(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2)) return true; const t=TILES.find(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2); return !!t&&!(WS(t[0],t[1])&&x<t[0]+30)&&!(NS(t[0],t[1])&&z<27); }
+function inLand(x,z){ if(EXTRA.some(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2)) return true; const t=TILES.find(t=>x>=t[0]+2&&x<t[0]+TW-2&&z>=t[1]+2&&z<t[1]+TH-2); return !!t&&!(WS(t[0],t[1])&&x<t[0]+SEAW+3)&&!(NS(t[0],t[1])&&z<SEAN+5); }
 function free(x,z,w,d){ if(!inLand(x,z)||!inLand(x+w,z+d)) return false; for(let j=z;j<z+d;j++)for(let i=x;i<x+w;i++) if(occ[j*MAPW+i]) return false; return true; }
 function take(x,z,w,d){ for(let j=Math.max(0,z);j<Math.min(MAPH,z+d);j++)for(let i=Math.max(0,x);i<Math.min(MAPW,x+w);i++) occ[j*MAPW+i]=1; }
 mark();
@@ -1493,7 +1534,7 @@ const SITES=[
 ['금산군','진산성지성당',60,40,'church',{},'우리나라 천주교의 첫 순교자를 기리는 성당이에요. 진산면에 있어요.']
 ];
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
-  const [cx,cz]=CO[reg]; let x=cx+lx,z=cz+lz,h,t;
+  const [cx,cz]=CO[reg]; let x=cx+Math.round(WIDE?lx*KX:lx),z=cz+Math.round(WIDE?lz*KZ:lz),h,t;
   if(kind==='island'){
     at(x,z,()=>{ T(0,0,0,8,1.3,8,C.sand); T(1,1.3,1,6,.4,6,C.green);
       if(o.f==='hermit'){ B(2.5,1.7,3,3,1.4,2,C.cream); hanokRoof(2.5,3.1,3,3,2); pine(5.6,1.7,1.2); }
@@ -1626,6 +1667,10 @@ for(const b of boxes) for(let i=0;i<6;i++) b[i]*=S;
 for(const s of studs){ s[0]*=S; s[1]*=S; s[2]*=S; }
 POI.forEach(p=>{ p.m=[p.t[0],p.t[1]]; p.t=[p.t[0]*S,p.t[1]*S]; p.l=p.l.map(v=>v*S); p.r*=S; });
 const SPOS=[START[0]*S,START[1]*S];
+// on the wide board the baked shadow covers the regions in play (a class of one county gets sharp shadows there)
+if(WIDE){ const rs=(GQ.get('lv')==='4'?[]:(GQ.get('r')||'').split(',')).filter(n=>CO[n]), list=rs.length?rs.map(n=>CO[n]):TILES; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const t of list){ x0=Math.min(x0,t[0]); z0=Math.min(z0,t[1]); x1=Math.max(x1,t[0]+TW); z1=Math.max(z1,t[1]+TH); }
+  const cx=(x0+x1)/2*S, cz=(z0+z1)/2*S, r=Math.hypot(x1-x0,z1-z0)/2*S*1.03, dir=new THREE.Vector3(-172,634,311).normalize(), dist=r*1.5+400, sc=sun.shadow.camera;
+  sun.target.position.set(cx,0,cz); sun.position.set(cx+dir.x*dist,dir.y*dist,cz+dir.z*dist); sc.left=-r; sc.right=r; sc.top=r; sc.bottom=-r; sc.near=20; sc.far=dist*2.4; sc.updateProjectionMatrix(); sun.target.updateMatrixWorld(); }
 // ---------- collision grid (4-unit cells). Thin decals (h<=0.12) and clouds do not collide.
 const CS=4,GW=Math.ceil(MW/CS),GH=Math.ceil(MH/CS),grid=Array.from({length:GW*GH},()=>[]);
 boxes.forEach((b,n)=>{ if(b[4]<=.18||b[1]>31) return;
@@ -1637,6 +1682,10 @@ function around(x,z,fn){ const i0=Math.max(0,Math.floor((x-PR)/CS)),i1=Math.min(
 // highest surface under the footprint that is not above `lim`; returns [top, isSea]
 function ground(x,z,lim){ let top=-9,sea=false; around(x,z,(b,n)=>{ const t=b[1]+b[4]; if(t<=lim&&t>top){ top=t; sea=WATER.has(n); } }); return [top,sea]; }
 function hits(x,y,z){ let h=false; around(x,z,b=>{ if(b[1]<y+PH&&b[1]+b[4]>y+.02) h=true; }); return h; }
+// on the wide board a place seen from the shore (an island, a lake) may have lost its standing point to the water: walk it outward from the name tag to the first dry, open ground
+if(WIDE) for(const p of POI){ const ok=(x,z)=>{ const g=ground(x,z,G*S+1.2); return !g[1]&&g[0]>.5&&!hits(x,g[0],z); }; if(ok(p.t[0],p.t[1])) continue;
+  let dx=p.t[0]-p.l[0], dz=p.t[1]-p.l[2], d=Math.hypot(dx,dz); if(d<.5){ dx=1; dz=0; d=1; } dx/=d; dz/=d;
+  for(let r=d;r<d+300;r+=1.5){ const x=p.l[0]+dx*r, z=p.l[2]+dz*r; if(ok(x,z)){ p.t=[x,z]; p.m=[x/S,z/S]; break; } } }
 // ---------- instanced blocks with brick seams
 // brick bevels, ocean waves and the stud were modelled and baked in Blender (see blender/bake.py in the project notes)
 const flatTex=new THREE.DataTexture(new Uint8Array([128,128,255,255]),1,1); flatTex.needsUpdate=true;
@@ -1706,7 +1755,7 @@ const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,
     p.push(ax*r,0,az*r, ax*r,h,az*r, bx*r,h,bz*r,  ax*r,0,az*r, bx*r,h,bz*r, bx*r,0,bz*r); n.push(ax,0,az, ax,0,az, bx,0,bz,  ax,0,az, bx,0,bz, bx,0,bz);
     p.push(0,h,0, bx*r,h,bz*r, ax*r,h,az*r); n.push(0,1,0, 0,1,0, 0,1,0); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(p),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(n),3)); return g; })();
-const studMeshes=[]; const CHK=90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
+const studMeshes=[]; const CHK=WIDE?150:90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
 const tinyMeshes=[], isTiny=b=>b[1]<3*S&&((b[3]<=.95*S&&b[5]<=.95*S&&b[4]<=1.5*S)||(b[4]<=.3*S&&Math.min(b[3],b[5])<=.65*S&&Math.max(b[3],b[5])<=80));
 for(const [tiny,list] of [[0,boxes.filter(b=>!isTiny(b))],[1,boxes.filter(isTiny)]]) for(const arr of bucket(list,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
   const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length); if(tiny) tinyMeshes.push(im);
@@ -1832,7 +1881,7 @@ function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!map
   mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
 
 // ---------- controls
-const OVER=2900;
+const OVER=2900*WF;
 const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
 const key={}; let jumpQ=false;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
@@ -1853,7 +1902,7 @@ const pmv=e=>{ const p=pts.get(e.pointerId); if(!p) return; if(e.pointerType==='
   p[0]=e.clientX; p[1]=e.clientY;
   if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } }; cv.addEventListener('pointermove',pmv); lbBox.addEventListener('pointermove',pmv);
 const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; for(const el of [cv,lbBox]){ el.addEventListener('pointerup',pend); el.addEventListener('pointercancel',pend); }
-function zoom(f){ cam.want=Math.min(3500,Math.max(7,cam.want*f)); }
+function zoom(f){ cam.want=Math.min(3500*WF,Math.max(7,cam.want*f)); }
 for(const el of [cv,lbBox]) el.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
 document.getElementById('zi').onclick=()=>zoom(.72); document.getElementById('zo').onclick=()=>zoom(1.4);
 document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=OVER; cam.yaw=0; cam.pitch=.95; } };
@@ -1886,9 +1935,10 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 const TRAINS=[{o:train,fix:462.35,f:u=>245+u*42},{o:train2,fix:692.35,f:u=>60+(1-u)*160},{o:train3,fix:406.35,f:u=>397+(1-u)*240}];
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
-for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
-  else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
-for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
+const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
+for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
+  else { const a2=fZ(m.base-m.span-m.len), b2=fZ(m.base); m.fix=WIDE?across(ROADS0,'z',m.fix,m.base-(m.span+m.len)/2):fX(m.fix); m.span=b2-a2-m.len; m.base=b2; } }
+for(const m of TRAINS){ const f=m.f, z0=f(0), z1=f(1), a=fZ(z0), b=fZ(z1); m.fix=WIDE?across(RAILS0,'z',m.fix,(z0+z1)/2):fX(m.fix); m.f=u=>a+(b-a)*((f(u)-z0)/(z1-z0)); }
 { const cols=[C.red,C.yellow,C.white,C.teal,C.orange,C.purple,C.blue,C.navy]; let n=0;
   const has=(ax,fix,lo,hi)=>LANES.some(m=>{ if(m.ax!==ax||Math.abs(m.fix-fix)>=.2) return false; const a=m.dir>0?m.base:m.base-m.span-m.len, b=m.dir>0?m.base+m.span+m.len:m.base; return a<hi&&b>lo; });
   for(const [x,z,w,h] of ROADS){ if(n>=130) break; const ew=h===4&&w>4, ns=w===4&&h>4, len=ew?w:h; if(!(ew||ns)||len<50) continue; const k=Math.min(8,Math.floor(len/70)+1), sp=2.6+((n*7)%5)*.2;
@@ -1938,7 +1988,7 @@ function tryMove(nx,nz){
   P.x=nx; P.z=nz; P.y=y; return true;
 }
 function physics(dt,dx,dz){
-  if(dx||dz){ const sp=11.5*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(dx||dz){ const sp=(WIDE?15:11.5)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
   if(jumpQ&&P.on){ P.vy=17.5; P.on=false; } jumpQ=false;
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
@@ -2128,7 +2178,7 @@ function updateEnv(dt){
   envC.sun.lerp(tmpC.setHex(e.sun),k); envC.hc.lerp(tmpC.setHex(e.hc),k);
   envC.si+=(e.si*w.dim-envC.si)*k; envC.hi+=(e.hi*(.6+.4*w.dim)-envC.hi)*k; envC.ex+=(e.ex-envC.ex)*k; envC.night+=(e.night-envC.night)*k;
   envC.cloud+=(w.cloud-envC.cloud)*k; envC.rain+=((wxI===1?1:0)-envC.rain)*k; envC.bs+=(e.bs-envC.bs)*k; envC.bt+=(e.bt-envC.bt)*k;
-  const fn=w.fog?cam.dist*w.fog[0]:4200, ff=w.fog?cam.dist*w.fog[1]+w.fog[2]:11000; envC.fn+=(fn-envC.fn)*k; envC.ff+=(ff-envC.ff)*k;
+  const fn=w.fog?cam.dist*w.fog[0]:4200*WF, ff=w.fog?cam.dist*w.fog[1]+w.fog[2]:11000*WF; envC.fn+=(fn-envC.fn)*k; envC.ff+=(ff-envC.ff)*k;
   skyU.uTop.value.setRGB(envC.top[0],envC.top[1],envC.top[2]); skyU.uHor.value.setRGB(envC.hor[0],envC.hor[1],envC.hor[2]); skyU.uSunCol.value.setRGB(envC.sc[0],envC.sc[1],envC.sc[2]);
   skyU.uSun.value.set(envC.sd[0],envC.sd[1],envC.sd[2]); skyU.uNight.value=envC.night; skyU.uCloud.value=envC.cloud; skyU.uTime.value=t;
   scene.fog.color.setRGB(envC.hor[0],envC.hor[1],envC.hor[2],THREE.SRGBColorSpace); scene.background.copy(scene.fog.color); scene.fog.near=envC.fn; scene.fog.far=envC.ff;
