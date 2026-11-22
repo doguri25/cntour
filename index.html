@@ -319,8 +319,8 @@ const POI=[
 POI.forEach(p=>{ p.t[0]+=270; p.l[0]+=270; });   // the whole map moved one column east when Taean was added
 // ---------- block collector
 // a class game (?g=…) is played on a wide board unless the teacher switched it off (x= without 'w'): same things, twice as far apart
-const GQ=new URLSearchParams(location.search), WIDE=GQ.get('wide')==='1'||(!!GQ.get('g')&&(GQ.get('x')===null||GQ.get('x').includes('w')));   // ?wide=1 shows the wide board in free play
-const NW=WIDE?540:330,NH=WIDE?344:210, MAPW=5*NW,MAPH=4*NH, KX=NW/270, KZ=NH/172, WF=NW/330, SEAW=WIDE?27*KX:27, SEAN=WIDE?22*KZ:22;   // tile size; the regions below were written for 270x172 tiles and are spread onto these
+const GQ=new URLSearchParams(location.search), BIG=GQ.get('wide')==='1'||(!!GQ.get('g')&&(GQ.get('x')===null||GQ.get('x').includes('w'))), WIDE=true;   // BIG: the class board (?wide=1 shows it in free play). Every board is now laid out by spreading the hand-built map.
+const NW=BIG?540:467,NH=BIG?344:297, MAPW=5*NW,MAPH=4*NH, KX=NW/270, KZ=NH/172, WF=NW/330, SEAW=WIDE?27*KX:27, SEAN=WIDE?22*KZ:22;   // tile size; the regions below were written for 270x172 tiles and are spread onto these
 const boxes=[],studs=[]; let OX=0,OZ=0,BX=0,BZ=0,SX=0; const WATER=new Set(),LAKES=[];
 let REMAP=!WIDE; const studAt=[], RAILS=[];
 // a span on the old grid -> the new grid: things keep their place inside their tile; long things that reach the tile's far edge (roads, rivers, ground) are stretched across the new land
@@ -1669,7 +1669,7 @@ for(const s of studs){ s[0]*=S; s[1]*=S; s[2]*=S; }
 POI.forEach(p=>{ p.m=[p.t[0],p.t[1]]; p.t=[p.t[0]*S,p.t[1]*S]; p.l=p.l.map(v=>v*S); p.r*=S; });
 const SPOS=[START[0]*S,START[1]*S];
 // on the wide board the baked shadow covers the regions in play (a class of one county gets sharp shadows there)
-if(WIDE){ const rs=(GQ.get('lv')==='4'?[]:(GQ.get('r')||'').split(',')).filter(n=>CO[n]), list=rs.length?rs.map(n=>CO[n]):TILES; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const t of list){ x0=Math.min(x0,t[0]); z0=Math.min(z0,t[1]); x1=Math.max(x1,t[0]+TW); z1=Math.max(z1,t[1]+TH); }
+{ const rs=(GQ.get('lv')==='4'||!GQ.get('g')?[]:(GQ.get('r')||'').split(',')).filter(n=>CO[n]), list=rs.length?rs.map(n=>CO[n]):TILES; let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9; for(const t of list){ x0=Math.min(x0,t[0]); z0=Math.min(z0,t[1]); x1=Math.max(x1,t[0]+TW); z1=Math.max(z1,t[1]+TH); }
   const cx=(x0+x1)/2*S, cz=(z0+z1)/2*S, r=Math.hypot(x1-x0,z1-z0)/2*S*1.03, dir=new THREE.Vector3(-172,634,311).normalize(), dist=r*1.5+400, sc=sun.shadow.camera;
   sun.target.position.set(cx,0,cz); sun.position.set(cx+dir.x*dist,dir.y*dist,cz+dir.z*dist); sc.left=-r; sc.right=r; sc.top=r; sc.bottom=-r; sc.near=20; sc.far=dist*2.4; sc.updateProjectionMatrix(); sun.target.updateMatrixWorld(); }
 // ---------- collision grid (4-unit cells). Thin decals (h<=0.12) and clouds do not collide.
@@ -1756,7 +1756,7 @@ const sgFar=(()=>{ let r=0,h=0; for(let i=0;i<STUD.p.length;i+=3){ r=Math.max(r,
     p.push(ax*r,0,az*r, ax*r,h,az*r, bx*r,h,bz*r,  ax*r,0,az*r, bx*r,h,bz*r, bx*r,0,bz*r); n.push(ax,0,az, ax,0,az, bx,0,bz,  ax,0,az, bx,0,bz, bx,0,bz);
     p.push(0,h,0, bx*r,h,bz*r, ax*r,h,az*r); n.push(0,1,0, 0,1,0, 0,1,0); }
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(p),3)); g.setAttribute('normal',new THREE.BufferAttribute(new Float32Array(n),3)); return g; })();
-const studMeshes=[]; const CHK=WIDE?150:90; function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
+const studMeshes=[]; const CHK=Math.round(90*WF); function bucket(list,kx,kz,big){ const m=new Map(); for(const it of list){ const k=big&&big(it)?'big':Math.floor(kx(it)/CHK)+'_'+Math.floor(kz(it)/CHK); (m.get(k)||m.set(k,[]).get(k)).push(it); } return m; }
 const tinyMeshes=[], isTiny=b=>b[1]<3*S&&((b[3]<=.95*S&&b[5]<=.95*S&&b[4]<=1.5*S)||(b[4]<=.3*S&&Math.min(b[3],b[5])<=.65*S&&Math.max(b[3],b[5])<=80));
 for(const [tiny,list] of [[0,boxes.filter(b=>!isTiny(b))],[1,boxes.filter(isTiny)]]) for(const arr of bucket(list,b=>b[0]+b[3]/2,b=>b[2]+b[5]/2,b=>b[3]>80||b[5]>80).values()){
   const im=new THREE.InstancedMesh(boxGeo,boxMat,arr.length); if(tiny) tinyMeshes.push(im);
@@ -1990,7 +1990,7 @@ function tryMove(nx,nz){
   P.x=nx; P.z=nz; P.y=y; return true;
 }
 function physics(dt,dx,dz){
-  if(dx||dz){ const sp=(WIDE?15:11.5)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
+  if(dx||dz){ const sp=(BIG?15:13)*dt; if(!tryMove(P.x+dx*sp,P.z+dz*sp)){ if(!(dx&&tryMove(P.x+dx*sp,P.z))) dz&&tryMove(P.x,P.z+dz*sp); } }
   if(jumpQ&&P.on){ P.vy=17.5; P.on=false; } jumpQ=false;
   P.vy-=32*dt; if(P.vy<-40) P.vy=-40;
   const ny=P.y+P.vy*dt;
