@@ -8,12 +8,13 @@ const DOCS=`https://firestore.googleapis.com/v1/projects/${FB.projectId}/databas
 
 // ---------- leaderboard (Cloud Firestore over REST: nothing to download)
 export async function sendScore(rec){
-  const id=Array.from(crypto.getRandomValues(new Uint8Array(15)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
+  const id=rec.id||Array.from(crypto.getRandomValues(new Uint8Array(15)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
   const body={writes:[{ update:{ name:`projects/${FB.projectId}/databases/(default)/documents/scores/${id}`, fields:{
       room:{stringValue:rec.room}, mode:{stringValue:rec.mode}, name:{stringValue:rec.name}, score:{integerValue:String(rec.score)}, time:{integerValue:String(rec.time)}, done:{integerValue:String(rec.done)} } },
     updateTransforms:[{fieldPath:'ts',setToServerValue:'REQUEST_TIME'}], currentDocument:{exists:false} }]};
   const r=await fetch(`${DOCS}:commit?key=${FB.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok) throw new Error('save '+r.status); return id; }
+  if(!r.ok){ let dup=false; if(r.status===409&&rec.id){ try{ dup=(await r.json()).error.status==='ALREADY_EXISTS'; }catch(e){} } if(!dup) throw new Error('save '+r.status); }
+  return id; }
 export async function loadScores(room){
   const q={structuredQuery:{from:[{collectionId:'scores'}],where:{fieldFilter:{field:{fieldPath:'room'},op:'EQUAL',value:{stringValue:room}}},limit:300}};
   const r=await fetch(`${DOCS}:runQuery?key=${FB.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)});
@@ -103,14 +104,15 @@ const GNAME={n:'자연',h:'옛 건물·유적',l:'살아가는 모습'};
 
 // ---------- the room on the realtime database: one stream in, small writes out (polling if the stream cannot open)
 function Room(room){
-  const base=`${globalThis.__RTDB||RTDB}/rooms/${room}`, data={}, subs=[]; let es=null, poll=null;
+  const base=`${globalThis.__RTDB||RTDB}/rooms/${room}`, data={}, subs=[]; let es=null, poll=null, loaded=false, busy=false, shut=false;
   const set=(path,v)=>{ const ks=path.split('/').filter(Boolean); if(!ks.length){ for(const k in data) delete data[k]; Object.assign(data,v||{}); return; } let o=data; for(let i=0;i<ks.length-1;i++) o=o[ks[i]]||(o[ks[i]]={}); if(v===null) delete o[ks[ks.length-1]]; else o[ks[ks.length-1]]=v; };
-  const merge=(path,v)=>{ for(const k in v) set(path+'/'+k,v[k]); }, fire=()=>{ for(const f of subs) f(data); };
-  const startPoll=()=>{ if(poll) return; const go=async()=>{ try{ const r=await fetch(base+'.json'); if(r.ok){ set('',await r.json()); fire(); } }catch(e){} }; go(); poll=setInterval(go,1200); };
+  const merge=(path,v)=>{ for(const k in v) set(path+'/'+k,v[k]); }, fire=()=>{ loaded=true; for(const f of subs) f(data); };
+  const startPoll=()=>{ if(poll||shut) return; const go=async()=>{ if(busy) return; busy=true; try{ const r=await fetch(base+'.json'); if(r.ok){ const v=await r.json(); if(poll){ set('',v); fire(); } } }catch(e){} busy=false; }; poll=setInterval(go,1200); go(); };
+  const stopPoll=()=>{ clearInterval(poll); poll=null; };
   try{ es=new EventSource(base+'.json'); es.addEventListener('put',e=>{ const m=JSON.parse(e.data); set(m.path,m.data); fire(); }); es.addEventListener('patch',e=>{ const m=JSON.parse(e.data); merge(m.path,m.data); fire(); });
-    es.onerror=()=>{ if(es.readyState===2||!Object.keys(data).length){ es.close(); startPoll(); } }; }catch(e){ startPoll(); }
+    es.onopen=stopPoll; es.onerror=()=>{ if(es.readyState===2||!loaded) es.close(); startPoll(); }; }catch(e){ startPoll(); }
   const req=(m,p,v)=>fetch(`${base}/${p}.json`,{method:m,headers:{'Content-Type':'application/json'},body:v===undefined?undefined:JSON.stringify(v),keepalive:true});
-  return {data,on:f=>subs.push(f),put:(p,v)=>req('PUT',p,v),patch:(p,v)=>req('PATCH',p,v),del:p=>req('DELETE',p),get:async p=>{ const r=await fetch(`${base}/${p}.json`); return r.ok?r.json():null; }}; }
+  return {data,close(){ shut=true; if(es) es.close(); stopPoll(); },get loaded(){ return loaded; },on:f=>subs.push(f),put:(p,v)=>req('PUT',p,v),patch:(p,v)=>req('PATCH',p,v),del:p=>req('DELETE',p),get:async p=>{ const r=await fetch(`${base}/${p}.json`); return r.ok?r.json():null; }}; }
 export const roomApi=Room;
 
 export function init(api){
@@ -125,7 +127,7 @@ export function init(api){
   const me=Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
   const st={on:false,over:false,t0:0,left:mins*60,stamps:0,wrong:0,hints:0,got:[],sent:false,pts:0,name:'',ch:0,flags:0,chests:0,picks:0,title:-1,mdone:0,paused:0};
   const seeded=str=>{ let s=0; for(const ch of str) s=(s*31+ch.charCodeAt(0))>>>0; return ()=>((s=(s*1664525+1013904223)>>>0)/4294967296); };
-  const rnd=seeded(room+area), rndMe=seeded(room+me), net=NET?Room(room):null;
+  const rnd=seeded(room+area), rndMe=seeded(room+me), net=Room(room), uid=me+me.slice(0,5);
   const add=(n,why)=>{ st.pts=Math.max(0,st.pts+n); if(why) say(`${why} ${n>0?'+':''}${n}점`); drawBar(); };
 
   // ---------- intro: name and character first
@@ -143,6 +145,7 @@ export function init(api){
     let ready=false; const lab=()=>{ if(!ready&&go.disabled) return; if(!ready){ ready=true; go.dataset.ready='1'; } { const ok=!!inp.value.trim(); const t=ok?'게임 시작':'이름을 적어 주세요'; if(go.textContent!==t) go.textContent=t; if(go.disabled!==!ok) go.disabled=!ok; } };
     inp.addEventListener('input',()=>{ st.name=inp.value.trim().slice(0,6); lab(); }); lab(); new MutationObserver(lab).observe(go,{attributes:true,childList:true}); }
   $('count').style.display='none';
+  if(lv===3) $('home').onclick=()=>{ const s=api.regionSpot(regs[0]); api.goTo(regs[0],s[0],s[1]); };
   const bar=el('button',{id:'gbar',className:'glass'}), bt=el('i'), bs=el('span'); bar.append(bt,bs); document.body.appendChild(bar);
   const pan=el('div',{id:'gpan'}), ps=el('div',{className:'sheet'}); pan.appendChild(ps); document.body.appendChild(pan);
   const end=el('div',{id:'gend'}), es=el('div',{className:'sheet'}); end.appendChild(es); document.body.appendChild(end);
@@ -178,13 +181,13 @@ export function init(api){
   const prog=m=>{ const a=st.got.filter(m.f); return Math.min(m.n,m.d?new Set(a.map(p=>p.c)).size:a.length); };
   const mDone=()=>missions.filter(m=>prog(m)>=m.n).length, allDone=()=>(!M||mDone()>=missions.length)&&(!H||hi>=hunt.length);
   const doneN=()=>(M?mDone():0)+(H?hi:0)+(T?st.stamps:0), score=()=>st.pts;
-  const used=()=>Math.min(mins*60,Math.round((performance.now()-st.t0)/1000));
+  const used=()=>Math.min(mins*60,Math.round(((st.pauseAt||performance.now())-st.t0)/1000));
   function clue(p){ let s=p.d; const words=[p.n].concat(p.n.split(/[\s·()]+/).filter(w=>w.length>=2)).sort((a,b)=>b.length-a.length); for(const w of words) s=s.split(w).join('○○'); return s; }
   function hint(p){ const dx=p.t[0]-P.x, dz=p.t[1]-P.z, d=Math.hypot(dx,dz), a=Math.atan2(dx,-dz)*180/Math.PI, dir=['북','북동','동','남동','남','남서','서','북서'][Math.round(((a+360)%360)/45)%8];
     return `${lv===4||regs.length>1?p.c+'에 있어요. ':''}지금 있는 곳에서 ${dir}쪽으로 ${d<60?'아주 가까워요':d<200?'조금 가면 돼요':'멀리 가야 해요'}. 이름은 ${p.n.length}글자예요.`; }
 
   // ---------- multipliers: the last minute, and the class-wide surprise (the same three minutes for everyone, counted from the room's first start)
-  let roomT0=0; const evNow=()=>{ if(!X('e')||!roomT0) return null; const m=(Date.now()-roomT0)/60000, k=Math.floor(m/6); return m>=3&&m%6>=3?['n','h','l'][k%3]:null; };
+  let roomT0=0, skew=0; const evNow=()=>{ if(!X('e')||!roomT0) return null; const m=(Date.now()+skew-roomT0)/60000, k=Math.floor(m/6); return m>=3&&m%6>=3?['n','h','l'][k%3]:null; };
   const mult=p=>(X('d')&&st.left<=60?2:1)*(evNow()&&p&&grp(p)===evNow()?2:1);
 
   const parts=()=>[M&&['미션',`${mDone()}/${missions.length}`],H&&['보물',`${hi}/${hunt.length}`],T&&['도장',st.stamps+'개']].filter(Boolean);
@@ -210,14 +213,18 @@ export function init(api){
   function labFill(e,name,ti,em){ e.textContent=''; if(em){ const b=el('em',{textContent:['','👋','👏','여기야!'][em]}); if(em===3) b.className='txt'; e.appendChild(b); } if(ti>=0&&TITLES[ti]) e.appendChild(el('small',{textContent:TITLES[ti][1]})); e.appendChild(el('span',{textContent:name})); }
   const myLab=()=>labFill(mine,st.name,st.title,performance.now()<emoT?emo:0);
   function push(force){ if(!net||!st.name||!st.joined) return; const now=performance.now(), k=`${P.x.toFixed(1)}_${P.z.toFixed(1)}_${P.y.toFixed(1)}_${P.face.toFixed(1)}`; if(sending&&now-lastSend>3000) sending=false;   // a request that never came back must not stop the reports
-    if(!force&&(sending||now-lastSend<280||(k===lastKey&&now-lastSend<4000))) return;
+    if(!force&&(sending||now-lastSend<280||((!NET||k===lastKey)&&now-lastSend<4000))) return;
     lastSend=now; lastKey=k; sending=true; net.patch('p/'+me,{x:+P.x.toFixed(2),z:+P.z.toFixed(2),y:+P.y.toFixed(2),f:+P.face.toFixed(2),n:st.name,c:st.ch,t:st.title,e:now<emoT?emo:0,ts:Date.now()}).catch(()=>{}).finally(()=>sending=false); }
+  const gone=new Map();
+  function prune(ps){ const now=performance.now(); for(const [id,o] of others) if(!ps[id]||now-o.seen>15000){ if(ps[id]) gone.set(id,o.ts); api.scene.remove(o.m); o.e.remove(); others.delete(id); }
+    for(const id of gone.keys()) if(!ps[id]) gone.delete(id); }
   function sync(d){ const ps=d.p||{}, now=performance.now();
-    for(const id in ps){ if(id===me) continue; const r=ps[id]; if(!r||typeof r.x!=='number') continue; let o=others.get(id);
-      if(!o){ o={m:api.makeAvatar(r.c||0),e:el('div',{className:'av'}),x:r.x,z:r.z,y:r.y||0,f:r.f||0,ts:0,seen:now,c:r.c}; api.scene.add(o.m); api.lbBox.appendChild(o.e); others.set(id,o); o.m.position.set(r.x,r.y||0,r.z); }
-      if(r.ts!==o.ts){ o.ts=r.ts; o.seen=now; } o.tx=r.x; o.tz=r.z; o.ty=r.y||0; o.tf=r.f||0;
-      const key=`${r.n}|${r.t}|${r.e}`; if(key!==o.key){ o.key=key; labFill(o.e,r.n||'',r.t,r.e); } }
-    for(const [id,o] of others) if(!ps[id]||now-o.seen>15000){ api.scene.remove(o.m); o.e.remove(); others.delete(id); }
+    if(NET) for(const id in ps){ if(id===me) continue; const r=ps[id]; if(!r||typeof r.x!=='number'||typeof r.z!=='number') continue; let o=others.get(id);
+      if(!o){ if(gone.has(id)&&gone.get(id)===r.ts) continue;
+        gone.delete(id); o={m:api.makeAvatar(r.c||0),e:el('div',{className:'av'}),x:r.x,z:r.z,y:+r.y||0,f:+r.f||0,ts:0,seen:now,c:r.c}; api.scene.add(o.m); api.lbBox.appendChild(o.e); others.set(id,o); o.m.position.set(r.x,+r.y||0,r.z); }
+      if(r.ts!==o.ts){ o.ts=r.ts; o.seen=now; } o.tx=r.x; o.tz=r.z; o.ty=+r.y||0; o.tf=+r.f||0;
+      const key=`${r.n}|${r.t}|${r.e}`; if(key!==o.key){ o.key=key; labFill(o.e,String(r.n||'').slice(0,6),r.t,r.e); } }
+    prune(ps);
     if(d.t0&&!roomT0) roomT0=d.t0;
     flagsSync(d.flags||{}); chestSync(d.chests||{}); goalSync(d.s||{}); ctlSync(d.ctl||{}); }
   function place(e,x,y,z){ v3.set(x,y,z); const cd=v3.distanceTo(api.camera.position); v3.project(api.camera); const on=cd<170&&v3.z<1&&v3.z>-1&&Math.abs(v3.x)<1.1&&Math.abs(v3.y)<1.1; e.style.display=on?'':'none'; if(on) e.style.transform=`translate(${((v3.x+1)/2*innerWidth).toFixed(1)}px,${((1-v3.y)/2*innerHeight).toFixed(1)}px) translate(-50%,-100%)`; }
@@ -229,20 +236,21 @@ export function init(api){
   const flagMeshes={}, hexc=c=>api.charSpec(c).jacket;
   function flagsSync(fl){ if(!X('f')) return; for(const i in fl){ if(flagMeshes[i]) continue; const p=POI[+i], f=fl[i]; if(!p||!f) continue; const g=new THREE.Group(), pole=new THREE.Mesh(new THREE.BoxGeometry(.18,4.2,.18),new THREE.MeshStandardMaterial({color:0xf2f2f2})), cl=new THREE.Mesh(new THREE.BoxGeometry(1.5,.95,.1),new THREE.MeshStandardMaterial({color:hexc(f.c||0)}));
       pole.position.y=2.1; cl.position.set(.84,3.65,0); g.add(pole,cl); const s=api.safeSpot(p.t[0]+1.6,p.t[1]+1.2); g.position.set(s[0],s[1],s[2]); api.scene.add(g); flagMeshes[i]=g;
-      if(!p.e.dataset.fl){ p.e.dataset.fl='1'; p.e.textContent=`${p.n} 🚩${f.n}`; } } }
+      if(!p.e.dataset.fl){ p.e.dataset.fl='1'; p.e.textContent=`${p.n} 🚩${String(f.n||'').slice(0,6)}`; } } }
   // ---------- chests: two explorers must stand together to open one
   const chests=[]; let chestGeo=null;
   function chestBuild(){ if(!NET||!X('c')) return; const per=lv===4?1:Math.max(2,Math.ceil(6/regs.length)); chestGeo=new THREE.BoxGeometry(1.7,1.2,1.2);
     for(const c of inPlay){ const [x0,z0,w,d]=api.tile(c); for(let k=0;k<per;k++){ const s=api.safeSpot(x0+w*(.12+rnd()*.76),z0+d*(.14+rnd()*.72)), g=new THREE.Group(), box=new THREE.Mesh(chestGeo,new THREE.MeshStandardMaterial({color:0x9a5b2c,roughness:.6})), band=new THREE.Mesh(new THREE.BoxGeometry(1.76,.26,1.26),new THREE.MeshStandardMaterial({color:0xfbbc04,roughness:.3,metalness:.3}));
         box.position.y=.6; band.position.y=.86; g.add(box,band); g.position.set(s[0],s[1],s[2]); api.scene.add(g); chests.push({k:c+k,g,x:s[0],z:s[2],y:s[1],open:false,tried:0}); } } }
-  function chestSync(ch){ for(const c of chests){ const o=ch[c.k]; if(o&&!c.open){ c.open=true; c.g.children[1].position.y=1.5; c.g.children[1].rotation.z=.5; c.g.children[0].material=new THREE.MeshStandardMaterial({color:0xc9a27c,roughness:.7}); if(o.a===me||o.b===me){ st.chests++; add(150,'보물 상자를 함께 열었어요!'); retitle(); } } } }
+  function chestSync(ch){ for(const c of chests){ const o=ch[c.k]; if(o&&!c.open){ c.open=true; c.g.children[1].position.y=1.5; c.g.children[1].rotation.z=.5; c.g.children[0].material=new THREE.MeshStandardMaterial({color:0xc9a27c,roughness:.7}); if((o.a===me||o.b===me)&&st.on){ st.chests++; add(150,'보물 상자를 함께 열었어요!'); retitle(); } } } }
   function chestTick(){ if(!chests.length||!st.on) return; const now=performance.now(); for(const c of chests){ if(c.open||now-c.tried<1500) continue; const d=Math.hypot(P.x-c.x,P.z-c.z); if(d>4.5) continue;
       let pal=null; for(const [id,o] of others) if(Math.hypot(o.x-c.x,o.z-c.z)<4.5){ pal=id; break; }
-      c.tried=now; if(pal) net.put('chests/'+c.k,{a:me,b:pal}).catch(()=>{}); else if(now-(c.said||0)>6000){ c.said=now; say('친구와 둘이 서야 열려요. 「여기야!」로 불러 봐요'); } } }
+      c.tried=now; if(pal) net.put('chests/'+c.k,{a:me,b:pal}).catch(()=>{}); else if(now-(c.said||0)>6000){ c.said=now; say(X('o')?'친구와 둘이 서야 열려요. 「여기야!」로 불러 봐요':'친구와 둘이 서야 열려요'); } } }
   // ---------- the class goal
-  const goal=el('div',{id:'ggoal',className:'glass'}), gi=el('i'), gt=el('span'); goal.append(gi,gt); if(NET&&X('g')) document.body.appendChild(goal); goal.style.display='none'; let goalHit=false;
-  function goalSync(s){ if(!NET||!X('g')||!st.on&&!st.over) return; const vals=Object.values(s).filter(v=>typeof v==='number'), n=Math.max(1,vals.length), tot=vals.reduce((a,b)=>a+b,0), target=Math.max(10,n*5);
-    goal.style.display=''; gi.style.width=Math.min(100,tot/target*100)+'%'; gt.textContent=`우리 반 도장 ${tot} / ${target}`; if(tot>=target&&!goalHit){ goalHit=true; say('우리 반 목표 달성! 모두 잘했어요'); confetti(); } }
+  const goal=el('div',{id:'ggoal',className:'glass'}), gi=el('i'), gt=el('span'); goal.append(gi,gt); if(X('g')) document.body.appendChild(goal); goal.style.display='none'; let goalHit=false, goalKey='';
+  function goalSync(s){ if(!X('g')||!st.on&&!st.over) return; const vals=Object.values(s).filter(v=>typeof v==='number'), n=Math.max(1,vals.length), tot=vals.reduce((a,b)=>a+b,0), target=Math.max(10,n*5);
+    if(goalKey===tot+'/'+target) return;
+    goalKey=tot+'/'+target; goal.style.display=''; gi.style.width=Math.min(100,tot/target*100)+'%'; gt.textContent=`우리 반 도장 ${tot} / ${target}`; if(tot>=target&&!goalHit){ goalHit=true; say('우리 반 목표 달성! 모두 잘했어요'); confetti(); } }
   function confetti(){ const cs=['#ea4335','#fbbc04','#34a853','#4285f4','#ff7fb0']; for(let i=0;i<70;i++){ const c=el('div',{className:'gconf'}); c.style.left=Math.random()*100+'vw'; c.style.background=cs[i%5]; c.style.animationDelay=Math.random()*.9+'s'; document.body.appendChild(c); setTimeout(()=>c.remove(),3800); } }
   // ---------- the teacher's signals
   let gatherSeen=0;
@@ -266,7 +274,7 @@ export function init(api){
     for(const o of opts){ const b=el('button',{textContent:o.t}); b.onclick=()=>{ for(const x of box.children){ x.disabled=true; } b.className=o.ok?'ok':'no'; if(!o.ok) [...box.children].find((x,k)=>opts[k].ok).className='ok'; setTimeout(()=>review(qs,i+1,ok+(o.ok?1:0)),o.ok?900:1900); }; box.appendChild(b); }
     es.appendChild(box); end.style.display='flex'; }
   function done(){ st.final=score(); showEnd(); upload(); }
-  async function upload(){ if(st.sent||st.sending) return; st.sending=true; try{ st.id=await sendScore({room,mode:`${gs}${lv}${regs.join(',')}`.slice(0,40),name:st.name||'이름없음',score:st.final,time:st.time,done:Math.min(600,st.doneN)}); st.sent=true; }catch(e){ st.fail=true; } st.sending=false; if(end.style.display==='flex'&&!st.jopen) showEnd(); }
+  async function upload(){ if(st.sent||st.sending) return; st.sending=true; try{ st.id=await sendScore({id:uid,room,mode:`${gs}${lv}${regs.join(',')}`.slice(0,40),name:st.name||'이름없음',score:st.final,time:st.time,done:Math.min(600,st.doneN)}); st.sent=true; }catch(e){ st.fail=true; } st.sending=false; if(end.style.display==='flex'&&!st.jopen) showEnd(); }
   function ranks(rows,meId){ const ol=el('ol',{className:'grank'}); rows.slice(0,30).forEach((r,i)=>{ const li=el('li'); if(r.id===meId) li.className='me'; li.append(el('em',{textContent:i+1}),el('span',{textContent:r.name}),el('b',{textContent:r.score+'점'}),el('small',{textContent:clock(r.time)})); ol.appendChild(li); }); return ol; }
   async function board(box,meId){ box.textContent=''; box.appendChild(el('p',{className:'gmsg',textContent:'순위를 불러오는 중…'}));
     try{ const rows=await loadScores(room); box.textContent=''; if(!rows.length) box.appendChild(el('p',{className:'gmsg',textContent:'아직 올라온 기록이 없어요.'})); else { const i=rows.findIndex(r=>r.id===meId); if(i>=0) box.appendChild(el('p',{className:'gmsg',textContent:`우리 반 ${rows.length}팀 가운데 ${i+1}등이에요.`})); box.appendChild(ranks(rows,meId)); } }
@@ -287,7 +295,7 @@ export function init(api){
     end.style.display='flex'; }
 
   let evShown=null;
-  setInterval(()=>{ if(!st.on) return; if(api_.frozen) return; st.left=Math.max(0,mins*60-(performance.now()-st.t0)/1000); drawBar(); if(pan.style.display==='flex'){ const s=ps.querySelector('.sub'); if(s) s.textContent=subLine(); }
+  setInterval(()=>{ prune(net.data.p||{}); if(!st.on) return; if(api_.frozen) return; st.left=Math.max(0,mins*60-(performance.now()-st.t0)/1000); drawBar(); if(pan.style.display==='flex'){ const s=ps.querySelector('.sub'); if(s) s.textContent=subLine(); }
     const ev=evNow(), last=X('d')&&st.left<=60, key=(ev||'')+(last?'d':''); if(key!==evShown){ evShown=key; evb.style.display=key?'block':'none'; evb.textContent=[ev&&`깜짝 임무! 지금 「${GNAME[ev]}」 장소는 점수 두 배`,last&&'마지막 1분! 점수 두 배'].filter(Boolean).join(' · '); if(ev) say(`깜짝 임무: ${GNAME[ev]} 장소 점수 두 배!`); }
     if(st.left<=0) finish('time'); },250);
   drawBar();
@@ -296,17 +304,21 @@ export function init(api){
     async start(){ if(lv===3){ const s=api.regionSpot(regs[0]); const a=Math.random()*6.28; api.goTo(regs[0],s[0]+Math.cos(a)*4,s[1]+Math.sin(a)*4); }
       try{ await api.extra(); }catch(e){ try{ await api.extra(); }catch(e2){ say('자료를 불러오지 못했어요. 새로 고침 해 주세요'); return; } }
       build(); chestBuild(); pickBuild(); st.t0=performance.now(); st.on=true; myLab(); if(st.emoBox) st.emoBox.style.display='flex';
-      if(net){ net.on(sync); try{ await net.put('p/'+me,{x:+P.x.toFixed(2),z:+P.z.toFixed(2),y:+P.y.toFixed(2),f:0,n:st.name,c:st.ch,t:-1,e:0,ts:Date.now()}); st.joined=true; }catch(e){} net.put('s/'+me,0).catch(()=>{});
-        net.get('t0').then(v=>{ if(v) roomT0=v; else { const now=Date.now(); net.put('t0',now).then(r=>{ if(r.ok) roomT0=roomT0||now; else net.get('t0').then(x=>{ if(x) roomT0=x; }); }).catch(()=>{}); } }).catch(()=>{});
-        addEventListener('pagehide',()=>{ net.del('p/'+me); }); }
+      if(net){ net.on(sync); if(net.loaded) sync(net.data);
+        net.put('s/'+me,0).catch(()=>{});
+        net.put('p/'+me,{x:+P.x.toFixed(2),z:+P.z.toFixed(2),y:+P.y.toFixed(2),f:0,n:st.name,c:st.ch,t:-1,e:0,ts:Date.now()}).catch(()=>{}).then(()=>{ st.joined=true; return net.patch('p/'+me,{ts:{'.sv':'timestamp'}}); })
+          .then(r=>r.ok?r.json():null).then(v=>{ if(v&&typeof v.ts==='number') skew=v.ts-Date.now(); }).catch(()=>{}).then(()=>net.get('t0'))
+          .then(v=>{ if(v) roomT0=v; else { const now=Date.now()+skew; net.put('t0',now).then(r=>{ if(r.ok) roomT0=roomT0||now; else net.get('t0').then(x=>{ if(x) roomT0=x; }); }).catch(()=>{}); } }).catch(()=>{});
+        addEventListener('pagehide',()=>{ st.joined=false; net.del('p/'+me); }); addEventListener('pageshow',e=>{ if(e.persisted) st.joined=true; }); }
       drawBar(); drawPanel(); pan.style.display='flex'; },
     stamp(p){ if(!st.on) return; st.stamps++; st.got.push(p); let msg='', show=false, gain=T?100:M?20:0;
       if(M){ const d=mDone(); if(d>st.mdone){ gain+=300*(d-st.mdone); st.mdone=d; msg=d>=missions.length?'미션을 모두 마쳤어요!':`미션 ${d}개 완료!`; } }
-      if(H){ if(p===hunt[hi]){ hi++; gain+=300; msg=hi>=hunt.length?'보물을 모두 찾았어요!':'보물 발견! 다음 단서를 확인해요'; show=hi<hunt.length; } else if(!M&&!T) msg='여기는 단서의 그곳이 아니에요'; }
+      if(H){ const h0=hi; while(hi<hunt.length&&st.got.includes(hunt[hi])) hi++;
+        if(hi>h0){ gain+=300*(hi-h0); msg=hi>=hunt.length?'보물을 모두 찾았어요!':'보물 발견! 다음 단서를 확인해요'; show=hi<hunt.length; } else if(!M&&!T) msg='여기는 단서의 그곳이 아니에요'; }
       const k=mult(p); add(gain*k); if(k>1&&gain) msg=(msg?msg+' ':'')+`점수 ${k}배!`; if(msg) say(msg);
       if(net){ net.put('s/'+me,st.stamps).catch(()=>{}); if(X('f')){ const i=POI.indexOf(p); net.put('flags/'+i,{n:st.name,c:st.ch}).then(r=>{ if(r.ok){ st.flags++; add(50,'처음 찾았어요! 깃발을 꽂았어요'); retitle(); } }).catch(()=>{}); } }
       retitle();
-      if(!T&&allDone()) setTimeout(()=>finish('all'),1600);
+      if(st.got.length>=play.length||(!T&&allDone())) setTimeout(()=>finish('all'),1600);
       else if(show) setTimeout(()=>{ if(st.on&&api.isOpen()){ api.closeQ(); } if(st.on){ drawPanel(); pan.style.display='flex'; } },1700);
       drawBar(); },
     wrong(p,box,qm){ if(!st.on) return; st.wrong++; add(T?-30:-10); if(!T) return; st.lock=performance.now()+10000;
@@ -320,7 +332,8 @@ export function init(api){
         // bodies push apart instead of blocking, so nobody can wall a friend in
         if(!P.ride){ const dx=P.x-o.x, dz=P.z-o.z, d=Math.hypot(dx,dz), R=1.15; if(d<R&&Math.abs(P.y-o.y)<2.6){ const nx=d>.01?dx/d:Math.cos(o.w), nz=d>.01?dz/d:Math.sin(o.w), ps=(R-d)*.55, x2=P.x+nx*ps, z2=P.z+nz*ps; if(!api.hits(x2,P.y+.05,z2)){ P.x=x2; P.z=z2; } } } }
       if(st.name&&st.on){ place(mine,P.x,P.y+3.7,P.z); } else mine.style.display='none';
-      if(st.on){ push(false); chestTick(); pickTick(); } },
+      if(st.on||st.over) push(false);
+      if(st.on){ chestTick(); pickTick(); } },
     get state(){ return {st,missions,hunt,hi,score:score(),done:doneN(),total:missions.length+hunt.length,room,gs,lv,regs,others,chests,picks,me,net}; }, finish };
   return api_;
 }

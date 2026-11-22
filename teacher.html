@@ -78,15 +78,23 @@ async function poll(){ if(!room||document.hidden) return; try{ const rows=await 
     $('rank').textContent=''; rows.forEach((r,i)=>{ const li=document.createElement('li'); for(const [t,v] of [['em',i+1],['span',r.name],['b',r.score+'점'],['small',clock(r.time)]]){ const e=document.createElement(t); e.textContent=v; li.appendChild(e); } $('rank').appendChild(li); }); }
   catch(e){ $('st').textContent='순위를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.'; } }
 // 수업 신호: 접속 인원을 보여 주고, 모두 멈추거나 한 시·군으로 모은다
-let live=null, paused=false;
-function signals(list){ live=roomApi(room); paused=false; $('pause').textContent='모두 멈춤'; $('pause').disabled=$('gather').disabled=false; $('gc').textContent=''; for(const n of list){ const o=document.createElement('option'); o.textContent=n; $('gc').appendChild(o); }
-  const r=live; r.on(d=>{ if(r!==live) return; const n=Object.keys(d.p||{}).length, tot=Object.values(d.s||{}).reduce((a,b)=>a+(+b||0),0); $('conn').textContent=`지금 ${n}명이 접속해 있습니다. 반 전체 도장은 ${tot}개입니다.`; if(d.ctl&&!!d.ctl.pause!==paused){ paused=!!d.ctl.pause; $('pause').textContent=paused?'다시 시작':'모두 멈춤'; } }); }
-$('pause').onclick=async()=>{ if(!live) return; paused=!paused; $('pause').textContent=paused?'다시 시작':'모두 멈춤'; try{ await live.patch('ctl',{pause:paused}); }catch(e){ $('conn').textContent='신호를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.'; } };
-$('gather').onclick=async()=>{ if(!live) return; try{ await live.patch('ctl',{gt:Date.now(),gc:$('gc').value}); $('gather').textContent='불렀습니다'; setTimeout(()=>$('gather').textContent='여기로 모여라',1500); }catch(e){ $('conn').textContent='신호를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.'; } };
+let live=null, paused=false, lastD={}; const seen=new Map();
+function conn(){ if(!live) return; const d=lastD, now=Date.now(); let n=0; for(const id in d.p||{}){ const ts=d.p[id]&&d.p[id].ts, s=seen.get(id); if(!s||s[0]!==ts) seen.set(id,[ts,now]); if(now-seen.get(id)[1]<20000) n++; }
+  const tot=Object.values(d.s||{}).reduce((a,b)=>a+(+b||0),0); $('conn').textContent=`지금 ${n}명이 접속해 있습니다. 반 전체 도장은 ${tot}개입니다.`; }
+setInterval(conn,5000);
+function signals(list){ if(live) live.close();
+  seen.clear(); lastD={}; live=roomApi(room); paused=false; $('pause').textContent='모두 멈춤'; $('pause').disabled=$('gather').disabled=false; $('gc').textContent=''; for(const n of list){ const o=document.createElement('option'); o.textContent=n; $('gc').appendChild(o); }
+  const r=live; r.on(d=>{ if(r!==live) return; lastD=d; conn(); if(d.ctl&&!!d.ctl.pause!==paused){ paused=!!d.ctl.pause; $('pause').textContent=paused?'다시 시작':'모두 멈춤'; } }); }
+$('pause').onclick=async()=>{ if(!live) return; const want=!paused; try{ const r=await live.patch('ctl',{pause:want}); if(!r.ok) throw 0; paused=want; $('pause').textContent=paused?'다시 시작':'모두 멈춤'; }catch(e){ $('conn').textContent='신호를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.'; } };
+$('gather').onclick=async()=>{ if(!live) return; try{ const r=await live.patch('ctl',{gt:Date.now(),gc:$('gc').value}); if(!r.ok) throw 0; $('gather').textContent='불렀습니다'; setTimeout(()=>$('gather').textContent='여기로 모여라',1500); }catch(e){ $('conn').textContent='신호를 보내지 못했습니다. 인터넷 연결을 확인해 주세요.'; } };
 $('make').onclick=make;
 $('copy').onclick=async()=>{ if(!$('link').value) return; try{ await navigator.clipboard.writeText($('link').value); $('copy').textContent='복사했습니다'; }catch(e){ $('link').select(); } setTimeout(()=>$('copy').textContent='주소 복사',1500); };
 $('big').onclick=()=>{ const on=document.body.classList.toggle('show'); $('big').textContent=on?'설정으로 돌아가기':'순위표 크게 보기'; };
 // reopening the page keeps the same game (the room is kept in the address)
 if(location.hash.length>1){ const [rm,sum,qs]=location.hash.slice(1).split('.'); if(/^[A-Z0-9]{6}$/.test(rm)&&qs){ room=rm; const u=new URL('./index.html',location.href); u.search=decodeURIComponent(qs);
-    const q=qrcode(0,'M'); q.addData(u.href); q.make(); $('qr').innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true}); $('sum').textContent=decodeURIComponent(sum); $('code').textContent='방 코드 '+room; $('link').value=u.href; poll(); timer=setInterval(poll,5000); const rr=(u.searchParams.get('r')||'').split(',').filter(n=>REGIONS.includes(n)); signals(u.searchParams.get('lv')==='3'&&rr.length?rr:REGIONS); } }
+    const q=qrcode(0,'M'); q.addData(u.href); q.make(); $('qr').innerHTML=q.createSvgTag({cellSize:8,margin:2,scalable:true}); $('sum').textContent=decodeURIComponent(sum); $('code').textContent='방 코드 '+room; $('link').value=u.href; poll(); timer=setInterval(poll,5000); const rr=(u.searchParams.get('r')||'').split(',').filter(n=>REGIONS.includes(n)), sp=u.searchParams, gg=[...(sp.get('g')||'')].filter(c=>'mth'.includes(c));
+    pick.lv=sp.get('lv')==='4'?'4':'3'; if(rr.length) pick.r=rr; if(gg.length) pick.g=gg; if(sp.get('min')) pick.min=sp.get('min'); if(sp.get('x')!==null) pick.x=[...sp.get('x')];
+    for(const k of ['lv','min']) for(const x of $(k).children) x.classList.toggle('on',x.dataset.v===pick[k]);
+    for(const k of ['r','g','x']) for(const x of $(k).children) x.classList.toggle('on',pick[k].includes(x.dataset.v));
+    note(); signals(u.searchParams.get('lv')==='3'&&rr.length?rr:REGIONS); } }
 </script></body></html>

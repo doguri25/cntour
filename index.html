@@ -34,7 +34,8 @@ button{font-family:inherit;color:inherit}
 .rail button:active{background:rgba(26,115,232,.14)}
 .rail svg{width:20px;height:20px;stroke:#3a4352;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 #zoom{top:12px}#sky{top:204px}
-@media(max-height:440px){#sky{top:12px;right:68px}}
+@media(max-height:590px) and (orientation:landscape){body #gemo{top:204px;right:68px;flex-direction:row}}
+@media(max-height:440px){#sky{top:12px;right:68px}body #gemo{top:200px;right:12px;flex-direction:row}}
 /* labels */
 #labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
 .lb{pointer-events:auto;cursor:pointer}
@@ -44,7 +45,7 @@ button{font-family:inherit;color:inherit}
 #goto button{border:0;border-radius:999px;cursor:pointer;font-weight:900;font-size:13.5px;flex:none}
 #gogo{background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;padding:9px 16px;box-shadow:0 4px 12px rgba(26,115,232,.35)}
 #gox{background:#eef2f7;color:#5b6472;width:34px;height:34px;font-size:17px;line-height:1}
-@media(max-width:380px){#goto{left:12px;transform:translate(0,-14px);max-width:calc(100% - 80px)}#goto.on{transform:none}}
+@media(max-width:560px){#goto{left:12px;top:224px;transform:translate(0,-14px);max-width:calc(100% - 80px)}#goto.on{transform:none}}
 #list li{cursor:pointer}
 .lb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(20,30,60,.18),0 4px 10px rgba(20,30,60,.14);will-change:transform;display:flex;align-items:center;gap:5px}
 .lb:before{content:"";width:7px;height:7px;border-radius:50%;background:#f29900;flex:none}
@@ -92,7 +93,8 @@ button{font-family:inherit;color:inherit}
 #act small{font-size:11px;font-weight:700;opacity:.9;line-height:1.3}
 #act b{font-size:15px;font-weight:900;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 #act:active{filter:brightness(.94)}
-@media(max-width:560px){#act{bottom:calc(150px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}}
+@media(max-width:560px){#act{bottom:calc(158px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 32px)}}
+@media(max-width:560px) and (max-height:700px){#act{max-width:calc(100% - 120px)}}
 #qz{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(18,24,38,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);padding:14px;z-index:5}
 #qz.on{display:flex}
 #qz .sheet{position:relative;width:min(440px,100%);max-height:calc(100% - 4px);overflow:hidden;display:flex;flex-direction:column;touch-action:none;user-select:text;-webkit-user-select:text}
@@ -879,7 +881,7 @@ roadEW(0,92,268); roadNS(130,2,170); railNS(160,0,172);
 town(96,60,126,88,4); town(96,98,126,114,4); town(170,60,190,84,3); mountain(36,128,14,12,[[50,140,9,8]],'hill');
 // ================= GYERYONG-SI =================
 BX=1080; BZ=344;
-roadEW(0,86,268); roadNS(130,0,172);
+roadEW(0,86,268); roadNS(130,0,172); T(122,G,0,12,.3,3,C.road);
 mountain(20,16,20,16,[[40,32,13,10],[52,24,7,6]],'rock'); town(108,96,128,112,3); town(136,96,170,110,3);
 // ================= BUYEO-GUN =================
 BX=540; BZ=516;
@@ -899,7 +901,7 @@ BX=810; BZ=172;
 function riv(x,z,w,d){ LAKES.push(mapRect([x+BX,z+BZ,w,d])); T(x,G,z,w,.25,d,C.water); }   // shallow, can be waded
 riv(300,2,236,7);                                                   // Geumgang along the north
 riv(150,130,7,42); riv(150,124,70,7); riv(214,70,7,60); riv(214,64,72,7); riv(280,8,7,62);   // Gapcheon: south-west -> centre -> north
-riv(310,100,7,72); riv(284,94,32,7); riv(284,70,7,30);              // Yudeungcheon
+riv(310,100,7,72); riv(284,94,32,7); riv(283,70,8,30);              // Yudeungcheon
 riv(380,112,7,60); riv(316,106,70,7);                               // Daejeoncheon
 riv(482,10,48,56); riv(500,66,30,44); riv(470,28,12,22); riv(486,110,22,30);   // Daecheong lake on the east edge
 mountain(4,96,30,36,[[30,130,14,11],[50,116,9,8],[20,108,8,7]],'rock');   // Gyeryongsan east face (Sutonggol)
@@ -914,11 +916,17 @@ mountain(230,128,14,18,[[244,150,7,7]],'hill'); mountain(120,40,12,10,[[132,50,5
 roadEW(0,80,540); roadNS(160,0,172); roadNS(392,64,108); roadEW(160,36,232); roadEW(160,120,150);
 B(262,G,84,12,2.8,4,C.white); B(261.6,G+2.8,83.6,12.8,.5,4.8,C.blue); T(260,G,88.4,16,.5,1.4,C.lgray);           // Daejeon station
 for(let i=0;i<8;i++) B(300,G+i*1.2,40,2,1.2,2,i%2?C.lgray:C.white,{s:false}); B(298.5,G+9.6,38.5,5,.6,5,C.lgray,{s:false}); B(299.5,G+10.2,39.5,3,1.6,3,C.orange,{s:false}); T(300.8,G+11.8,40.8,.4,4,.4,C.lgray);   // expo tower
-town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
+{ const b0=boxes.length, s0=studs.length;
+  town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
+  // same random draws as before, minus the houses and trees that stood on a road or in a stream
+  const RW=ROADS.concat(LAKES), over=(v,r)=>Math.min(v[0]+v[3],r[0]+r[2])-Math.max(v[0],r[0])>.6&&Math.min(v[2]+v[5],r[1]+r[3])-Math.max(v[2],r[1])>.6;
+  const lots=boxes.slice(b0).filter(v=>v[1]<=G+.01&&v[4]>=1&&RW.some(r=>over(v,r))).map(v=>[v[0]-1.1,v[2]-1.1,v[0]+v[3]+1.1,v[2]+v[5]+1.1]);
+  const inLot=(x0,z0,x1,z1)=>lots.some(r=>x0>=r[0]&&z0>=r[1]&&x1<=r[2]&&z1<=r[3]);
+  const kb=boxes.slice(b0).filter(v=>!inLot(v[0],v[2],v[0]+v[3],v[2]+v[5])), ks=studs.slice(s0).filter(v=>!inLot(v[0],v[2],v[0],v[2])); boxes.length=b0; boxes.push(...kb); studs.length=s0; studs.push(...ks); }
 BX=0; BZ=0;
 // ---------- the tiles grow: everything above was laid out on 270x172 tiles; from here on all coordinates are on the new, larger grid
 // ---------- the wide board: every hand-built thing keeps its size and moves to twice its distance; roads, rivers, rails, water and ground stretch with the land
-const ROADS0=ROADS.map(r=>r.slice()), RAILS0=RAILS.map(r=>r.slice());
+const ROADS0=ROADS.map(r=>r.slice()), RAILS0=RAILS.map(r=>r.slice()); let pieceOf=null;
 if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), GC=new Set([C.water,C.road,C.sand,C.green,0x5ab955,0x47a544,C.black,C.yellow]);
   const find=a=>{ while(par[a]!==a){ par[a]=par[par[a]]; a=par[a]; } return a; };
   const lineOf=(w,d)=>{ const mx=Math.max(w,d), mn=Math.min(w,d); return mx>=30&&mn<=8?(w>d?2:3):0; };
@@ -958,7 +966,7 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
     const r=kind[n]===1?[b[0]*KX,b[2]*KZ,b[3]*KX,b[5]*KZ]:kind[n]===2?[b[0]*KX-b[5]*(KX-1)/2,(b[2]+b[5]/2)*KZ-b[5]/2,b[3]*KX+b[5]*(KX-1),b[5]]:[(b[0]+b[3]/2)*KX-b[3]/2,b[2]*KZ-b[3]*(KZ-1)/2,b[3],b[5]*KZ+b[3]*(KZ-1)]; b[0]=r[0]; b[2]=r[1]; b[3]=r[2]; b[5]=r[3];
     if(had[n]){ const nx=Math.floor(b[3]+1e-6),nz=Math.floor(b[5]+1e-6),ox=(b[3]-nx)/2,oz=(b[5]-nz)/2; for(let i=0;i<nx;i++)for(let j=0;j<nz;j++) out.push([b[0]+ox+i+.5,b[1]+b[4],b[2]+oz+j+.5,b[6]]); } }
   studs.length=0; for(const st of out) studs.push(st);
-  { const rd=[]; for(let n=NG;n<N;n++){ const b=boxes[n]; if(b[6]===C.road&&b[4]<=.6&&kind[n]>=2) rd.push(b); }   // an end that stops just short of a crossing road is carried on to it
+  { const rd=[]; for(let n=NG;n<N;n++){ const b=boxes[n]; if(b[6]===C.road&&b[4]<=.6&&(kind[n]>=2||(Math.min(b[3],b[5])<=5&&Math.max(b[3],b[5])>=2*Math.min(b[3],b[5])))) rd.push(b); }   // an end that stops just short of a crossing road is carried on to it
     for(const a of rd){ const ew=a[3]>a[5]; for(const c of rd){ if(c===a||(c[3]>c[5])===ew) continue;
         if(ew){ if(a[2]+a[5]/2<c[2]-1||a[2]+a[5]/2>c[2]+c[5]+1) continue; const gr=c[0]-(a[0]+a[3]); if(gr>0&&gr<9) a[3]+=gr+.5; const gl=a[0]-(c[0]+c[3]); if(gl>0&&gl<9){ a[0]-=gl+.5; a[3]+=gl+.5; } }
         else { if(a[0]+a[3]/2<c[0]-1||a[0]+a[3]/2>c[0]+c[3]+1) continue; const gd=c[2]-(a[2]+a[5]); if(gd>0&&gd<9) a[5]+=gd+.5; const gu=a[2]-(c[2]+c[5]); if(gu>0&&gu<9){ a[2]-=gu+.5; a[5]+=gu+.5; } } } } }
@@ -968,7 +976,10 @@ if(WIDE){ const N=boxes.length, kind=new Uint8Array(N), par=new Int32Array(N), G
   for(const p of POI){ const lx=p.l?p.l[0]:p.t[0], lz=p.l?p.l[2]:p.t[1]; let best=null, bd=1e9, ba=1e18;   // the smallest piece under the name tag, else the nearest piece within reach
     for(const q of qs){ if(q[2]-q[0]<1.5&&q[3]-q[1]<1.5) continue; const dx=Math.max(q[0]-lx,0,lx-q[2]), dz=Math.max(q[1]-lz,0,lz-q[3]), d=Math.hypot(dx,dz), ar=(q[2]-q[0])*(q[3]-q[1]); if(d<bd-1e-6||(d<1e-6&&bd<1e-6&&ar<ba)){ bd=d; ba=ar; best=q; } }
     if(best&&bd<6){ p.t=[p.t[0]+best[4],p.t[1]+best[5]]; if(p.l) p.l=[p.l[0]+best[4],p.l[1],p.l[2]+best[5]]; }
-    else { p.t=[p.t[0]*KX,p.t[1]*KZ]; if(p.l) p.l=[p.l[0]*KX,p.l[1],p.l[2]*KZ]; } } }
+    else { p.t=[p.t[0]*KX,p.t[1]*KZ]; if(p.l) p.l=[p.l[0]*KX,p.l[1],p.l[2]*KZ]; } }
+  // small pieces (a house, a tree, a shed) by their blocks: the railway removes such a piece whole instead of slicing it
+  { const mem=new Map(); for(let n=NG;n<N;n++){ if(kind[n]) continue; const r=find(n), q=box.get(r); if(q[2]-q[0]>16||q[3]-q[1]>16) continue; let a=mem.get(r); if(!a) mem.set(r,a=[]); a.push(n); }
+    pieceOf=n=>n<N&&!kind[n]?mem.get(find(n)):null; } }
 { const RC=new Set([C.gray,C.dgray,C.brown]); for(const r of RAILS) for(let n=NG;n<boxes.length;n++){ const b=boxes[n]; if(b[1]<G-.1||b[1]+b[4]>G+.6||!RC.has(b[6])) continue;
     if(b[0]>r[0]-.6&&b[0]+b[3]<r[0]+r[2]+.6&&b[2]>r[1]-.6&&b[2]+b[5]<r[1]+r[3]+.6){ b[1]=-9; b[3]=b[4]=b[5]=.01; } } }
 REMAP=false; TW=NW; TH=NH;
@@ -1607,38 +1618,42 @@ function rlDeck(ax,a,b,f){ const lo=Math.min(a,b), len=Math.abs(b-a), X=ax==='x'
   for(let i=lo;i<lo+len;i+=1.8) P(i,f-1.2,.6,.11,2.4,RY,C.brown);
   RLSEG.push(X?[lo-1.6,f-1.6,len+3.2,3.2]:[f-1.6,lo-1.6,3.2,len+3.2]); RLL.push({ax,lo,hi:lo+len,f}); }
 { const X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), R0=boxes.length;
-  rlDeck('z',Z(.05),Z(1.62),X(4.62));                                                                                   // Gyeongbu: Seonghwan - Cheonan - Daejeon
-  rlDeck('z',Z(.05),Z(1.3),X(4.05)); rlDeck('x',X(4.05),X(4.62),Z(1.3));                                               // KTX line through Cheonan-Asan to Daejeon
-  rlDeck('x',X(2.9),X(4.62),Z(.7)); rlDeck('z',Z(.7),Z(1.45),X(2.9)); rlDeck('x',X(1.64),X(2.9),Z(1.45)); rlDeck('z',Z(1.45),Z(3.92),X(1.64));   // Janghang: Cheonan - Asan - Yesan - Hongseong - Boryeong - Seocheon
-  rlDeck('z',Z(.3),Z(1.45),X(2.45)); rlDeck('x',X(2.45),X(3.15),Z(.3)); rlDeck('z',Z(.06),Z(.3),X(3.15));              // Seohae: Hongseong side - Hapdeok - Inju - north
-  rlDeck('z',Z(1.62),Z(2.2),X(4.62)); rlDeck('x',X(4.03),X(4.62),Z(2.2)); rlDeck('z',Z(2.2),Z(3.05),X(4.03)); rlDeck('x',X(3.35),X(4.03),Z(3.05)); rlDeck('z',Z(3.05),Z(3.95),X(3.35));   // Honam: Daejeon - Gyeryong - Nonsan - Ganggyeong
+  const goneR=[], gone=n=>{ for(const m of (pieceOf&&pieceOf(n))||[n]){ const b=boxes[m]; if(b[1]<-5) continue; goneR.push([b[0],b[2],b[3],b[5],b[1]+b[4]]); b[1]=-9; b[3]=b[4]=b[5]=.01; } };
+  rlDeck('z',Z(.05),Z(1.62),X(4.715));                                                                                   // Gyeongbu: Seonghwan - Cheonan - Daejeon
+  rlDeck('z',Z(.05),Z(1.33),X(4.075)); rlDeck('x',X(4.075),X(4.715),Z(1.33));                                               // KTX line through Cheonan-Asan to Daejeon
+  rlDeck('x',X(2.86),X(4.715),Z(.7)); rlDeck('z',Z(.7),Z(1.44),X(2.86)); rlDeck('x',X(1.625),X(2.86),Z(1.44)); rlDeck('z',Z(1.44),Z(3.92),X(1.625));   // Janghang: Cheonan - Asan - Yesan - Hongseong - Boryeong - Seocheon
+  rlDeck('z',Z(.3),Z(1.44),X(2.445)); rlDeck('x',X(2.445),X(3.15),Z(.3)); rlDeck('z',Z(.06),Z(.3),X(3.15));              // Seohae: Hongseong side - Hapdeok - Inju - north
+  rlDeck('z',Z(1.62),Z(2.26),X(4.715)); rlDeck('x',X(4.03),X(4.715),Z(2.26)); rlDeck('z',Z(2.26),Z(3.05),X(4.03)); rlDeck('x',X(3.345),X(4.03),Z(3.05)); rlDeck('z',Z(3.05),Z(3.95),X(3.345));   // Honam: Daejeon - Gyeryong - Nonsan - Ganggyeong
   for(const r of RLSEG){ take(Math.floor(r[0])-1,Math.floor(r[1])-1,Math.ceil(r[2])+2,Math.ceil(r[3])+2);   // whatever stood on the line is cleared away; roads, water and ground markings stay and the track runs over them
-    for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<r[0]+r[2]+.2&&b[0]+b[3]>r[0]-.2&&b[2]<r[1]+r[3]+.2&&b[2]+b[5]>r[1]-.2&&b[1]+b[4]>G+.3){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
+    for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<r[0]+r[2]+.2&&b[0]+b[3]>r[0]-.2&&b[2]<r[1]+r[3]+.2&&b[2]+b[5]>r[1]-.2&&b[1]+b[4]>G+.3) gone(n); }
     for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[0]>r[0]-.2&&t[0]<r[0]+r[2]+.2&&t[2]>r[1]-.2&&t[2]<r[1]+r[3]+.2) studs.splice(i,1); } }
   // a station: a roofed platform beside the track, stairs, and a station house on the ground with its name board
-  const clearRect=(x,z,w,d)=>{ for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<x+w&&b[0]+b[3]>x&&b[2]<z+d&&b[2]+b[5]>z&&b[1]+b[4]>G+.3){ b[1]=-9; b[3]=b[4]=b[5]=.01; } }
+  const clearRect=(x,z,w,d)=>{ for(let n=NG;n<R0;n++){ const b=boxes[n]; if(b[4]<=.35&&b[1]<=G+.05) continue; if(b[0]<x+w&&b[0]+b[3]>x&&b[2]<z+d&&b[2]+b[5]>z&&b[1]+b[4]>G+.3) gone(n); }
     for(let i=studs.length-1;i>=0;i--){ const t=studs[i]; if(t[1]>G+.3&&t[0]>x&&t[0]<x+w&&t[2]>z&&t[2]<z+d) studs.splice(i,1); } take(Math.floor(x)-1,Math.floor(z)-1,Math.ceil(w)+2,Math.ceil(d)+2); };
   const station=(name,ax,fu,fv,big,tag)=>{ let x0=X(fu), z0=Z(fv); const L=big?26:18, Xa=ax==='x', W=big?16:11, D=7;
     // both platforms and the station house want open ground: try places further along the line, nearest first
-    { const fits=(x,z)=>{ for(const side of [1,-1]){ const px=Xa?x-L/2:(side>0?x+3:x-3-3), pz=Xa?(side>0?z+3:z-3-3):z-L/2; if(!free(Math.round(px),Math.round(pz),Xa?L:3,Xa?3:L)) return false; }
-        return [1,-1].some(side=>free(Math.round(Xa?x-W/2:(side>0?x+6:x-6-W))-1,Math.round(Xa?(side>0?z+6:z-6-D):z-D/2)-1,W+2,D+3)); };
-      for(const sh of [0,8,-8,16,-16,24,-24,32,-32,44,-44,56,-56]){ const x=Xa?x0+sh:x0, z=Xa?z0:z0+sh; if(fits(x,z)){ x0=x; z0=z; break; } } }
+    { const fits=(x,z,house)=>{ for(const side of [1,-1]){ const px=Xa?x-L/2:(side>0?x+3:x-3-3), pz=Xa?(side>0?z+3:z-3-3):z-L/2; if(!free(Math.round(px),Math.round(pz),Xa?L:3,Xa?3:L)) return false; }
+        return !house||[1,-1].some(side=>free(Math.round(Xa?x-W/2:(side>0?x+6:x-6-W))-1,Math.round(Xa?(side>0?z+6:z-6-D):z-D/2)-1,W+2,D+3)); };
+      fit: for(const house of [1,0]) for(const sh of [0,8,-8,16,-16,24,-24,32,-32,44,-44,56,-56]){ const x=Xa?x0+sh:x0, z=Xa?z0:z0+sh; if(fits(x,z,house)){ x0=x; z0=z; break fit; } } }
     for(const side of [1,-1]){ const px=Xa?x0-L/2:(side>0?x0+1.7:x0-1.7-3.4), pz=Xa?(side>0?z0+1.7:z0-1.7-3.4):z0-L/2, pw=Xa?L:3.4, pd=Xa?3.4:L;
       clearRect(px-.3,pz-.3,pw+.6,pd+.6); T(px,G,pz,pw,.75,pd,C.stone); for(let k=2;k<L-1;k+=6){ const cx=Xa?px+k:px+1.5, cz=Xa?pz+1.5:pz+k; T(cx,G+.75,cz,.3,2.9,.3,C.white); }
       T(px-.3,G+3.65,pz-.3,pw+.6,.3,pd+.6,big?C.glass:C.blue); }
     let spot=null; search: for(let r=0;r<34;r+=2) for(const side of [1,-1]) for(const al of [0,r,-r]){ const x=Xa?x0-W/2+al:(side>0?x0+6+r*.5:x0-6-r*.5-W), z=Xa?(side>0?z0+6+r*.5:z0-6-r*.5-D):z0-D/2+al; if(free(Math.round(x)-1,Math.round(z)-1,W+2,D+3)){ spot=[Math.round(x),Math.round(z)]; break search; } }
-    if(spot){ const [x,z]=spot; take(x-1,z-1,W+2,D+3); at(x,z,()=>{ T(-.5,G,-.5,W+1,.14,D+2.5,C.stone); B(0,G,0,W,big?4.2:3,D-1.5,big?0xe9f1f7:C.cream,{s:false}); T(-.4,G+(big?4.2:3),-.4,W+.8,.5,D-.7,big?C.navy:0x3b6fb5);
+    if(spot){ const [x,z]=spot; take(x-1,z-1,W+2,D+8); at(x,z,()=>{ T(-.5,G,-.5,W+1,.14,D+2.5,C.stone); B(0,G,0,W,big?4.2:3,D-1.5,big?0xe9f1f7:C.cream,{s:false}); T(-.4,G+(big?4.2:3),-.4,W+.8,.5,D-.7,big?C.navy:0x3b6fb5);
         for(let i=1;i<W-1;i+=2.4) T(i,G+.5,D-1.5,1.5,big?2.6:1.6,.1,C.glass); T(W/2-1,G,D-1.5,2,2,.12,C.dgray); T(W/2-3,G+(big?4.7:3.5),D-1.6,6,1.1,.25,C.white); T(W/2-2.6,G+(big?4.9:3.7),D-1.34,5.2,.7,.06,C.blue);
         T(1,G+.14,D+.3,.4,.5,1.2,C.wood); T(W-2,G+.14,D+.3,.4,.5,1.2,C.wood); });
       // stairs from the station house up to the platform
-      { const n=8, tx=Xa?x0:(x+W/2<x0?x0-3.4:x0+3.4), tz=Xa?(z+D/2<z0?z0-3.4:z0+3.4):z0, sx=x+W/2, sz=z+D/2; for(let k=1;k<=n;k++){ const t=k/n; T(sx+(tx-sx)*t-.9,G,sz+(tz-sz)*t-.9,1.8,.12,1.8,C.stone); } }   // a paved path from the station house to the platform
+      { const n=8, tx=Xa?x0:(x+W/2<x0?x0-3.4:x0+3.4), tz=Xa?(z+D/2<z0?z0-3.4:z0+3.4):z0, sx=x+W/2, sz=z+D/2; for(let k=1;k<=n;k++){ const t=k/n; T(sx+(tx-sx)*t-.9,G,sz+(tz-sz)*t-.9,1.8,.12,1.8,C.stone); take(Math.floor(sx+(tx-sx)*t-.9)-1,Math.floor(sz+(tz-sz)*t-.9)-1,4,4); } }   // a paved path from the station house to the platform
       if(tag) TAGS.push({n:tag,x:x+W/2,y:G+(big?7:5.6),z:z+D/2}); }
     else if(tag) TAGS.push({n:tag,x:x0,y:G+5,z:z0}); };
-  station('성환역','z',4.62,.14,0,'성환역'); station('두정역','z',4.62,.42,0,'두정역'); station('천안역','z',4.62,.66,1,'천안역 승강장'); station('대전역','z',4.62,1.5,1,'대전역'); station('서대전역','z',4.62,1.8,0,'서대전역');
-  station('천안아산역','z',4.05,.62,1,'천안아산역 승강장'); station('아산역','x',3.9,.7,0,'아산역'); station('온양온천역','x',3.5,.7,0,'온양온천역'); station('신창역','x',3.15,.7,0,'신창역');
-  station('예산역','x',2.72,1.45,0,'예산역 승강장'); station('삽교역','x',2.2,1.45,0,'삽교역'); station('홍성역','z',1.64,1.62,0,'홍성역 승강장'); station('광천역','z',1.64,1.88,0,'광천역');
-  station('청소역','z',1.64,2.2,0,'청소역 승강장'); station('대천역','z',1.64,2.5,0,'대천역 승강장'); station('웅천역','z',1.64,2.85,0,'웅천역'); station('판교역','z',1.64,3.15,0,'판교역'); station('서천역','z',1.64,3.5,0,'서천역'); station('장항역','z',1.64,3.82,0,'장항역');
-  station('합덕역','z',2.45,.75,0,'합덕역'); station('인주역','x',3.08,.3,0,'인주역'); station('계룡역','x',4.32,2.2,0,'계룡역 승강장'); station('연산역','x',3.82,3.05,0,'연산역'); station('논산역','z',3.35,3.4,0,'논산역'); station('강경역','z',3.35,3.8,0,'강경역'); }
+  station('성환역','z',4.715,.14,0,'성환역'); station('두정역','z',4.715,.42,0,'두정역'); station('천안역','z',4.715,.66,1,'천안역 승강장'); station('대전역','z',4.715,1.5,1,'대전역'); station('서대전역','z',4.715,1.8,0,'서대전역');
+  station('천안아산역','z',4.075,.62,1,'천안아산역 승강장'); station('아산역','x',3.9,.7,0,'아산역'); station('온양온천역','x',3.5,.7,0,'온양온천역'); station('신창역','x',3.15,.7,0,'신창역');
+  station('예산역','x',2.72,1.44,0,'예산역 승강장'); station('삽교역','x',2.2,1.44,0,'삽교역'); station('홍성역','z',1.625,1.62,0,'홍성역 승강장'); station('광천역','z',1.625,1.88,0,'광천역');
+  station('청소역','z',1.625,2.2,0,'청소역 승강장'); station('대천역','z',1.625,2.5,0,'대천역 승강장'); station('웅천역','z',1.625,2.85,0,'웅천역'); station('판교역','z',1.625,3.15,0,'판교역'); station('서천역','z',1.625,3.5,0,'서천역'); station('장항역','z',1.625,3.82,0,'장항역');
+  station('합덕역','z',2.445,.75,0,'합덕역'); station('인주역','x',3.08,.3,0,'인주역'); station('계룡역','x',4.32,2.26,0,'계룡역 승강장'); station('연산역','x',3.82,3.05,0,'연산역'); station('논산역','z',3.345,3.4,0,'논산역'); station('강경역','z',3.345,3.8,0,'강경역');
+  if(goneR.length){ const gm=new Map(), key=(i,j)=>i*8192+j;   // studs that sat on a removed block
+    for(const r of goneR) for(let i=Math.floor(r[0]/8);i<=Math.floor((r[0]+r[2])/8);i++) for(let j=Math.floor(r[1]/8);j<=Math.floor((r[1]+r[3])/8);j++){ const k=key(i,j); let a=gm.get(k); if(!a) gm.set(k,a=[]); a.push(r); }
+    let w=0; for(const t of studs){ const a=gm.get(key(Math.floor(t[0]/8),Math.floor(t[2]/8))); if(a&&a.some(r=>Math.abs(t[1]-r[4])<.01&&t[0]>r[0]-.01&&t[0]<r[0]+r[2]+.01&&t[2]>r[1]-.01&&t[2]<r[1]+r[3]+.01)) continue; studs[w++]=t; } studs.length=w; } }
 for(const [reg,name,lx,lz,kind,o,desc] of SITES){
   const [cx,cz]=CO[reg]; let x=cx+Math.round(WIDE?lx*KX:lx),z=cz+Math.round(WIDE?lz*KZ:lz),h,t;
   if(kind==='island'){
@@ -1676,7 +1691,7 @@ for(const [reg,name,lx,lz,kind,o,desc] of SITES){
     if(free(px-1,pz-1,S+2,S+5)){ x=px; z=pz; ok=true; break search; } }
   if(!ok) continue;
   take(x-1,z-1,S+2,S+5); at(x,z,()=>{ h=PF[kind](o); });
-  POI.push({n:name,c:reg,t:[x+S/2,z+S+2],r:5.5,l:o.l?[cx+o.l[0],o.l[1],cz+o.l[2]]:[x+S/2,h,z+S/2],d:desc});
+  POI.push({n:name,c:reg,t:[x+S/2,z+S+2],r:5.5,l:o.l?[cx+o.l[0]*KX,o.l[1],cz+o.l[2]*KZ]:[x+S/2,h,z+S/2],d:desc});
 }
 // ---------- big cities (Asan, Cheonan, Daejeon): apartment blocks and office towers
 function apt2(x,z,h,c){ B(x,G,z,4,h,4,pick([C.white,C.cream,0xeef1f4])); T(x+1.3,G,z+4,1.4,h,.12,c); T(x+1.3,G,z-.12,1.4,h,.12,c);
@@ -2072,7 +2087,7 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 // six trains shuttle along the longest runs of the new lines (map units; a train is 1.9 wide and its track runs down the middle of the deck)
 const TRAINS=[]; { const mk=(o,ax,f,a,b)=>{ o.rotation.y=ax==='x'?0:Math.PI/2; TRAINS.push({o,ax,fix:f-.95,f:ax==='x'?u=>a+2+u*(b-a-23):u=>a+21+u*(b-a-23)}); }, X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), cl=()=>{ const o=train.clone(); MV.add(o); return o; };
-  mk(train,'z',X(4.62),Z(.05),Z(2.2)); mk(train2,'z',X(4.05),Z(.05),Z(1.3)); mk(train3,'z',X(1.64),Z(1.45),Z(3.92)); mk(cl(),'x',Z(.7),X(2.9),X(4.62)); mk(cl(),'x',Z(1.45),X(1.64),X(2.9)); mk(cl(),'z',X(2.45),Z(.3),Z(1.45)); }
+  mk(train,'z',X(4.715),Z(.05),Z(2.26)); mk(train2,'z',X(4.075),Z(.05),Z(1.33)); mk(train3,'z',X(1.625),Z(1.44),Z(3.92)); mk(cl(),'x',Z(.7),X(2.86),X(4.715)); mk(cl(),'x',Z(1.44),X(1.625),X(2.86)); mk(cl(),'z',X(2.445),Z(.3),Z(1.44)); }
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
 const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
@@ -2105,6 +2120,10 @@ function moverTop(x,z,lim){ const ux=x/S,uz=z/S; let best=-9,bm=null; for(const 
 const inBox=(b,x,z,mg)=>x>b[0]-mg&&x<b[1]+mg&&z>b[2]-mg&&z<b[3]+mg, hitB=(a,b)=>a[0]<b[1]&&a[1]>b[0]&&a[2]<b[3]&&a[3]>b[2];
 const pingU=tt=>{ const tp=(tt*.045)%2, te=tp<1?tp:2-tp; return te*te*(3-2*te); };
 const ALLMV=LANES.concat(TRAINS);
+{ const route=m=>{ if(m.f){ const lo=Math.min(m.f(0),m.f(1)), hi=Math.max(m.f(0),m.f(1)); return m.ax==='x'?[lo-13,hi+32,m.fix-1,m.fix+2.9]:[m.fix-1,m.fix+2.9,lo-32,hi+13]; }
+    return m.ax==='x'?(m.dir>0?[m.base-12,m.base+m.span+m.len+12,m.fix-1,m.fix+2.6]:[m.base-m.span-m.len-12,m.base+12,m.fix-2.6,m.fix+1]):[m.fix-1,m.fix+2.6,m.base-m.span-m.len-12,m.base+12]; };
+  for(const m of ALLMV) m.rt=route(m);
+  for(const m of LANES) m.nb=ALLMV.filter(o=>o!==m&&(m.y||0)===(o.y||0)&&hitB(m.rt,o.rt)); }
 function moveTraffic(dt){
   const px=P.x/S,pz=P.z/S;
   for(const m of LANES){ const u=(m.t*m.sp+m.off)%m.span, c=m.dir>0?m.base+u:m.base-u, b=m.box, ox=b[0], oz=b[2];
@@ -2116,12 +2135,18 @@ function moveTraffic(dt){
     m.dx=(b[0]-ox)*S; m.dz=(b[2]-oz)*S; if(Math.abs(m.dx)+Math.abs(m.dz)>3) m.dx=m.dz=0; }
   for(const m of TRAINS){ const u=pingU(m.t), c=m.f(u), b=m.box, xw=m.ax==='x', o0=xw?b[0]:b[2];
     if(xw){ m.o.position.set(c,G+.2,m.fix); b[0]=c-.9;b[1]=c+19.8;b[2]=m.fix;b[3]=m.fix+1.9; } else { m.o.position.set(m.fix,G+.2,c); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=c-19.8;b[3]=c+.9; }
-    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-c; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(xw){ if(fwd>0) a[1]+=7; else a[0]-=7; } else if(fwd>0) a[3]+=7; else a[2]-=7; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
+    const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-c; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(xw){ if(fwd>0) a[1]+=7; else a[0]-=7; } else if(fwd>0) a[3]+=7; else a[2]-=7; const w=m.warn||(m.warn=[0,0,0,0]), fr=m.f(pingU(m.t+.9*(m.ts||1)))-c, far=m.k?fr:0, i0=xw?0:2; m.far=fr; w[0]=b[0];w[1]=b[1];w[2]=b[2];w[3]=b[3]; w[i0]+=Math.min(far,0)-3; w[i0+1]+=Math.max(far,0)+3; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
   for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
-    if(!stop&&!m.f) for(const o of ALLMV){ if(o===m||(m.y||0)!==(o.y||0)) continue; const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
-      // same lane: keep a gap; crossing roads and level crossings: wait for whatever is in the way; end of lane: wait until the start is free
-      if((m.sp&&o.ax===m.ax&&o.fix===m.fix?inBox(m.ahead,cx,cz,.2)&&!inBox(m.box,cx,cz,0):hitB(m.ahead,ob)&&!hitB(m.box,ob))||(m.sp&&m.u>m.span-2.5&&hitB(m.st,ob))){ stop=true; break; } }
+    if(!stop&&!m.f){ const b=m.box, ah=m.ahead, end=m.u>m.span-2.5, need=m.sp*m.k/8.5; for(const o of m.nb){
+      // level crossing: wait for the train unless it is too late to stop before the track
+      if(o.f){ const w=o.warn; if((hitB(ah,w)&&(m.ax==='x'?(m.dir>0?w[0]-b[1]:b[0]-w[1]):b[2]-w[3])>=need)||(end&&hitB(m.st,w))){ stop=true; break; } continue; }
+      if(m.ax==='z'&&o.ax==='x'){ const w=o.ahead; if((hitB(ah,w)&&b[2]-w[3]>=need)||(end&&hitB(m.st,o.k?w:o.box))){ stop=true; break; } continue; }
+      const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
+      // same lane: keep a gap; crossing roads: wait for whatever is in the way; end of lane: wait until the start is free and nobody is about to drive over it
+      if((o.ax===m.ax&&o.fix===m.fix?inBox(ah,cx,cz,.2)&&!inBox(b,cx,cz,0):hitB(ah,ob)&&!hitB(b,ob))||(end&&hitB(m.st,o.k?o.ahead:ob))){ stop=true; break; } } }
+    else if(!stop&&m.ax==='x'){ const b=m.box, fw=m.ahead[1]>b[1], r=Math.max(7,Math.abs(m.far)+3), lo=fw?b[0]:b[0]-r, hi=fw?b[1]+r:b[1];
+      for(const o of TRAINS){ if(o.ax!=='z') continue; const z=o.warn; if(lo<z[1]&&hi>z[0]&&b[2]<z[3]&&b[3]>z[2]&&(fw?z[0]-b[1]:b[0]-z[1])>=Math.abs(m.far)*m.k/7){ stop=true; break; } } }
     m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k*(m.ts||1); }
 }
 function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(!m.y&&inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
@@ -2482,5 +2507,6 @@ window.__dbg={get game(){return GAME},RAILS,TOWNS,HWL,TAGE,RLSEG,ROADS,openQ,goT
 // start: bake the sky reflection and compile shaders before the first frame, so nothing is compiled twice; the start button wakes up once a frame is on screen
 updateEnv(0); bakeEnv(); envDirty=0;
 (async()=>{ try{ if(renderer.compileAsync) await renderer.compileAsync(scene,camera); }catch(e){}
-  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'); g.disabled=false; g.textContent='탐방 시작'; setTimeout(()=>extra().catch(()=>{}),1200); }); })();
+  tick(); requestAnimationFrame(()=>{ const g=document.getElementById('go'), en=()=>{ g.disabled=false; g.textContent='탐방 시작'; }; if(GAMEP) GAMEP.then(en); else en();
+    setTimeout(()=>extra().catch(()=>{}),1200); }); })();
 </script></body></html>
