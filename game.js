@@ -19,7 +19,8 @@ export async function loadScores(room){
   const q={structuredQuery:{from:[{collectionId:'scores'}],where:{fieldFilter:{field:{fieldPath:'room'},op:'EQUAL',value:{stringValue:room}}},limit:300}};
   const r=await fetch(`${DOCS}:runQuery?key=${FB.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(q)});
   if(!r.ok) throw new Error('load '+r.status);
-  const rows=(await r.json()).filter(x=>x.document).map(x=>{ const f=x.document.fields; return {id:x.document.name.split('/').pop(),name:f.name.stringValue,score:+f.score.integerValue,time:+f.time.integerValue,done:+f.done.integerValue,mode:f.mode.stringValue}; });
+  const rows=(await r.json()).filter(x=>x&&x.document&&x.document.fields).map(x=>{ const f=x.document.fields, s=k=>f[k]&&typeof f[k].stringValue==='string'?f[k].stringValue:'', n=k=>{ const v=f[k]||{}; return Math.round(+(v.integerValue??v.doubleValue))||0; };
+    return {id:String(x.document.name).split('/').pop(),name:s('name').trim().slice(0,12)||'이름없음',score:n('score'),time:Math.max(0,n('time')),done:n('done'),mode:s('mode')}; });
   return rows.sort((a,b)=>b.score-a.score||a.time-b.time); }
 export const clock=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
 export const MODES={m:'미션 탐방',t:'도장 모으기',h:'보물찾기'};
@@ -105,7 +106,7 @@ const GNAME={n:'자연',h:'옛 건물·유적',l:'살아가는 모습'};
 // ---------- the room on the realtime database: one stream in, small writes out (polling if the stream cannot open)
 function Room(room){
   const base=`${globalThis.__RTDB||RTDB}/rooms/${room}`, data={}, subs=[]; let es=null, poll=null, loaded=false, busy=false, shut=false;
-  const set=(path,v)=>{ const ks=path.split('/').filter(Boolean); if(!ks.length){ for(const k in data) delete data[k]; Object.assign(data,v||{}); return; } let o=data; for(let i=0;i<ks.length-1;i++) o=o[ks[i]]||(o[ks[i]]={}); if(v===null) delete o[ks[ks.length-1]]; else o[ks[ks.length-1]]=v; };
+  const set=(path,v)=>{ const ks=path.split('/').filter(Boolean); if(!ks.length){ for(const k in data) delete data[k]; Object.assign(data,v||{}); return; } let o=data; for(let i=0;i<ks.length-1;i++) o=o[ks[i]]&&typeof o[ks[i]]==='object'?o[ks[i]]:(o[ks[i]]={}); if(v===null) delete o[ks[ks.length-1]]; else o[ks[ks.length-1]]=v; };
   const merge=(path,v)=>{ for(const k in v) set(path+'/'+k,v[k]); }, fire=()=>{ loaded=true; for(const f of subs) f(data); };
   const startPoll=()=>{ if(poll||shut) return; const go=async()=>{ if(busy) return; busy=true; try{ const r=await fetch(base+'.json'); if(r.ok){ const v=await r.json(); if(poll){ set('',v); fire(); } } }catch(e){} busy=false; }; poll=setInterval(go,1200); go(); };
   const stopPoll=()=>{ clearInterval(poll); poll=null; };
@@ -124,8 +125,9 @@ export function init(api){
   const {POI,say,THREE,P}=api, $=id=>document.getElementById(id), el=(t,p)=>Object.assign(document.createElement(t),p||{});
   const play=POI.filter(p=>lv===4||regs.includes(p.c)); for(const p of POI){ if(lv===3&&!regs.includes(p.c)){ p.off=true; p.e.style.display='none'; } }
   document.head.appendChild(el('style',{textContent:CSS}));
-  const me=Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
-  const st={on:false,over:false,t0:0,left:mins*60,stamps:0,wrong:0,hints:0,got:[],sent:false,pts:0,name:'',ch:0,flags:0,chests:0,picks:0,title:-1,mdone:0,paused:0};
+  const SK='cntour-game'+location.search; let sv=null; try{ sv=JSON.parse(sessionStorage.getItem(SK)); if(!sv||!/^[a-z0-9]{10}$/.test(sv.me)||!(Date.now()-sv.at<600000)) sv=null; }catch(e){ sv=null; }
+  const me=sv?sv.me:Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>'abcdefghijklmnopqrstuvwxyz0123456789'[b%36]).join('');
+  const st={on:false,over:false,t0:0,left:mins*60,stamps:0,wrong:0,hints:0,got:[],sent:false,pts:0,name:'',ch:0,flags:0,chests:0,picks:0,title:-1,mdone:0,paused:0,ck:{}};
   const seeded=str=>{ let s=0; for(const ch of str) s=(s*31+ch.charCodeAt(0))>>>0; return ()=>((s=(s*1664525+1013904223)>>>0)/4294967296); };
   const rnd=seeded(room+area), rndMe=seeded(room+me), net=Room(room), uid=me+me.slice(0,5);
   const add=(n,why)=>{ st.pts=Math.max(0,st.pts+n); if(why) say(`${why} ${n>0?'+':''}${n}점`); drawBar(); };
@@ -143,6 +145,7 @@ export function init(api){
       b.append(hat,head,bd); if(v===0) b.className='on'; b.onclick=()=>{ st.ch=v; for(const x of grid.children) x.classList.toggle('on',x===b); api.setChar(v); }; grid.appendChild(b); }
     for(const ev of ['keydown','keyup','pointerdown']) inp.addEventListener(ev,e=>e.stopPropagation());
     let ready=false; const lab=()=>{ if(!ready&&go.disabled) return; if(!ready){ ready=true; go.dataset.ready='1'; } { const ok=!!inp.value.trim(); const t=ok?'게임 시작':'이름을 적어 주세요'; if(go.textContent!==t) go.textContent=t; if(go.disabled!==!ok) go.disabled=!ok; } };
+    if(sv){ inp.value=st.name=String(sv.name||'').trim().slice(0,6); const b=grid.children[sv.ch|0]; if(b) b.click(); box.firstChild.textContent='하던 탐방을 이어서 해요. 이름을 확인하고 시작해요.'; }
     inp.addEventListener('input',()=>{ st.name=inp.value.trim().slice(0,6); lab(); }); lab(); new MutationObserver(lab).observe(go,{attributes:true,childList:true}); }
   $('count').style.display='none';
   if(lv===3) $('home').onclick=()=>{ const s=api.regionSpot(regs[0]); api.goTo(regs[0],s[0],s[1]); };
@@ -152,6 +155,7 @@ export function init(api){
   const evb=el('div',{id:'gev'}), frz=el('div',{id:'gfrz',textContent:'선생님이 잠깐 멈췄어요. 앞을 봐 주세요.'}); document.body.append(evb,frz);
   for(const o of [pan,end,frz]) for(const ev of ['pointerdown','pointermove','wheel','touchstart','keydown','keyup']) o.addEventListener(ev,e=>e.stopPropagation());
   pan.addEventListener('click',e=>{ if(e.target===pan) pan.style.display='none'; });
+  addEventListener('keydown',e=>{ if(api_.frozen||pan.style.display==='flex'||end.style.display==='flex') e.stopPropagation(); },true);
   bar.onclick=()=>{ if(st.over) showEnd(); else { drawPanel(); pan.style.display='flex'; } };
 
   // ---------- missions and treasures
@@ -188,7 +192,7 @@ export function init(api){
 
   // ---------- multipliers: the last minute, and the class-wide surprise (the same three minutes for everyone, counted from the room's first start)
   let roomT0=0, skew=0; const evNow=()=>{ if(!X('e')||!roomT0) return null; const m=(Date.now()+skew-roomT0)/60000, k=Math.floor(m/6); return m>=3&&m%6>=3?['n','h','l'][k%3]:null; };
-  const mult=p=>(X('d')&&st.left<=60?2:1)*(evNow()&&p&&grp(p)===evNow()?2:1);
+  const mult=p=>(X('d')&&st.left<=60)||(evNow()&&p&&grp(p)===evNow())?2:1;
 
   const parts=()=>[M&&['미션',`${mDone()}/${missions.length}`],H&&['보물',`${hi}/${hunt.length}`],T&&['도장',st.stamps+'개']].filter(Boolean);
   function drawBar(){ bt.textContent=clock(st.left); bt.className=st.left<=60&&st.on?'hot':''; if(st.over) return;
@@ -242,7 +246,7 @@ export function init(api){
   function chestBuild(){ if(!NET||!X('c')) return; const per=lv===4?1:Math.max(2,Math.ceil(6/regs.length)); chestGeo=new THREE.BoxGeometry(1.7,1.2,1.2);
     for(const c of inPlay){ const [x0,z0,w,d]=api.tile(c); for(let k=0;k<per;k++){ const s=api.safeSpot(x0+w*(.12+rnd()*.76),z0+d*(.14+rnd()*.72)), g=new THREE.Group(), box=new THREE.Mesh(chestGeo,new THREE.MeshStandardMaterial({color:0x9a5b2c,roughness:.6})), band=new THREE.Mesh(new THREE.BoxGeometry(1.76,.26,1.26),new THREE.MeshStandardMaterial({color:0xfbbc04,roughness:.3,metalness:.3}));
         box.position.y=.6; band.position.y=.86; g.add(box,band); g.position.set(s[0],s[1],s[2]); api.scene.add(g); chests.push({k:c+k,g,x:s[0],z:s[2],y:s[1],open:false,tried:0}); } } }
-  function chestSync(ch){ for(const c of chests){ const o=ch[c.k]; if(o&&!c.open){ c.open=true; c.g.children[1].position.y=1.5; c.g.children[1].rotation.z=.5; c.g.children[0].material=new THREE.MeshStandardMaterial({color:0xc9a27c,roughness:.7}); if((o.a===me||o.b===me)&&st.on){ st.chests++; add(150,'보물 상자를 함께 열었어요!'); retitle(); } } } }
+  function chestSync(ch){ for(const c of chests){ const o=ch[c.k]; if(o&&!c.open){ c.open=true; c.g.children[1].position.y=1.5; c.g.children[1].rotation.z=.5; c.g.children[0].material=new THREE.MeshStandardMaterial({color:0xc9a27c,roughness:.7}); if((o.a===me||o.b===me)&&st.on&&!st.ck[c.k]){ st.ck[c.k]=1; st.chests++; add(150,'보물 상자를 함께 열었어요!'); retitle(); } } } }
   function chestTick(){ if(!chests.length||!st.on) return; const now=performance.now(); for(const c of chests){ if(c.open||now-c.tried<1500) continue; const d=Math.hypot(P.x-c.x,P.z-c.z); if(d>4.5) continue;
       let pal=null; for(const [id,o] of others) if(Math.hypot(o.x-c.x,o.z-c.z)<4.5){ pal=id; break; }
       c.tried=now; if(pal) net.put('chests/'+c.k,{a:me,b:pal}).catch(()=>{}); else if(now-(c.said||0)>6000){ c.said=now; say(X('o')?'친구와 둘이 서야 열려요. 「여기야!」로 불러 봐요':'친구와 둘이 서야 열려요'); } } }
@@ -266,7 +270,16 @@ export function init(api){
   function pickTick(t){ if(!items||!st.on) return; for(const k of picks){ if(!k.on) continue; const dx=P.x-k.x, dz=P.z-k.z; if(dx*dx+dz*dz<2.6&&Math.abs(P.y-k.y)<3){ k.on=false; st.m4.makeScale(0,0,0); items.setMatrixAt(k.i,st.m4); items.instanceMatrix.needsUpdate=true; st.picks++; add(10*mult(null),`${k.c.slice(0,2)} ${SPECIAL[k.c][0]}`); retitle(); } } }
 
   // ---------- the end: review quiz, score, journal, class ranking
-  function finish(why){ if(st.over) return; st.time=used(); st.doneN=doneN(); st.parts=parts(); st.over=true; st.on=false; drawBar(); bs.textContent='결과 보기'; pan.style.display='none'; api.closeQ(); st.why=why; evb.style.display='none'; if(st.emoBox) st.emoBox.style.display='none';
+  const save=()=>{ try{ sessionStorage.setItem(SK,JSON.stringify({me,at:Date.now(),name:st.name,ch:st.ch,left:st.left,pts:st.pts,wrong:st.wrong,hints:st.hints,flags:st.flags,picks:st.picks,title:st.title,tset:[...(st.tset||[])],ck:st.ck,
+    got:st.got.map(p=>POI.indexOf(p)),pk:picks.filter(k=>!k.on).map(k=>k.i),hint:hunt.filter(p=>p.hint).map(p=>[POI.indexOf(p),p.hint])})); }catch(e){} };
+  function resume(){ if(!sv) return; try{ for(const i of sv.got||[]){ const p=POI[i]; if(p&&!p.off&&!p.v){ p.v=true; p.e.classList.add('v'); st.got.push(p); } }
+      st.stamps=st.got.length; while(hi<hunt.length&&st.got.includes(hunt[hi])) hi++; st.mdone=M?mDone():0;
+      for(const k of ['pts','wrong','hints','flags','picks','title']) if(Number.isFinite(sv[k])) st[k]=sv[k]; st.tset=new Set(sv.tset||[]); if(sv.ck&&typeof sv.ck==='object') st.ck=sv.ck; st.chests=Object.keys(st.ck).length;
+      for(const [i,h] of sv.hint||[]) if(POI[i]) POI[i].hint=String(h);
+      if(items){ st.m4.makeScale(0,0,0); for(const i of sv.pk||[]) if(picks[i]&&picks[i].on){ picks[i].on=false; items.setMatrixAt(i,st.m4); } items.instanceMatrix.needsUpdate=true; }
+      if(sv.left>0&&sv.left<mins*60) st.left=sv.left; api.redraw(); say('하던 탐방을 이어서 해요');
+      if(st.got.length&&(st.got.length>=play.length||(!T&&allDone()))) setTimeout(()=>finish('all'),1600); }catch(e){} sv=null; }
+  function finish(why){ if(st.over) return; try{ sessionStorage.removeItem(SK); }catch(e){} st.time=used(); st.doneN=doneN(); st.parts=parts(); st.over=true; st.on=false; drawBar(); bs.textContent='결과 보기'; pan.style.display='none'; api.closeQ(); st.why=why; evb.style.display='none'; if(st.emoBox) st.emoBox.style.display='none';
     const pool=st.got.filter(p=>p.q); if(X('r')&&pool.length){ for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; } review(pool.slice(0,3),0,0); } else done(); }
   function review(qs,i,ok){ es.textContent=''; if(i>=qs.length){ if(ok) st.pts+=ok*50; st.review=`${ok}/${qs.length}`; done(); return; } const p=qs[i];
     es.append(el('h1',{textContent:'복습 퀴즈'}),el('p',{className:'sub',textContent:`다녀온 곳에서 ${qs.length}문제 가운데 ${i+1}번째 · 맞히면 50점`}),el('p',{className:'gclue',textContent:p.q[0]}));
@@ -294,8 +307,8 @@ export function init(api){
     const fr=el('button',{className:'btn',textContent:'자유롭게 더 둘러보기'}); fr.onclick=()=>end.style.display='none'; es.appendChild(fr);
     end.style.display='flex'; }
 
-  let evShown=null;
-  setInterval(()=>{ prune(net.data.p||{}); if(!st.on) return; if(api_.frozen) return; st.left=Math.max(0,mins*60-(performance.now()-st.t0)/1000); drawBar(); if(pan.style.display==='flex'){ const s=ps.querySelector('.sub'); if(s) s.textContent=subLine(); }
+  let evShown=null, svN=0;
+  setInterval(()=>{ prune(net.data.p||{}); if(!st.on) return; if((++svN&3)===0) save(); if(api_.frozen) return; st.left=Math.max(0,mins*60-(performance.now()-st.t0)/1000); drawBar(); if(pan.style.display==='flex'){ const s=ps.querySelector('.sub'); if(s) s.textContent=subLine(); }
     const ev=evNow(), last=X('d')&&st.left<=60, key=(ev||'')+(last?'d':''); if(key!==evShown){ evShown=key; evb.style.display=key?'block':'none'; evb.textContent=[ev&&`깜짝 임무! 지금 「${GNAME[ev]}」 장소는 점수 두 배`,last&&'마지막 1분! 점수 두 배'].filter(Boolean).join(' · '); if(ev) say(`깜짝 임무: ${GNAME[ev]} 장소 점수 두 배!`); }
     if(st.left<=0) finish('time'); },250);
   drawBar();
@@ -303,9 +316,9 @@ export function init(api){
     frozen:false,
     async start(){ if(lv===3){ const s=api.regionSpot(regs[0]); const a=Math.random()*6.28; api.goTo(regs[0],s[0]+Math.cos(a)*4,s[1]+Math.sin(a)*4); }
       try{ await api.extra(); }catch(e){ try{ await api.extra(); }catch(e2){ say('자료를 불러오지 못했어요. 새로 고침 해 주세요'); return; } }
-      build(); chestBuild(); pickBuild(); st.t0=performance.now(); st.on=true; myLab(); if(st.emoBox) st.emoBox.style.display='flex';
+      build(); chestBuild(); pickBuild(); resume(); st.t0=performance.now()-(mins*60-st.left)*1000; st.on=true; save(); myLab(); if(st.emoBox) st.emoBox.style.display='flex';
       if(net){ net.on(sync); if(net.loaded) sync(net.data);
-        net.put('s/'+me,0).catch(()=>{});
+        net.put('s/'+me,st.stamps).catch(()=>{});
         net.put('p/'+me,{x:+P.x.toFixed(2),z:+P.z.toFixed(2),y:+P.y.toFixed(2),f:0,n:st.name,c:st.ch,t:-1,e:0,ts:Date.now()}).catch(()=>{}).then(()=>{ st.joined=true; return net.patch('p/'+me,{ts:{'.sv':'timestamp'}}); })
           .then(r=>r.ok?r.json():null).then(v=>{ if(v&&typeof v.ts==='number') skew=v.ts-Date.now(); }).catch(()=>{}).then(()=>net.get('t0'))
           .then(v=>{ if(v) roomT0=v; else { const now=Date.now()+skew; net.put('t0',now).then(r=>{ if(r.ok) roomT0=roomT0||now; else net.get('t0').then(x=>{ if(x) roomT0=x; }); }).catch(()=>{}); } }).catch(()=>{});

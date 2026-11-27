@@ -43,8 +43,8 @@ button{font-family:inherit;color:inherit}
 #goto.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 #goto span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #goto button{border:0;border-radius:999px;cursor:pointer;font-weight:900;font-size:13.5px;flex:none}
-#gogo{background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;padding:9px 16px;box-shadow:0 4px 12px rgba(26,115,232,.35)}
-#gox{background:#eef2f7;color:#5b6472;width:34px;height:34px;font-size:17px;line-height:1}
+#gogo{background:linear-gradient(145deg,var(--p2),var(--p));color:#fff;padding:11px 16px;box-shadow:0 4px 12px rgba(26,115,232,.35)}
+#gox{background:#eef2f7;color:#5b6472;width:40px;height:40px;font-size:17px;line-height:1}
 @media(max-width:560px){#goto{left:12px;top:224px;transform:translate(0,-14px);max-width:calc(100% - 80px)}#goto.on{transform:none}}
 #list li{cursor:pointer}
 .lb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:rgba(255,255,255,.92);border-radius:999px;padding:4px 10px 4px 8px;font-size:11.5px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(20,30,60,.18),0 4px 10px rgba(20,30,60,.14);will-change:transform;display:flex;align-items:center;gap:5px}
@@ -168,6 +168,28 @@ button{font-family:inherit;color:inherit}
 #toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:rgba(31,36,48,.92);color:#fff;border-radius:999px;padding:10px 18px;font-size:13.5px;font-weight:700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:6}
 #toast.on{opacity:1}
 #err{position:fixed;inset:auto 12px 12px 12px;background:#fce8e6;color:#c5221f;border-radius:12px;padding:12px;font-size:13px;display:none;z-index:9}
+/* class-game banner: two lines at most, and a place of its own at every size (it used to lie on the minimap, the goal bar and the toast).
+   --ga/--gb/--gc: room taken by the class goal bar, the banner and the go-here chip, so that the messages stack instead of covering each other */
+@supports selector(:has(a)){body{--ga:0px;--gb:0px;--gc:0px}body:has(#ggoal:not([style*="none"])){--ga:32px}body:has(#gev[style*="block"]){--gb:54px}body:has(#goto.on){--gc:62px}}
+body #gev{white-space:normal;word-break:keep-all;line-height:1.35;max-height:calc(2.7em + 14px);padding:7px 16px;border-radius:20px;text-align:center}
+@media(min-width:561px) and (min-height:441px){body #gev{top:13px;left:calc(50% + 82px);max-width:calc(100vw - 340px)}
+  #toast{top:calc(70px + min(var(--ga,0px),26px))}#goto{top:calc(118px + min(var(--ga,0px),28px))}}
+/* short landscape phones: the joystick reaches up to the compass, the jump button up to the emotes */
+@media(min-width:561px) and (max-height:440px){body #gemo{top:12px;right:128px}#cmp{left:auto;right:71px;top:114px}
+  body #gev{top:calc(66px + var(--ga,32px));left:204px;transform:none;max-width:calc(100vw - 336px);text-align:left}
+  #toast{left:calc(50% + 34px);top:calc(70px + var(--ga,0px) + var(--gb,0px));max-width:calc(100% - 340px);white-space:normal;word-break:keep-all;border-radius:20px;text-align:center}
+  #goto{left:calc(50% + 34px);top:max(132px,calc(72px + var(--ga,0px) + var(--gb,0px)));max-width:calc(100% - 340px);z-index:5}#act{max-width:calc(100% - 364px)}}
+/* portrait phones: messages go under the compass, clear of the minimap and the right rails */
+@media(max-width:560px){#toast{left:12px;top:calc(222px + var(--ga,0px) + var(--gb,0px) + var(--gc,0px));transform:none;max-width:calc(100% - 80px);white-space:normal;word-break:keep-all;border-radius:20px}
+  #goto{top:calc(224px + var(--ga,0px) + var(--gb,0px));z-index:5}
+  body #ggoal{top:222px;left:12px;width:min(240px,calc(100vw - 88px))}
+  body #gev{top:calc(222px + var(--ga,32px));left:12px;transform:none;max-width:calc(100% - 80px);text-align:left}}
+@media(max-width:560px) and (max-height:600px){body #gemo{top:171px;left:66px;right:auto;flex-direction:row}}
+@media(max-width:340px){#run{right:104px}}
+/* small buttons on the place sheet keep their look and get a finger-sized touch area */
+#qx:after,#qsw:after,#qbk:after{content:"";position:absolute;inset:-8px}#qx:after{inset:-4px}#qbk{position:relative}#qbk:after{inset:-12px -8px}
+/* the stamp list is 569 places long: its close button stays in sight instead of waiting at the very end */
+#lc{position:sticky;bottom:-4px;box-shadow:0 0 0 10px #fff}
 </style>
 <link rel="modulepreload" href="./three.module.js">
 <link rel="modulepreload" href="./three.core.js">
@@ -711,7 +733,7 @@ T(199.6,G,17.6,23,.8,.3,C.white); T(199.6,G,36,23,.8,.3,C.white);
 B(225,G,26,3,.6,3,C.white); B(225,G+.6,26,3,2.4,3,C.red,{s:false}); T(226.3,G+3.0,27.3,.4,.8,.4,C.brown); T(226.7,G+3.5,27.2,1,.2,.6,C.green);
 // Yedang reservoir + suspension bridge
 lake(140,100,66,42); lake(156,88,28,12);
-B(152,G+1.2,93,36,.3,2,C.white,{s:false}); T(152,G+1.5,93,36,.5,.15,C.lgray); T(152,G+1.5,94.85,36,.5,.15,C.lgray);
+B(152,G+1.2,93,36,.3,2,C.white,{s:false}); T(152,G+1.5,93.925-.925/KZ,36,.5,.15,C.lgray); T(152,G+1.5,93.925+.925/KZ,36,.5,.15,C.lgray);
 for(let k=0;k<3;k++){ T(150.2+k*.6,G,93,.6,.4+k*.38,2,C.stone); T(189.2-k*.6,G,93,.6,.4+k*.38,2,C.stone); }
 for(const px of [160,180]) T(px,G,93.5,1,1.2,1,C.lgray);
 T(169.5,G,92.3,1,14,.5,C.white); T(169.5,G,95.2,1,14,.5,C.white); T(169.5,G+13.4,92.3,1,.6,3.4,C.white);
@@ -831,10 +853,10 @@ T(146.5,G,100,1.6,.5,.8,C.stone); T(146.5,G,100,1.6,1.0,.4,C.stone);
 for(const [jx,jz,jh] of [[112,113,4.5],[115,112.4,6],[118,113,3.6],[121,112.6,5.2],[124,113.2,4],[113.5,117,3.8],[117,117.4,5],[121.5,117,4.4]]) jang(jx,jz,jh);
 // Cheonjangho suspension bridge (chili + goji pylons), dragon + tiger
 lake(212,56,30,24);
-B(209.8,G+1.2,66,34.4,.3,2,C.white,{s:false}); T(209.8,G+1.5,66,34.4,.5,.15,C.lgray); T(209.8,G+1.5,67.85,34.4,.5,.15,C.lgray);
+B(209.8,G+1.2,66,34.4,.3,2,C.white,{s:false}); T(209.8,G+1.5,66.925-.925/KZ,34.4,.5,.15,C.lgray); T(209.8,G+1.5,66.925+.925/KZ,34.4,.5,.15,C.lgray);
 for(let k=0;k<3;k++){ T(208+k*.6,G,66,.6,.4+k*.38,2,C.stone); T(245.4-k*.6,G,66,.6,.4+k*.38,2,C.stone); }
 T(213.4,G,64.9,1.3,9,1.0,C.red); T(213.6,G+9,65.1,.9,1.4,.6,C.red); T(213.8,G+10.4,65.2,.4,.8,.4,C.green);
-T(213.5,G,68.1,1.1,6,1.0,0xe8452c); T(213.7,G+6,68.3,.7,1,.6,0xe8452c); T(213.9,G+7,68.4,.3,.6,.3,C.green);
+T(213.5,G,68.1,1.1,6,1.0,0xe8452c); T(213.7,G+6,68.3,.7,1,.6,0xe8452c); T(213.9,G+7,68.4,.3,.6,.3,C.green); T(213.5,G,65.9,1,.14,2.2,C.stone);
 for(let k=0;k<10;k++) T(214.6+k*2.6,G+8.6-k*.7,66.95,2.6,.12,.12,C.lgray);
 B(247.5,G,62,3,.6,2,C.stone,{s:false}); T(247.8,G+.6,62.4,2,.9,1.1,C.orange); T(249.4,G+1.2,62.5,.9,.9,.9,C.orange); for(let i=0;i<3;i++) T(248+i*.6,G+1.5,62.4,.2,.05,1.1,C.black); T(247.9,G+.6,62.5,.3,.0+.6,.3,C.orange);
 B(247.5,G,69.6,4,.6,2,C.stone,{s:false}); T(247.8,G+.6,70,1.2,.8,1,C.teal); T(248.8,G+1.2,70.1,1.2,.8,.9,C.teal); T(249.8,G+1.8,70.1,1.2,.8,.9,C.blue); T(250.8,G+2.4,70.15,.9,.8,.8,C.blue); T(251.5,G+2.9,70.3,.5,.2,.5,C.yellow);
@@ -899,12 +921,12 @@ town(108,58,128,76,3); town(136,58,166,76,3);
 // ================= DAEJEON (terrain only: real mountains, streams and Daecheong lake; no places) =================
 BX=810; BZ=172;
 function riv(x,z,w,d){ LAKES.push(mapRect([x+BX,z+BZ,w,d])); T(x,G,z,w,.25,d,C.water); }   // shallow, can be waded
-riv(300,2,236,7);                                                   // Geumgang along the north
+riv(280,2,256,7);                                                   // Geumgang along the north
 riv(150,130,7,42); riv(150,124,70,7); riv(214,70,7,60); riv(214,64,72,7); riv(280,8,7,62);   // Gapcheon: south-west -> centre -> north
 riv(310,100,7,72); riv(284,94,32,7); riv(283,70,8,30);              // Yudeungcheon
 riv(380,112,7,60); riv(316,106,70,7);                               // Daejeoncheon
-riv(482,10,48,56); riv(500,66,30,44); riv(470,28,12,22); riv(486,110,22,30);   // Daecheong lake on the east edge
-mountain(4,96,30,36,[[30,130,14,11],[50,116,9,8],[20,108,8,7]],'rock');   // Gyeryongsan east face (Sutonggol)
+riv(482,7,48,59); riv(500,66,30,44); riv(470,28,12,22); riv(486,110,22,30);   // Daecheong lake on the east edge
+const DJH0=boxes.length; mountain(4,96,30,36,[[30,130,14,11],[50,116,9,8],[20,108,8,7]],'rock');   // Gyeryongsan east face (Sutonggol)
 mountain(40,10,26,20,[[66,30,10,9],[86,20,7,6]],'hill');                  // Usanbong, Geumbyeongsan
 mountain(108,136,16,14,[[124,150,9,7]],'rock');                           // Gubongsan
 mountain(170,138,16,16,[[186,154,8,7]],'hill');                           // Jangtaesan
@@ -913,14 +935,15 @@ mountain(410,104,30,32,[[440,136,15,11],[458,118,8,7]],'rock');           // Sik
 mountain(390,14,30,24,[[420,38,12,10],[436,24,7,6]],'hill');              // Gyejoksan
 mountain(230,128,14,18,[[244,150,7,7]],'hill'); mountain(120,40,12,10,[[132,50,5,5]],'hill');
 // Daejeon city basics: roads, a station, the expo tower, shops and houses in the basin (no stamp places)
-roadEW(0,80,540); roadNS(160,0,172); roadNS(392,64,108); roadEW(160,36,232); roadEW(160,120,150);
+roadEW(0,80,540); roadNS(160,0,172); roadNS(392,64,108); roadEW(160,36,232); roadEW(160,120,150); T(120,G,0,44,.3,3,C.road); T(120,G,169,44,.3,3,C.road);
 B(262,G,84,12,2.8,4,C.white); B(261.6,G+2.8,83.6,12.8,.5,4.8,C.blue); T(260,G,88.4,16,.5,1.4,C.lgray);           // Daejeon station
 for(let i=0;i<8;i++) B(300,G+i*1.2,40,2,1.2,2,i%2?C.lgray:C.white,{s:false}); B(298.5,G+9.6,38.5,5,.6,5,C.lgray,{s:false}); B(299.5,G+10.2,39.5,3,1.6,3,C.orange,{s:false}); T(300.8,G+11.8,40.8,.4,4,.4,C.lgray);   // expo tower
 { const b0=boxes.length, s0=studs.length;
   town(170,44,228,60,6); town(246,44,290,60,6); town(170,90,208,116,6); town(240,96,300,116,6); town(330,70,386,100,6); town(400,70,470,96,5); town(60,66,140,78,4); town(170,128,226,160,4);
   // same random draws as before, minus the houses and trees that stood on a road or in a stream
   const RW=ROADS.concat(LAKES), over=(v,r)=>Math.min(v[0]+v[3],r[0]+r[2])-Math.max(v[0],r[0])>.6&&Math.min(v[2]+v[5],r[1]+r[3])-Math.max(v[2],r[1])>.6;
-  const lots=boxes.slice(b0).filter(v=>v[1]<=G+.01&&v[4]>=1&&RW.some(r=>over(v,r))).map(v=>[v[0]-1.1,v[2]-1.1,v[0]+v[3]+1.1,v[2]+v[5]+1.1]);
+  const HILL=boxes.slice(DJH0,b0).filter(v=>v[1]<=G+.01&&v[4]>=1.2&&v[3]===2&&v[5]===2).map(v=>[v[0],v[2],v[3],v[5]]);
+  const lots=boxes.slice(b0).filter(v=>v[1]<=G+.01&&v[4]>=1&&(RW.some(r=>over(v,r))||HILL.some(r=>over(v,r)))).map(v=>[v[0]-1.1,v[2]-1.1,v[0]+v[3]+1.1,v[2]+v[5]+1.1]);
   const inLot=(x0,z0,x1,z1)=>lots.some(r=>x0>=r[0]&&z0>=r[1]&&x1<=r[2]&&z1<=r[3]);
   const kb=boxes.slice(b0).filter(v=>!inLot(v[0],v[2],v[0]+v[3],v[2]+v[5])), ks=studs.slice(s0).filter(v=>!inLot(v[0],v[2],v[0],v[2])); boxes.length=b0; boxes.push(...kb); studs.length=s0; studs.push(...ks); }
 BX=0; BZ=0;
@@ -2002,6 +2025,7 @@ function say(s){ toast.textContent=s; toast.classList.add('on'); clearTimeout(to
 function renderList(){ const done=c=>POI.filter(p=>p.c===c&&p.v).length+'/'+POI.filter(p=>p.c===c).length; document.getElementById('ul').innerHTML=['태안군','서산시','당진시','아산시','천안시','홍성군','예산군','보령시','청양군','공주시','계룡시','서천군','부여군','논산시','금산군'].map(c=>`<h3>${c} ${done(c)}</h3>`+POI.filter(p=>p.c===c).map(p=>`<li data-i="${POI.indexOf(p)}" class="${p.v?'v':''}"><em>${p.v?'✓':''}</em>${p.n}</li>`).join('')).join(''); }
 document.getElementById('count').onclick=()=>{ renderList(); document.getElementById('list').style.display='flex'; };
 document.getElementById('lc').onclick=()=>{ document.getElementById('list').style.display='none'; };
+document.getElementById('list').addEventListener('click',e=>{ if(e.target.id==='list') e.target.style.display='none'; });
 let gotoT=null, gotoTm=0, lbDrag=0;
 function offerGo(name,x,z){ gotoT=[name,x,z]; document.getElementById('gon').textContent=name; const g=document.getElementById('goto'); g.classList.add('on'); clearTimeout(gotoTm); gotoTm=setTimeout(()=>g.classList.remove('on'),7000); }
 function safeSpot(x,z){ for(let r=0;r<60;r+=1.5) for(let a=0;a<(r?8:1);a++){ const nx=x+Math.cos(a*Math.PI/4)*r, nz=z+Math.sin(a*Math.PI/4)*r; if(nx<2||nz<2||nx>MW-2||nz>MH-2) continue;
@@ -2028,23 +2052,29 @@ function drawBase(){ const mc=mbc; mc.clearRect(0,0,mm.width,mm.height);
 }
 function drawMap(){ const key=(P.x|0)+'_'+(P.z|0)+'_'+P.face.toFixed(1); if(!mapDirty&&key===mapLast) return; mapLast=key; if(mapDirty){ drawBase(); mapDirty=false; }
   mc.clearRect(0,0,mm.width,mm.height); mc.drawImage(mb,0,0);
-  mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
+  mc.save(); mc.translate(P.x/S*MS,P.z/S*MS); mc.rotate(-P.face+Math.PI); mc.scale(2,2); mc.beginPath(); mc.moveTo(0,-24); mc.lineTo(17,18); mc.lineTo(0,9); mc.lineTo(-17,18); mc.closePath(); mc.fillStyle='#d93025'; mc.fill(); mc.lineWidth=2; mc.strokeStyle='#fff'; mc.stroke(); mc.restore(); }
 
 // ---------- controls
-const OVER=2900*WF;
-const cam={yaw:0,pitch:.95,dist:OVER,want:OVER,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
+// the overview backs away far enough to show the map from west to east: a portrait screen needs about twice the distance of a wide one
+const OVER=2900*WF, overFit=()=>Math.max(OVER,MW*.52/(Math.tan(camera.fov*Math.PI/360)*camera.aspect)+MH*.3);
+let overD=overFit();
+const cam={po:0,yaw:0,pitch:.95,dist:overD,want:overD,tx:MW/2,ty:2,tz:MH/2+10}; let started=false;
 const cmpEl=document.querySelector('#cmp i'); let cmpYaw=null;
-const key={}; let jumpQ=false, runHeld=false, running=false, stam=1, stamShown=-1;
+// how far the camera can back away from the explorer at this pitch before a building or a hill gets in between (trees, poles and thin roofs do not count)
+function camFree(pitch,dist){ const cp=Math.cos(pitch), ux=Math.sin(cam.yaw)*cp, uy=Math.sin(pitch), uz=Math.cos(cam.yaw)*cp; for(let d=1.5;d<dist;d+=.5){ const x=cam.tx+ux*d, y=cam.ty+uy*d, z=cam.tz+uz*d; if(x<0||z<0||x>=MW||z>=MH) continue; const c=grid[Math.floor(z/CS)*GW+Math.floor(x/CS)];
+    for(let k=0;k<c.length;k++){ const b=boxes[c[k]]; if(b[4]>=2.4&&b[3]>=2.8&&b[5]>=2.8&&x>b[0]&&x<b[0]+b[3]&&z>b[2]&&z<b[2]+b[5]&&y>b[1]&&y<b[1]+b[4]) return d-.8; } } return dist; }
+const key={}; let jumpQ=false, runHeld=false, running=false, stam=1, stamShown=-1, runShown=false;
 addEventListener('blur',()=>{ for(const k in key) key[k]=false; });
 addEventListener('keydown',e=>{ const fb=document.activeElement; if((e.code==='Enter'||e.code==='Space')&&fb&&fb.tagName==='BUTTON'&&!fb.closest('#qz,#list,#intro')){ e.preventDefault(); fb.blur(); }
   if(modal){ if(e.code==='Escape') closeQ(); else if(e.code==='Enter'&&!e.repeat&&!document.getElementById('qz').classList.contains('quiz')) document.getElementById('qg').click(); return; } if(document.getElementById('list').style.display==='flex'){ if(e.code==='Escape') document.getElementById('list').style.display='none'; return; } if((e.code==='KeyE'||e.code==='Enter')&&cur){ if(!e.repeat) openQ(cur); return; } if(e.code==='Space'&&!key.Space) jumpQ=true; key[e.code]=true; if(e.code.startsWith('Arrow')||e.code==='Space') e.preventDefault(); }); addEventListener('keyup',e=>key[e.code]=false);
 const joy=document.getElementById('joy'),knob=joy.firstElementChild; let jx=0,jy=0,jid=null;
 function jmove(e){ const r=joy.getBoundingClientRect(); let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2); const m=Math.hypot(dx,dy),mx=r.width/2-14;
   if(m>mx){ dx*=mx/m; dy*=mx/m; } knob.style.transform=`translate(${dx}px,${dy}px)`; jx=dx/mx; jy=-dy/mx; }
-joy.addEventListener('pointerdown',e=>{ jid=e.pointerId; joy.setPointerCapture(jid); jmove(e); e.stopPropagation(); });
+// a second finger on the stick must not take it over (lifting it used to leave the stick dead under the first finger)
+joy.addEventListener('pointerdown',e=>{ e.stopPropagation(); if(jid!==null) return; jid=e.pointerId; try{ joy.setPointerCapture(jid); }catch(_){} jmove(e); });
 joy.addEventListener('pointermove',e=>{ if(e.pointerId===jid) jmove(e); });
 const jend=e=>{ if(e.pointerId===jid){ jid=null; jx=jy=0; knob.style.transform=''; } };
-joy.addEventListener('pointerup',jend); joy.addEventListener('pointercancel',jend);
+joy.addEventListener('pointerup',jend); joy.addEventListener('pointercancel',jend); joy.addEventListener('lostpointercapture',jend);
 document.getElementById('jump').addEventListener('pointerdown',e=>{ jumpQ=true; e.preventDefault(); e.stopPropagation(); });
 { const rb=document.getElementById('run'); rb.addEventListener('pointerdown',e=>{ runHeld=true; rb.setPointerCapture(e.pointerId); e.preventDefault(); e.stopPropagation(); }); for(const ev of ['pointerup','pointercancel','lostpointercapture']) rb.addEventListener(ev,()=>{ runHeld=false; }); }
 const pts=new Map(); let pinch=0; const cv=renderer.domElement;
@@ -2054,10 +2084,11 @@ const pmv=e=>{ const p=pts.get(e.pointerId); if(!p) return; if(e.pointerType==='
   p[0]=e.clientX; p[1]=e.clientY;
   if(pts.size===2){ const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]); if(pinch) zoom(pinch/d); pinch=d; } }; cv.addEventListener('pointermove',pmv); lbBox.addEventListener('pointermove',pmv);
 const pend=e=>{ pts.delete(e.pointerId); pinch=0; }; for(const el of [cv,lbBox]){ el.addEventListener('pointerup',pend); el.addEventListener('pointercancel',pend); }
-function zoom(f){ cam.want=Math.min(3500*WF,Math.max(7,cam.want*f)); }
+function zoom(f){ cam.want=Math.min(Math.max(3500*WF,overD),Math.max(7,cam.want*f)); }
+addEventListener('resize',()=>{ const o=overFit(); if(!started||cam.want===overD) cam.want=o; overD=o; });
 for(const el of [cv,lbBox]) el.addEventListener('wheel',e=>{ zoom(e.deltaY>0?1.12:.89); e.preventDefault(); },{passive:false});
 document.getElementById('zi').onclick=()=>zoom(.72); document.getElementById('zo').onclick=()=>zoom(1.4);
-document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=OVER; cam.yaw=0; cam.pitch=.95; } };
+document.getElementById('zall').onclick=()=>{ if(cam.want>200){ cam.want=17; } else { cam.want=overD; cam.yaw=0; cam.pitch=.95; } };
 document.getElementById('home').onclick=()=>{ P.x=SPOS[0]; P.z=SPOS[1]; P.y=G*S+.5; P.vy=0; P.ride=null; say('출발 지점으로 돌아왔어요'); };
 document.getElementById('go').onclick=()=>{ document.getElementById('intro').style.display='none'; started=true; cam.want=17; cam.pitch=.8; if(GAMEP) GAMEP.then(g=>g.start()); };
 // ---------- game link (?g=…): the class game made by the teacher's page. Places outside the game's area are switched off (p.off)
@@ -2087,7 +2118,7 @@ const LANES=[ // o, axis, dir, base, span, speed, offset, fixed coordinate, leng
   {o:bus2,ax:'x',dir:1,base:320,span:1020,sp:3.2,off:100,fix:432.25,len:6},{o:car6,ax:'x',dir:1,base:320,span:1022,sp:3.6,off:330,fix:432.25,len:3}];
 // six trains shuttle along the longest runs of the new lines (map units; a train is 1.9 wide and its track runs down the middle of the deck)
 const TRAINS=[]; { const mk=(o,ax,f,a,b)=>{ o.rotation.y=ax==='x'?0:Math.PI/2; TRAINS.push({o,ax,fix:f-.95,f:ax==='x'?u=>a+2+u*(b-a-23):u=>a+21+u*(b-a-23)}); }, X=v=>Math.round(v*NW), Z=v=>Math.round(v*NH), cl=()=>{ const o=train.clone(); MV.add(o); return o; };
-  mk(train,'z',X(4.715),Z(.05),Z(2.26)); mk(train2,'z',X(4.075),Z(.05),Z(1.33)); mk(train3,'z',X(1.625),Z(1.44),Z(3.92)); mk(cl(),'x',Z(.7),X(2.86),X(4.715)); mk(cl(),'x',Z(1.44),X(1.625),X(2.86)); mk(cl(),'z',X(2.445),Z(.3),Z(1.44)); }
+  mk(train,'z',X(4.715),Z(.05),Z(2.26)); mk(train2,'z',X(4.075),Z(.05),Z(1.33)); mk(train3,'z',X(1.625),Z(1.5),Z(3.92)); mk(cl(),'x',Z(.7),X(2.86),X(4.715)); mk(cl(),'x',Z(1.44),X(1.66),X(2.86)); mk(cl(),'z',X(2.445),Z(.3),Z(1.44)); }
 // the hand-placed lanes and trains were written on the old grid: move them onto the grown tiles
 const across=(list,ax,fix,mid)=>{ for(const r of list){ const lo=ax==='x'?r[1]:r[0], w=ax==='x'?r[3]:r[2], a=ax==='x'?r[0]:r[1], len=ax==='x'?r[2]:r[3]; if(w<=8&&fix>=lo-1&&fix<=lo+w+1&&mid>=a-2&&mid<=a+len+2) return fix+(lo+w/2)*((ax==='x'?KZ:KX)-1); } return ax==='x'?fZ(fix):fX(fix); };
 for(const m of LANES){ if(m.ax==='x'){ const a=m.dir>0?m.base:m.base-m.span-m.len, a2=fX(a), b2=fX(a+m.span+m.len); m.fix=WIDE?across(ROADS0,'x',m.fix,a+(m.span+m.len)/2):fZ(m.fix); m.span=b2-a2-m.len; m.base=m.dir>0?a2:b2; }
@@ -2123,7 +2154,8 @@ const ALLMV=LANES.concat(TRAINS);
 { const route=m=>{ if(m.f){ const lo=Math.min(m.f(0),m.f(1)), hi=Math.max(m.f(0),m.f(1)); return m.ax==='x'?[lo-13,hi+32,m.fix-1,m.fix+2.9]:[m.fix-1,m.fix+2.9,lo-32,hi+13]; }
     return m.ax==='x'?(m.dir>0?[m.base-12,m.base+m.span+m.len+12,m.fix-1,m.fix+2.6]:[m.base-m.span-m.len-12,m.base+12,m.fix-2.6,m.fix+1]):[m.fix-1,m.fix+2.6,m.base-m.span-m.len-12,m.base+12]; };
   for(const m of ALLMV) m.rt=route(m);
-  for(const m of LANES) m.nb=ALLMV.filter(o=>o!==m&&(m.y||0)===(o.y||0)&&hitB(m.rt,o.rt)); }
+  for(const m of LANES) m.nb=ALLMV.filter(o=>o!==m&&(m.y||0)===(o.y||0)&&hitB(m.rt,o.rt));
+  for(const m of TRAINS) m.cx=LANES.filter(o=>!o.y&&hitB(m.rt,o.rt)); }
 function moveTraffic(dt){
   const px=P.x/S,pz=P.z/S;
   for(const m of LANES){ const u=(m.t*m.sp+m.off)%m.span, c=m.dir>0?m.base+u:m.base-u, b=m.box, ox=b[0], oz=b[2];
@@ -2137,17 +2169,19 @@ function moveTraffic(dt){
     if(xw){ m.o.position.set(c,G+.2,m.fix); b[0]=c-.9;b[1]=c+19.8;b[2]=m.fix;b[3]=m.fix+1.9; } else { m.o.position.set(m.fix,G+.2,c); b[0]=m.fix;b[1]=m.fix+1.9;b[2]=c-19.8;b[3]=c+.9; }
     const a=m.ahead||(m.ahead=[0,0,0,0]), fwd=m.f(pingU(m.t+.4*(m.ts||1)))-c; a[0]=b[0];a[1]=b[1];a[2]=b[2];a[3]=b[3]; if(xw){ if(fwd>0) a[1]+=7; else a[0]-=7; } else if(fwd>0) a[3]+=7; else a[2]-=7; const w=m.warn||(m.warn=[0,0,0,0]), fr=m.f(pingU(m.t+.9*(m.ts||1)))-c, far=m.k?fr:0, i0=xw?0:2; m.far=fr; w[0]=b[0];w[1]=b[1];w[2]=b[2];w[3]=b[3]; w[i0]+=Math.min(far,0)-3; w[i0+1]+=Math.max(far,0)+3; const mv=((xw?b[0]:b[2])-o0)*S; m.dx=xw?mv:0; m.dz=xw?0:mv; if(Math.abs(mv)>7) m.dx=m.dz=0; }
   if(P.ride){ const m=P.ride, nx=P.x+m.dx, nz=P.z+m.dz; if(!hits(nx,P.y,nz)){ P.x=nx; P.z=nz; } }
-  for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S);   // traffic up on an expressway deck does not mind what is on the ground
+  for(const m of ALLMV){ let stop=!m.y&&(P.ride!==m&&inBox(m.ahead,px,pz,.7)&&P.y<mTop(m,px,pz)-.05||!!m.sp&&m.u>m.span-2.5&&inBox(m.st,px,pz,.7)&&P.y<VY+2.1*S), held=stop;   // traffic up on an expressway deck does not mind what is on the ground; held: it is the explorer who keeps this one waiting (directly, or through the queue in front)
     if(!stop&&!m.f){ const b=m.box, ah=m.ahead, end=m.u>m.span-2.5, need=m.sp*m.k/8.5; for(const o of m.nb){
       // level crossing: wait for the train unless it is too late to stop before the track
       if(o.f){ const w=o.warn; if((hitB(ah,w)&&(m.ax==='x'?(m.dir>0?w[0]-b[1]:b[0]-w[1]):b[2]-w[3])>=need)||(end&&hitB(m.st,w))){ stop=true; break; } continue; }
-      if(m.ax==='z'&&o.ax==='x'){ const w=o.ahead; if((hitB(ah,w)&&b[2]-w[3]>=need)||(end&&hitB(m.st,o.k?w:o.box))){ stop=true; break; } continue; }
+      if(m.ax==='z'&&o.ax==='x'){ const w=o.ahead; if((hitB(ah,w)&&b[2]-w[3]>=need)||(end&&hitB(m.st,o.k?w:o.box))){ stop=true; held=!!o.held; break; } continue; }
       const ob=o.box, cx=(ob[0]+ob[1])/2, cz=(ob[2]+ob[3])/2;
       // same lane: keep a gap; crossing roads: wait for whatever is in the way; end of lane: wait until the start is free and nobody is about to drive over it
-      if((o.ax===m.ax&&o.fix===m.fix?inBox(ah,cx,cz,.2)&&!inBox(b,cx,cz,0):hitB(ah,ob)&&!hitB(b,ob))||(end&&hitB(m.st,o.k?o.ahead:ob))){ stop=true; break; } } }
+      if((o.ax===m.ax&&o.fix===m.fix?inBox(ah,cx,cz,.2)&&!inBox(b,cx,cz,0):hitB(ah,ob)&&!hitB(b,ob))||(end&&hitB(m.st,o.k?o.ahead:ob))){ stop=true; held=!!o.held; break; } } }
+    // a train brakes for a vehicle that the explorer is holding on its track; other traffic never waits on a track, so nothing can lock up
+    else if(!stop&&m.cx.some(o=>o.held&&hitB(m.ahead,o.box)&&!hitB(m.box,o.box))) stop=true;
     else if(!stop&&m.ax==='x'){ const b=m.box, fw=m.ahead[1]>b[1], r=Math.max(7,Math.abs(m.far)+3), lo=fw?b[0]:b[0]-r, hi=fw?b[1]+r:b[1];
       for(const o of TRAINS){ if(o.ax!=='z') continue; const z=o.warn; if(lo<z[1]&&hi>z[0]&&b[2]<z[3]&&b[3]>z[2]&&(fw?z[0]-b[1]:b[0]-z[1])>=Math.abs(m.far)*m.k/7){ stop=true; break; } } }
-    m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k*(m.ts||1); }
+    m.held=held; m.k+=((stop?0:1)-m.k)*Math.min(1,dt*(stop?9:2.2)); if(m.k<.02) m.k=0; m.t+=dt*m.k*(m.ts||1); }
 }
 function moverHit(x,z,y){ const ux=x/S,uz=z/S,mg=PR/S; for(const m of ALLMV) if(!m.y&&inBox(m.box,ux,uz,mg)&&y<mTop(m,ux,uz)-.05) return true; return false; }
 // ---------- movement with box collision, gravity and jump
@@ -2354,7 +2388,7 @@ function updateEnv(dt){
   envC.sun.lerp(tmpC.setHex(e.sun),k); envC.hc.lerp(tmpC.setHex(e.hc),k);
   envC.si+=(e.si*w.dim-envC.si)*k; envC.hi+=(e.hi*(.6+.4*w.dim)-envC.hi)*k; envC.ex+=(e.ex-envC.ex)*k; envC.night+=(e.night-envC.night)*k;
   envC.cloud+=(w.cloud-envC.cloud)*k; envC.rain+=((wxI===1?1:0)-envC.rain)*k; envC.bs+=(e.bs-envC.bs)*k; envC.bt+=(e.bt-envC.bt)*k;
-  const fn=w.fog?cam.dist*w.fog[0]:4200*WF, ff=w.fog?cam.dist*w.fog[1]+w.fog[2]:11000*WF; envC.fn+=(fn-envC.fn)*k; envC.ff+=(ff-envC.ff)*k;
+  const fz=Math.max(1,cam.dist/OVER), fn=w.fog?cam.dist*w.fog[0]:4200*WF*fz, ff=w.fog?cam.dist*w.fog[1]+w.fog[2]:11000*WF*fz; envC.fn+=(fn-envC.fn)*k; envC.ff+=(ff-envC.ff)*k;
   skyU.uTop.value.setRGB(envC.top[0],envC.top[1],envC.top[2]); skyU.uHor.value.setRGB(envC.hor[0],envC.hor[1],envC.hor[2]); skyU.uSunCol.value.setRGB(envC.sc[0],envC.sc[1],envC.sc[2]);
   skyU.uSun.value.set(envC.sd[0],envC.sd[1],envC.sd[2]); skyU.uNight.value=envC.night; skyU.uCloud.value=envC.cloud; skyU.uTime.value=t;
   scene.fog.color.setRGB(envC.hor[0],envC.hor[1],envC.hor[2],THREE.SRGBColorSpace); scene.background.copy(scene.fog.color); scene.fog.near=envC.fn; scene.fog.far=envC.ff;
@@ -2391,7 +2425,7 @@ function tick(){
   const im=Math.hypot(ix,iy); let moving=false,dx=0,dz=0;
   if(started&&im>.12){ const k=Math.min(1,im)/im; ix*=k; iy*=k; const sn=Math.sin(cam.yaw),cs=Math.cos(cam.yaw); dx=cs*ix-sn*iy; dz=-sn*ix-cs*iy;
     let df=Math.atan2(dx,dz)-P.face; df=Math.atan2(Math.sin(df),Math.cos(df)); P.face+=df*Math.min(1,dt*12); moving=true; }
-  if(Math.abs(stam-stamShown)>.01||running!==(stamShown<0)){ const rb=document.getElementById('run'); rb.style.setProperty('--g',(stam*100).toFixed(0)+'%'); rb.classList.toggle('on',running); rb.classList.toggle('low',stam<.25&&!running); stamShown=stam; }
+  if(Math.abs(stam-stamShown)>.01||running!==runShown){ runShown=running; const rb=document.getElementById('run'); rb.style.setProperty('--g',(stam*100).toFixed(0)+'%'); rb.classList.toggle('on',running); rb.classList.toggle('low',stam<.25&&!running); stamShown=stam; }
   if(started){ physics(dt/2,dx,dz); physics(dt/2,dx,dz); if(GAME&&GAME.tick) GAME.tick(dt,moving); } else jumpQ=false;
   P.walk+=moving?dt*11:0; const sw=!P.on?.9:(moving?Math.sin(P.walk)*.7:0);
   legL.rotation.x=sw; legR.rotation.x=-sw; armL.rotation.x=P.on?-sw:-2.4; armR.rotation.x=P.on?sw:-2.4;
@@ -2402,10 +2436,15 @@ function tick(){
   cam.dist+=(cam.want-cam.dist)*Math.min(1,dt*3.5);
   const gx=P.x, gy=P.y+1.9, gz=P.z;   // the view stays on the explorer however far it is zoomed out
   cam.tx+=(gx-cam.tx)*Math.min(1,dt*8); cam.ty+=(gy-cam.ty)*Math.min(1,dt*5); cam.tz+=(gz-cam.tz)*Math.min(1,dt*8);
-  const cp=Math.cos(cam.pitch);
-  camera.position.set(cam.tx+Math.sin(cam.yaw)*cp*cam.dist,cam.ty+Math.sin(cam.pitch)*cam.dist,cam.tz+Math.cos(cam.yaw)*cp*cam.dist);
+  let cd=cam.dist, pt=cam.pitch;
+  // close up, a wall between the camera and the explorer would fill the screen: come in front of it (quickly in, slowly back out), looking down more steeply if that leaves more room
+  { let po=0; if(started&&cd<70){ let f=camFree(pt,cd); if(f<Math.min(cd,9)&&pt<1.25){ const f2=camFree(1.25,cd); if(f2>f+1){ f=f2; po=1.25-pt; } }
+      cam.cl=cam.cl===undefined?f:cam.cl+(f-cam.cl)*Math.min(1,dt*(f<cam.cl?12:3)); cd=Math.min(cd,Math.max(2.2,cam.cl)); } else cam.cl=undefined;
+    cam.po+=(po-cam.po)*Math.min(1,dt*5); pt+=cam.po; }
+  const cp=Math.cos(pt);
+  camera.position.set(cam.tx+Math.sin(cam.yaw)*cp*cd,cam.ty+Math.sin(pt)*cd,cam.tz+Math.cos(cam.yaw)*cp*cd);
   camera.lookAt(cam.tx,cam.ty,cam.tz);
-  { const nr=Math.max(.3,cam.dist*.05), fr=Math.max(4000,cam.dist*7); if(Math.abs(camera.near-nr)>nr*.04||Math.abs(camera.far-fr)>fr*.04){ camera.near=nr; camera.far=fr; camera.updateProjectionMatrix(); } }
+  { const nr=Math.max(.3,cd*.05), fr=Math.max(4000,cam.dist*7); if(Math.abs(camera.near-nr)>nr*.04||Math.abs(camera.far-fr)>fr*.04){ camera.near=nr; camera.far=fr; camera.updateProjectionMatrix(); } }
   updateEnv(dt);
   if(post) post.composer.render(dt); else renderer.render(scene,camera);
   if(frame===2) renderer.shadowMap.autoUpdate=false;
